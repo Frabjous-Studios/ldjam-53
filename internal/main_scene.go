@@ -426,7 +426,7 @@ func (m *MainScene) putCounter(args []string) error {
 		case "coin_50":
 			m.Sprites = append(m.Sprites, newCoin(50, randCounterPos()))
 		default:
-			debug.Println("unrecognized argument to put_counter: %v", arg)
+			debug.Printf("unrecognized argument to put_counter: %v", arg)
 		}
 	}
 	return nil

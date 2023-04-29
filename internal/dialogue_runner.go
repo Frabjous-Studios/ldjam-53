@@ -93,7 +93,7 @@ func (r *DialogueRunner) Portrait() Sprite {
 	}
 	toks := strings.Split(portraitID, ":")
 	if len(toks) != 2 {
-		debug.Println("malformed portrait! using random: %v", portraitID)
+		debug.Printf("malformed portrait! using random: %v", portraitID)
 		r.portrait = newRandPortrait(r.portraitImg)
 		return r.portrait
 	}
