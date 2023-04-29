@@ -1,4 +1,12 @@
 title: Start
 ---
-Hello world!
+Hello! I would like to bank.
+-> You cannot bank right now.
+    Too bad. I'll leave then.
+-> Ok. How much would you like to bank?
+    I'd like to bank five banking banks
+    -> What?
+        You heard me!
+    -> Okay. That'll be 200 dollars.
+        Nooooo
 ===

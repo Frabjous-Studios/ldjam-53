@@ -98,3 +98,36 @@ func (t *Till) Remove(s Sprite) {
 		}
 	}
 }
+
+// newBill creates a bill of the provided denomination in local coordinates on the counter.
+func newBill(denom int, x, y int) Sprite {
+	x = clamp(x+112, 112, 320-43)
+	y = clamp(y+152, 152, 240-43)
+
+	img := Resources.images[fmt.Sprintf("bill_%d", denom)]
+	return &Money{
+		Value:  denom * 100,
+		IsCoin: false,
+		BaseSprite: &BaseSprite{
+			X:   x,
+			Y:   y,
+			Img: img,
+		},
+	}
+}
+
+// newCoin creates a coin of the provided denomination in local coordinates on the counter.
+func newCoin(denom int, x, y int) Sprite {
+	x = clamp(x+112, 112, 320-15)
+	y = clamp(y+152, 152, 240-15)
+	img := Resources.images[fmt.Sprintf("coin_%d", denom)]
+	return &Money{
+		Value:  denom,
+		IsCoin: true,
+		BaseSprite: &BaseSprite{
+			X:   x,
+			Y:   y,
+			Img: img,
+		},
+	}
+}

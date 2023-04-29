@@ -56,6 +56,8 @@ func (s *BaseSprite) ClampToRect(r image.Rectangle) {
 type MainScene struct {
 	Game *Game
 
+	Customers []string // Customers is a list of Yarnspinner nodes happening on the current day.
+
 	Sprites []Sprite
 
 	State  *GameState
@@ -67,6 +69,9 @@ type MainScene struct {
 	holding     Sprite
 	clickStart  image.Point
 	clickOffset image.Point
+
+	lines []*DialogueLine
+	opts  []*DialogueLine
 }
 
 func NewMainScene(g *Game) *MainScene {
@@ -85,6 +90,7 @@ func NewMainScene(g *Game) *MainScene {
 			newCoin(5, 25, 20),
 			newCoin(25, 45, 20),
 		},
+		Customers: Days[0],
 		State: &GameState{
 			CurrentNode: "Start",
 			Vars:        make(yarn.MapVariableStorage),
@@ -132,7 +138,80 @@ func (m *MainScene) Update() error {
 		m.holding.SetPos(mPos.Add(m.clickOffset))
 	}
 
+	// update dialogue
+	m.updateDialogue()
 	return nil
+}
+
+func (m *MainScene) updateDialogue() {
+	lines, err := m.Runner.Lines()
+	if err != nil {
+		debug.Println("error getting lines: ", err)
+	}
+	opts, err := m.Runner.Options()
+	if err != nil {
+		debug.Println("error getting options:", err)
+		return
+	}
+
+	m.lines = renderAttributedStr(lines)
+	m.opts = m.renderOpts(opts)
+
+	// TODO: have the bubbles push themselves upwards until they're off the screen and can be safely culled.
+}
+
+func (m *MainScene) renderOpts(astrs []*yarn.AttributedString) []*DialogueLine {
+	lines := renderAttributedStr(astrs)
+	result := make([]*DialogueLine, len(lines))
+	for i, line := range lines {
+		result[i] = line
+		fmt.Println(line.Line)
+		if i < len(m.opts) {
+			result[i].Highlighted = m.opts[i].Highlighted // transfer highlighted and clicked info from last frame
+		}
+	}
+	return result
+}
+
+func renderAttributedStr(strs []*yarn.AttributedString) []*DialogueLine {
+	var result []*DialogueLine
+	for _, str := range strs {
+		result = append(result, &DialogueLine{
+			Line:       str.String(),
+			IsCustomer: true,
+			// TODO: set BaseSprite
+		})
+	}
+	return result
+}
+
+func (m *MainScene) Draw(screen *ebiten.Image) {
+	// draw Till
+	m.till.DrawTo(screen)
+
+	// draw counter
+	m.counter.DrawTo(screen)
+
+	// draw all the sprites in their draw order.
+	for _, sprite := range m.Sprites {
+		sprite.DrawTo(screen)
+	}
+}
+
+type DialogueLine struct {
+	*BaseSprite // 9-patch
+
+	Line        string
+	IsCustomer  bool
+	Highlighted bool
+	Clickbox    image.Rectangle
+}
+
+func (m *MainScene) startRunner() {
+	if err := m.Runner.Start(m.State); err != nil {
+		debug.Printf("error starting runner: %v", err)
+		return
+	}
 }
 
 func (m *MainScene) pickUp() {
@@ -157,63 +236,10 @@ func (m *MainScene) spriteUnderCursor() Sprite {
 	return nil
 }
 
-func (m *MainScene) Draw(screen *ebiten.Image) {
-	// draw Till
-	m.till.DrawTo(screen)
-
-	// draw counter
-	m.counter.DrawTo(screen)
-
-	// draw all the sprites in their draw order.
-	for _, sprite := range m.Sprites {
-		sprite.DrawTo(screen)
-	}
-}
-
-func (m *MainScene) startRunner() {
-	if err := m.Runner.Start(m.State); err != nil {
-		debug.Printf("error starting runner: %v", err)
-		return
-	}
-}
-
 type Money struct {
 	*BaseSprite
 	Value  int // Value is in cents.
 	IsCoin bool
-}
-
-// newBill creates a bill of the provided denomination in local coordinates on the counter.
-func newBill(denom int, x, y int) Sprite {
-	x = clamp(x+112, 112, 320-43)
-	y = clamp(y+152, 152, 240-43)
-
-	img := Resources.images[fmt.Sprintf("bill_%d", denom)]
-	return &Money{
-		Value:  denom * 100,
-		IsCoin: false,
-		BaseSprite: &BaseSprite{
-			X:   x,
-			Y:   y,
-			Img: img,
-		},
-	}
-}
-
-// newCoin creates a coin of the provided denomination in local coordinates on the counter.
-func newCoin(denom int, x, y int) Sprite {
-	x = clamp(x+112, 112, 320-15)
-	y = clamp(y+152, 152, 240-15)
-	img := Resources.images[fmt.Sprintf("coin_%d", denom)]
-	return &Money{
-		Value:  denom,
-		IsCoin: true,
-		BaseSprite: &BaseSprite{
-			X:   x,
-			Y:   y,
-			Img: img,
-		},
-	}
 }
 
 // clampToCounter clamps the provided point to the counter range (hardcoded)

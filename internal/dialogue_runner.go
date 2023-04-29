@@ -24,7 +24,7 @@ type RunnerState uint8
 const (
 	RunnerStopped RunnerState = iota // RunnerStopped
 	RunnerRunning                    // RunnerRunning is set for a runner that's running.
-	RunnerWaiting                    // RunnerWaiting indicates the runner is waiting for the player to select an option.
+	RunnerWaiting                    // RunnerWaiting indicates the runner is waiting for the player to select an dialogueOption.
 )
 
 // DialogueRunner runs YarnSpinner and any commands from the script. It buffers lines delivered and handles blocking the
@@ -121,13 +121,13 @@ func (r *DialogueRunner) Options() ([]*yarn.AttributedString, error) {
 	for i, opt := range r.handler.options {
 		result[i], err = r.stringTable.Render(opt.Line)
 		if err != nil {
-			return nil, fmt.Errorf("error rendering option '%d': %w", opt.ID, err)
+			return nil, fmt.Errorf("error rendering dialogueOption '%d': %w", opt.ID, err)
 		}
 	}
 	return result, nil
 }
 
-// Choose selects the option from the list of current options.
+// Choose selects the dialogueOption from the list of current options.
 func (r *DialogueRunner) Choose(choice int) error {
 	r.mut.RLock()
 	defer r.mut.RUnlock()
