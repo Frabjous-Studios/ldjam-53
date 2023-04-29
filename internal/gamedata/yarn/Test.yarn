@@ -1,0 +1,40 @@
+title: Test1
+portrait: random
+---
+Hello! I would like to bank.
+-> You cannot bank right now.
+    Too bad. I'll leave then.
+-> Ok. How much would you like to bank?
+    I'd like to bank five banking banks
+    -> What?
+        You heard me!
+    -> Okay. That'll be 200 dollars.
+        Nooooo
+===
+title: Test2
+portrait: random
+---
+I'd like to speak to the manager.
+-> He's busy.
+    Too bad. I'll leave then.
+-> Me too! Let me know if you find him.
+    What?! He's gone missing!?
+===
+title: Test3
+portrait: random
+---
+Can I borrow your pen?
+-> Absolutely not. I need it.
+    Ugh. Rude!!
+-> No... sorry...
+    *sigh* Makes sense.
+===
+title: Test4
+portrait: random
+---
+Do you have any gum?
+-> Sir, this is a Wendy's.
+    Oh, okay. Sorry to bother you.
+-> Uh... sure. Here's a piece.
+    Thanks!
+===

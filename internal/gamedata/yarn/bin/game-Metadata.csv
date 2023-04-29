@@ -1,3 +1,6 @@
 id,node,lineNumber,tags
-line:/Users/kalexmills/repos/personal/ldjam-53/internal/gamedata/yarn/Start.yarn-Start-0,Start,4,lastline
-line:/Users/kalexmills/repos/personal/ldjam-53/internal/gamedata/yarn/Start.yarn-Start-4,Start,8,lastline
+line:/Users/kalexmills/repos/personal/ldjam-53/internal/gamedata/yarn/Test.yarn-Test1-0,Test1,4,lastline
+line:/Users/kalexmills/repos/personal/ldjam-53/internal/gamedata/yarn/Test.yarn-Test1-4,Test1,8,lastline
+line:/Users/kalexmills/repos/personal/ldjam-53/internal/gamedata/yarn/Test.yarn-Test2-9,Test2,17,lastline
+line:/Users/kalexmills/repos/personal/ldjam-53/internal/gamedata/yarn/Test.yarn-Test3-14,Test3,26,lastline
+line:/Users/kalexmills/repos/personal/ldjam-53/internal/gamedata/yarn/Test.yarn-Test4-19,Test4,35,lastline

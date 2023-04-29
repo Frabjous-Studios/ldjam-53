@@ -5,6 +5,14 @@ import (
 	"strings"
 )
 
+// Days is the list of Yarnspinner nodes that happen each day... in this order.
+var Days = []Day{
+	0: {
+		Sequence: []string{"random"},
+		Random:   []string{"Test1", "Test2", "Test3", "Test4"},
+	},
+}
+
 type Day struct {
 	// Sequence is a sequence of YarnSpinner nodes; the node 'random' is replaced by one of the random nodes in
 	// random. There is an implicit infinite string of random nodes at the end of the day.
@@ -33,14 +41,6 @@ func (d *Day) Next() string {
 		return d.Random[rand.Intn(len(d.Random))]
 	}
 	return d.Sequence[curr]
-}
-
-// Days is the list of Yarnspinner nodes that happen each day... in this order.
-var Days = []Day{
-	0: {
-		Sequence: []string{"random"},
-		Random:   []string{"Start"},
-	},
 }
 
 func init() {

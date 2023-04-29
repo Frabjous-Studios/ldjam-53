@@ -79,11 +79,11 @@ func (b *Bubbles) IsDone() bool {
 	return b.stack[0].charsShown == len(b.stack[0].Text)
 }
 
-var TextBounds = rect(340, 12, 200, 72)
+var TextBounds = rect(340, 56, 200, 72)
 
-func (b *Bubbles) DrawTo(screen *ebiten.Image) {
+func (b *Bubbles) DrawTo(screen *ebiten.Image) bool {
 	if b.Empty() {
-		return
+		return true
 	}
 	const padding = 3
 	b.txt.SetTarget(b.offscrn)
@@ -105,6 +105,7 @@ func (b *Bubbles) DrawTo(screen *ebiten.Image) {
 		b.txt.SetColor(fontColor)
 		l.Rect = b.print(feed, l, TextBounds)
 	}
+	return b.IsDone()
 }
 func (b *Bubbles) Empty() bool {
 	return len(b.stack) == 0 || len(b.stack[0].Text) == 0
@@ -141,6 +142,11 @@ func NewLine(text string) *Line {
 		Text:       text,
 		crawlStart: time.Now(),
 	}
+}
+
+// NewOption returns a line with a crawlStart of zero.
+func NewOption(text string) *Line {
+	return &Line{Text: text}
 }
 
 const fontSize = 20

@@ -12,6 +12,7 @@ import (
 	"github.com/tinne26/etxt"
 	"golang.org/x/image/font"
 	"image/color"
+	_ "image/png"
 	"io/fs"
 	"strings"
 )
@@ -22,6 +23,8 @@ var bodies = []string{ // TODO: put them here
 
 var heads = []string{ // TODO: put them here
 	"head.png",
+	"head_1.png",
+	"head_2.png",
 }
 
 // Resources makes all multimedia resources for the game available.
@@ -57,6 +60,7 @@ func init() {
 	debug.Println("fonts available:", strings.Join(fonts, ","))
 	Resources.fontLib = fontLib
 
+	Resources.images = make(map[string]*ebiten.Image)
 	Resources.bodies = Resources.loadImages(bodies)
 	Resources.heads = Resources.loadImages(heads)
 
@@ -71,7 +75,6 @@ func init() {
 	// load font faces (again?)
 	Resources.faces = make(map[string]*truetype.Font)
 
-	Resources.images = make(map[string]*ebiten.Image)
 	Resources.images["bill_1"] = placeholder(h2c("00ff00"), 18, 43)
 	Resources.images["bill_5"] = placeholder(h2c("00ff00"), 18, 43)
 	Resources.images["bill_10"] = placeholder(h2c("00ff00"), 18, 43)
@@ -98,6 +101,7 @@ func (r *resources) GetNineSlice(id string) *image.NineSlice {
 	return r.nineSlices[id]
 }
 
+// loadImages loads a separate map of special images, given the provided paths.
 func (r *resources) loadImages(paths []string) map[string]*ebiten.Image {
 	result := make(map[string]*ebiten.Image)
 	for _, path := range paths {
@@ -106,15 +110,18 @@ func (r *resources) loadImages(paths []string) map[string]*ebiten.Image {
 	return result
 }
 
-// TODO: Enable //go:embed gamedata/img
+//go:embed gamedata/img
 var art embed.FS
 
 func (r *resources) GetImage(path string) *ebiten.Image {
+	if r.images == nil {
+		r.images = make(map[string]*ebiten.Image)
+	}
 	if _, ok := r.images[path]; !ok {
 		bgPath := fmt.Sprintf("gamedata/img/%s", path)
 		img, _, err := ebitenutil.NewImageFromFileSystem(art, bgPath)
 		if err != nil {
-			debug.Printf("failed to load image: %s", bgPath)
+			debug.Printf("failed to load image: %s: %v", bgPath, err)
 			return nil
 		}
 		r.images[path] = img
@@ -187,18 +194,20 @@ func placeholder(c color.Color, w, h int) *ebiten.Image {
 	return i
 }
 
-func randMapValue[K comparable, V any](m map[K]V) V {
-	var zero V
-	for _, v := range m { // uses fact that map range loops are random
-		return v
+func newPortrait(target *ebiten.Image, body, head string) Sprite {
+	b, h := Resources.GetImage(body), Resources.GetImage(head)
+	opts := &ebiten.DrawImageOptions{}
+	target.DrawImage(b, opts)
+	target.DrawImage(h, opts)
+	return &Portrait{
+		BaseSprite: &BaseSprite{
+			Img: target,
+			X:   170,
+			Y:   52,
+		},
 	}
-	return zero
 }
 
-func randMapKey[K comparable, V any](m map[K]V) K {
-	var zero K
-	for k := range m { // uses fact that map range loops are random
-		return k
-	}
-	return zero
+func newRandPortrait(target *ebiten.Image) Sprite {
+	return newPortrait(target, randMapKey(Resources.bodies), randMapKey(Resources.heads))
 }

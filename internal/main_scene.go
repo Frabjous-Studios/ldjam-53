@@ -8,9 +8,9 @@ import (
 	"github.com/hajimehoshi/ebiten/v2/inpututil"
 	"golang.org/x/image/math/fixed"
 	"image"
-	"log"
 	"strings"
 	"sync"
+	"time"
 )
 
 // global ScaleFactor for pixel art.
@@ -86,13 +86,9 @@ type MainScene struct {
 }
 
 func NewMainScene(g *Game) *MainScene {
-	runner, err := NewDialogueRunner()
-	if err != nil {
-		log.Fatal(err)
-	}
+	var err error
 	result := &MainScene{
-		Game:   g,
-		Runner: runner,
+		Game: g,
 		Sprites: []Sprite{
 			newBill(1, 5, 60),
 			newBill(5, 60, 60),
@@ -102,10 +98,6 @@ func NewMainScene(g *Game) *MainScene {
 			newCoin(25, 45, 20),
 		},
 		Day: Days[0],
-		State: &GameState{
-			CurrentNode: "Start",
-			Vars:        make(yarn.MapVariableStorage),
-		},
 
 		till: NewTill(),
 		counter: &BaseSprite{
@@ -117,6 +109,11 @@ func NewMainScene(g *Game) *MainScene {
 	result.bubbles = NewBubbles(result)
 	result.speaking = sync.NewCond(&result.mut)
 	result.selectOpt = sync.NewCond(&result.mut)
+
+	result.Runner, err = NewDialogueRunner(result.vars, result)
+	if err != nil {
+		panic(err)
+	}
 	return result
 }
 
@@ -150,9 +147,7 @@ func (m *MainScene) Update() error {
 			} else {
 				// check for dialogue option
 				for idx, opt := range m.options {
-					fmt.Println("checking!")
 					if cPos.Mul(ScaleFactor).In(opt.Rect) {
-						fmt.Println("selected", idx)
 						m.selection = idx
 						m.selectOpt.Broadcast()
 						m.options = nil
@@ -161,6 +156,14 @@ func (m *MainScene) Update() error {
 				}
 			}
 		}
+	}
+	runnerP := m.Runner.Portrait()
+	if runnerP == nil {
+		m.Customer = nil
+	} else {
+		// TODO: animate the customer into position
+		m.Customer = runnerP
+		m.Customer.SetPos(image.Pt(170, 52))
 	}
 	for _, opt := range m.options {
 		if opt == nil {
@@ -185,6 +188,10 @@ func (m *MainScene) Draw(screen *ebiten.Image) {
 	// draw Till
 	m.till.DrawTo(screen)
 
+	if m.Customer != nil {
+		m.Customer.DrawTo(screen)
+	}
+
 	// draw counter
 	m.counter.DrawTo(screen)
 
@@ -194,13 +201,11 @@ func (m *MainScene) Draw(screen *ebiten.Image) {
 	}
 
 	// draw dialogue bubbles.
-	m.bubbles.DrawTo(screen)
-
-	// draw dialogue options
-	m.drawOptions(screen)
+	if m.bubbles.DrawTo(screen) {
+		// draw dialogue options if the bubbles are drawn.
+		m.drawOptions(screen)
+	}
 }
-
-// 290, 151, 140, 40
 
 var OptionsBounds = rect(300, 240, 280, 80)
 
@@ -208,6 +213,9 @@ func (m *MainScene) drawOptions(screen *ebiten.Image) {
 	m.bubbles.txt.SetTarget(screen)
 	feed := m.bubbles.txt.NewFeed(fixed.P(OptionsBounds.Min.X, OptionsBounds.Min.Y))
 	for _, opt := range m.options {
+		if opt.crawlStart.IsZero() {
+			opt.crawlStart = time.Now()
+		}
 		if opt.highlighted {
 			m.bubbles.txt.SetColor(fontColorHighlight)
 		} else {
@@ -219,10 +227,12 @@ func (m *MainScene) drawOptions(screen *ebiten.Image) {
 }
 
 func (m *MainScene) startRunner() {
-	if err := m.Runner.Start(m.vars, m); err != nil {
+	if err := m.Runner.DoNode(m.Day.Next()); err != nil {
 		debug.Printf("error starting runner: %v", err)
 		return
 	}
+	fmt.Println("completed customer")
+	m.Runner.running = false
 }
 
 func (m *MainScene) pickUp() {
@@ -262,9 +272,7 @@ func (m *MainScene) Line(line yarn.Line) error {
 	m.bubbles.SetLine(m.Runner.Render(line))
 
 	for !m.bubbles.IsDone() && !m.Runner.IsLastLine(line) {
-		fmt.Println("locked!")
 		m.speaking.Wait()
-		fmt.Println("unlocked; checking again")
 	}
 	return nil
 }
@@ -274,7 +282,7 @@ func (m *MainScene) Options(options []yarn.Option) (int, error) {
 	defer m.mut.Unlock()
 	m.options = make([]*Line, 0, len(options))
 	for _, opt := range options {
-		m.options = append(m.options, NewLine(m.Runner.Render(opt.Line)))
+		m.options = append(m.options, NewOption(m.Runner.Render(opt.Line)))
 	}
 	m.selectOpt.Wait() // wait for the player to make a selection
 	return m.selection, nil
@@ -306,24 +314,6 @@ func (m *MainScene) DialogueComplete() error {
 
 type Portrait struct {
 	*BaseSprite
-}
-
-func newPortrait(body, head string) Sprite {
-	b, h := Resources.bodies[body], Resources.heads[head]
-	img := ebiten.NewImage(100, 100)
-	img.DrawImage(b, nil)
-	img.DrawImage(h, nil)
-	return &Portrait{
-		BaseSprite: &BaseSprite{
-			Img: img,
-			X:   170,
-			Y:   52,
-		},
-	}
-}
-
-func newRandPortrait() Sprite {
-	return newPortrait(randMapKey(Resources.bodies), randMapKey(Resources.heads))
 }
 
 // clampToCounter clamps the provided point to the counter range (hardcoded)
