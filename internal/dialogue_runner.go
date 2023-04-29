@@ -84,6 +84,7 @@ func (r *DialogueRunner) Portrait() Sprite {
 	node, ok := r.vm.Program.Nodes[r.CurrNodeName]
 	if !ok {
 		debug.Printf("could not find node %v", r.CurrNodeName)
+		return nil
 	}
 	r.portraitImg.Clear()
 	portraitID := portrait(node)
