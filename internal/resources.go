@@ -1,6 +1,7 @@
 package internal
 
 import (
+	"bufio"
 	"embed"
 	"fmt"
 	"github.com/Frabjous-Studios/ebitengine-game-template/internal/debug"
@@ -14,6 +15,7 @@ import (
 	"image/color"
 	_ "image/png"
 	"io/fs"
+	"math/rand"
 	"strings"
 )
 
@@ -46,6 +48,7 @@ type resources struct {
 	shaders    map[string]*ebiten.Shader
 	heads      map[string]*ebiten.Image
 	bodies     map[string]*ebiten.Image
+	lists      map[string][]string
 }
 
 const FontName = "Munro-2LYe.ttf"
@@ -95,8 +98,17 @@ func init() {
 	Resources.images["coin_25"] = placeholder(h2c("bbbb00"), 15, 15)
 	Resources.images["coin_50"] = placeholder(h2c("aaaa00"), 15, 15)
 
+	Resources.images["check_front"] = Resources.GetImage("check_front.png")
+	Resources.images["check_back"] = Resources.GetImage("check_back.png")
+
+	Resources.images["deposit_slip_empty"] = Resources.GetImage("deposit_slip.png")
+	Resources.images["deposit_slip_deposit"] = Resources.GetImage("deposit_slip_deposit.png")
+	Resources.images["deposit_slip_withdrawal"] = Resources.GetImage("deposit_slip_withdrawal.png")
+
+	Resources.images["photo_id"] = Resources.GetImage("photo_id.png")
+
 	Resources.images["counter"] = placeholder(h2c("ff0000"), 208, 88)
-	Resources.images["Till"] = placeholder(h2c("0000ff"), 112, 68)
+	Resources.images["Till"] = Resources.GetImage("placeholer_till.png")
 
 	Resources.images["bg_bg.png"] = Resources.GetImage("bg_bg.png")
 	Resources.images["bg_fg.png"] = Resources.GetImage("bg_fg.png")
@@ -119,6 +131,12 @@ func (r *resources) loadImages(paths []string) map[string]*ebiten.Image {
 		result[path] = r.GetImage(path)
 	}
 	return result
+}
+
+func (r *resources) RandomScriptFont() *etxt.Font {
+	var options = []string{"Honey Script Light", "Roustel Regular", "Thesignature"}
+	chosen := options[rand.Intn(3)]
+	return r.GetFont(chosen)
 }
 
 //go:embed gamedata/img
@@ -158,6 +176,26 @@ func (r *resources) GetFace(path string, size float64) font.Face {
 		DPI:     dpi,
 		Hinting: font.HintingFull,
 	})
+}
+
+//go:embed gamedata/*.txt
+var text embed.FS
+
+func (r *resources) GetList(filename string) []string {
+	if result, ok := r.lists[filename]; ok {
+		return result
+	}
+	f, err := text.Open(filename)
+	if err != nil {
+		debug.Printf("error opening text file %s: %v", filename)
+	}
+	s := bufio.NewScanner(f)
+	var result []string
+	for s.Scan() {
+		result = append(result, s.Text())
+	}
+	r.lists[filename] = result
+	return result
 }
 
 // GetShader retrieves the shader with the provided ID
@@ -223,4 +261,12 @@ func newPortrait(target *ebiten.Image, body, head string) Sprite {
 
 func newRandPortrait(target *ebiten.Image) Sprite {
 	return newPortrait(target, randMapKey(Resources.bodies), randMapKey(Resources.heads))
+}
+
+func drawRandom[T any](vals []T) T {
+	if len(vals) == 0 {
+		var zero T
+		return zero
+	}
+	return vals[rand.Intn(len(vals))]
 }

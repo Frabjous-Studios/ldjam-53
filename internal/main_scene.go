@@ -6,8 +6,11 @@ import (
 	"github.com/Frabjous-Studios/ebitengine-game-template/internal/debug"
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/inpututil"
+	"github.com/tinne26/etxt"
+	"golang.org/x/image/colornames"
 	"golang.org/x/image/math/fixed"
 	"image"
+	"math/rand"
 	"strconv"
 	"strings"
 	"sync"
@@ -90,6 +93,8 @@ type MainScene struct {
 	selection int
 
 	debouceTime time.Time
+
+	txt *etxt.Renderer
 }
 
 func NewMainScene(g *Game) *MainScene {
@@ -111,6 +116,10 @@ func NewMainScene(g *Game) *MainScene {
 	result.selectOpt = sync.NewCond(&result.mut)
 
 	result.Runner, err = NewDialogueRunner(result.vars, result)
+
+	result.txt = etxt.NewStdRenderer()
+	result.txt.SetAlign(etxt.Top, etxt.Left)
+	result.txt.SetSizePx(6)
 	if err != nil {
 		panic(err)
 	}
@@ -420,6 +429,18 @@ func (m *MainScene) putCounter(args []string) error {
 			continue
 		}
 		switch arg {
+		case "empty_slip":
+			slip := m.randEmptySlip()
+			m.Runner.SetDepositSlip(slip)
+			m.put(slip)
+		case "deposit_slip":
+			slip := m.randDepositSlip()
+			m.Runner.SetDepositSlip(slip)
+			m.put(slip)
+		case "withdrawal_slip":
+			slip := m.randWithdrawalSlip()
+			m.Runner.SetDepositSlip(slip)
+			m.put(slip)
 		case "bill_1":
 			m.putBill(1)
 		case "bill_5":
@@ -497,6 +518,74 @@ func (m *MainScene) putBills(amt int) {
 	for _, amt := range amts {
 		m.putBill(amt)
 	}
+}
+
+type DepositSlip struct {
+	*BaseSprite
+	Value         int
+	ForDeposit    bool
+	ForWithdrawal bool
+	AcctNum       int
+}
+
+var depositSlipColor = colornames.Black
+
+func (m *MainScene) put(sprite Sprite) {
+	m.Sprites = append(m.Sprites, sprite)
+}
+
+func (m *MainScene) randEmptySlip() *DepositSlip {
+	return m.randSlip("deposit_slip.png")
+}
+
+func (m *MainScene) randDepositSlip() *DepositSlip {
+	result := m.randSlip("deposit_slip_deposit.png")
+	result.ForDeposit = true
+	return result
+}
+
+func (m *MainScene) randWithdrawalSlip() *DepositSlip {
+	result := m.randSlip("deposit_slip_withdrawal.png")
+	result.ForWithdrawal = true
+	return result
+}
+
+func (m *MainScene) randSlip(path string) *DepositSlip {
+	img := ebiten.NewImage(43, 32)
+	img.DrawImage(Resources.GetImage(path), nil)
+
+	pos := randCounterPos()
+	slip := &DepositSlip{
+		AcctNum:    randomAcctNumber(),
+		Value:      randomTransactionValue(),
+		BaseSprite: &BaseSprite{Img: img, X: pos.X, Y: pos.Y},
+	}
+
+	m.txt.SetColor(depositSlipColor)
+	m.txt.SetSizePx(10)
+	m.txt.SetFont(Resources.GetFont(DialogFont))
+	m.txt.SetTarget(img)
+	m.txt.Draw(fmt.Sprintf("#%d", slip.AcctNum), 14, 2)
+
+	m.txt.SetFont(Resources.GetFont(DialogFont)) // TODO: make look like handwriting
+	m.txt.SetSizePx(10)
+	m.txt.SetTarget(img)
+	m.txt.Draw(fmt.Sprintf("%d.00", slip.Value/100), 16, 17)
+
+	// TODO: signature?
+	return slip
+}
+
+func randomAccountValue() int {
+	return rand.Intn(10000) // TODO: make this more realistic
+}
+
+func randomTransactionValue() int {
+	return rand.Intn(1000) * 100 // TODO: make this more realistic
+}
+
+func randomAcctNumber() int {
+	return rand.Intn(89999) + 10000
 }
 
 func (m *MainScene) putBill(denom int) {

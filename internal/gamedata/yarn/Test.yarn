@@ -1,11 +1,16 @@
 title: Test1
 portrait: random
 ---
+<< set $slip_amount to 0>>
+<< set $account_number to 0>>
 Hello! I would like to bank.
--> You cannot bank right now.
-    Too bad. I'll leave then.
--> Ok. How much would you like to bank?
-    I'd like to bank five banking banks
+<< put_counter deposit_slip >>
+<< put_counter empty_slip >>
+<< put_counter withdrawal_slip >>
+-> How much is this for?
+    ${$slip_amount}; just like it says.
+-> What's the account number?
+    It's {$account_number}. I wrote it down.
     -> What?
         You heard me!
     -> Okay. That'll be 200 dollars.
@@ -15,35 +20,4 @@ Hello! I would like to bank.
             No worries.
         -> Now get out of here!
             Wahhhh.
-===
-title: Test2
-portrait: random
----
-I'd like to speak to the manager.
--> He's busy.
-    Fine. Here's a quarter
-    << put_coins 25 >>
--> Me too! Let me know if you find him.
-    What?! He's gone missing!?
-===
-title: Test3
-portrait: random
----
-Can I borrow your pen?
--> Absolutely not. I need it.
-    What about a bribe?! I've got... er...
-    << put_cash_and_coins 2.43 >>
--> No... sorry...
-    *sigh* Makes sense.
-===
-title: Test4
-portrait: random
----
-Do you have any gum?
--> Sir, this is a Wendy's.
-    Oh, okay. Sorry to bother you.
--> Uh... sure. Here's a piece.
-    Thanks!
-    Here, let me pay.
-    << put_cash_and_coins 0.27 >>
 ===

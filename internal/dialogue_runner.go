@@ -2,6 +2,7 @@ package internal
 
 import (
 	"embed"
+	"fmt"
 	"github.com/DrJosh9000/yarn"
 	"github.com/DrJosh9000/yarn/bytecode"
 	"github.com/Frabjous-Studios/ebitengine-game-template/internal/debug"
@@ -65,6 +66,14 @@ func NewDialogueRunner(vars yarn.MapVariableStorage, handler yarn.DialogueHandle
 	return r, nil
 }
 
+const (
+	VarFullName      = "$char_full_name"
+	VarFirstName     = "$char_first_name"
+	VarLastName      = "$char_last_name"
+	VarSlipAmt       = "$slip_amount"
+	VarAccountNumber = "$account_number"
+)
+
 // DoNode starts the runner, which blocks the current thread until a fatal error occurs.
 func (r *DialogueRunner) DoNode(name string) error {
 	defer func() {
@@ -75,6 +84,41 @@ func (r *DialogueRunner) DoNode(name string) error {
 	r.runState = RunnerRunning
 
 	return r.vm.Run(name)
+}
+
+func (r *DialogueRunner) RandomName() string {
+	f, l := drawRandom(Resources.GetList("first_names.txt")), drawRandom(Resources.GetList("last_names.txt"))
+
+	fullName := fmt.Sprintf("%s %s", f, l)
+	r.vm.Vars.SetValue(VarFirstName, f)
+	r.vm.Vars.SetValue(VarLastName, f)
+	r.vm.Vars.SetValue(VarFullName, fullName)
+	return fullName
+}
+
+func (r *DialogueRunner) FullName() string {
+	return r.getString(VarFullName)
+}
+
+func (r *DialogueRunner) FirstName() string {
+	return r.getString(VarFirstName)
+}
+
+func (r *DialogueRunner) LastName() string {
+	return r.getString(VarLastName)
+}
+
+// SetDepositSlip sets variables associated with the generated deposit slip.
+func (r *DialogueRunner) SetDepositSlip(slip *DepositSlip) {
+	r.SetDepositAmt(slip.Value)
+	r.SetAccountNumber(slip.AcctNum)
+}
+
+func (r *DialogueRunner) SetDepositAmt(val int) {
+	r.vm.Vars.SetValue(VarSlipAmt, fmt.Sprintf("%d.%02d", val/100, val%100))
+}
+func (r *DialogueRunner) SetAccountNumber(val int) {
+	r.vm.Vars.SetValue(VarAccountNumber, val)
 }
 
 func (r *DialogueRunner) Portrait() Sprite {
@@ -138,4 +182,12 @@ func portrait(node *bytecode.Node) string {
 		}
 	}
 	return ""
+}
+
+func (r *DialogueRunner) getString(varName string) string {
+	v, ok := r.vm.Vars.GetValue(VarFullName)
+	if !ok {
+		return ""
+	}
+	return v.(string)
 }

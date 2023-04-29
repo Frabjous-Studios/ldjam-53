@@ -104,16 +104,13 @@ type Money struct {
 
 // newBill creates a bill of the provided denomination in local coordinates on the counter.
 func newBill(denom int, pt image.Point) Sprite {
-	x := clamp(pt.X+112, 112, 320-43)
-	y := clamp(pt.Y+152, 152, 240-43)
-
 	img := Resources.images[fmt.Sprintf("bill_%d", denom)]
 	return &Money{
 		Value:  denom * 100,
 		IsCoin: false,
 		BaseSprite: &BaseSprite{
-			X:   x,
-			Y:   y,
+			X:   pt.X,
+			Y:   pt.Y,
 			Img: img,
 		},
 	}
@@ -121,20 +118,21 @@ func newBill(denom int, pt image.Point) Sprite {
 
 // newCoin creates a coin of the provided denomination in local coordinates on the counter.
 func newCoin(denom int, pt image.Point) Sprite {
-	x := clamp(pt.X+112, 112, 320-15)
-	y := clamp(pt.Y+152, 152, 240-15)
 	img := Resources.images[fmt.Sprintf("coin_%d", denom)]
 	return &Money{
 		Value:  denom,
 		IsCoin: true,
 		BaseSprite: &BaseSprite{
-			X:   x,
-			Y:   y,
+			X:   pt.X,
+			Y:   pt.Y,
 			Img: img,
 		},
 	}
 }
 
 func randCounterPos() image.Point {
-	return image.Pt(rand.Intn(208), rand.Intn(88))
+	pt := image.Pt(rand.Intn(208), rand.Intn(88))
+	pt.X = clamp(pt.X+112, 112, 320-15)
+	pt.Y = clamp(pt.Y+152, 152, 240-15)
+	return pt
 }
