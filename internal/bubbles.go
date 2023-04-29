@@ -45,7 +45,7 @@ func NewBubbles(m *MainScene) *Bubbles {
 	txt := etxt.NewStdRenderer()
 	txt.SetTarget(result.offscrn)
 	txt.SetFont(Resources.GetFont(DialogFont))
-	txt.SetAlign(etxt.Top, etxt.Left)
+	txt.SetAlign(etxt.Bottom, etxt.XCenter)
 	txt.SetSizePx(fontSize)
 	txt.SetColor(fontColor)
 	txt.SetLineSpacing(lineSpacing)
@@ -90,7 +90,7 @@ func (b *Bubbles) IsDone() bool {
 	return b.stack[0].charsShown == len(b.stack[0].Text)
 }
 
-var TextBounds = rect(340, 56, 200, 72)
+var TextBounds = rect(340, 56, 200, 100)
 
 func (b *Bubbles) DrawTo(screen *ebiten.Image) bool {
 	if b.Empty() {
