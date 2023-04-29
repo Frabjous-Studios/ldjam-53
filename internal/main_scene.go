@@ -187,6 +187,7 @@ func (m *MainScene) updateInput() error {
 		} else { // pick up the thing under the cursor
 			m.holding = m.spriteUnderCursor()
 			if m.holding != nil {
+				m.BringToFront(m.holding)
 				m.clickStart = cPos
 				m.clickOffset = m.holding.Pos().Sub(m.clickStart)
 				m.till.Remove(m.holding) // remove it from the Till (maybe)
@@ -210,6 +211,15 @@ func (m *MainScene) updateInput() error {
 		m.debouceTime = time.Now().Add(debounceDuration)
 	}
 	return nil
+}
+
+func (m *MainScene) BringToFront(s Sprite) {
+	for idx, o := range m.Sprites {
+		if s == o {
+			m.Sprites = append(m.Sprites[:idx], append(m.Sprites[idx+1:], s)...)
+			return
+		}
+	}
 }
 
 func (m *MainScene) AdvanceDialogue() {
@@ -240,7 +250,12 @@ func (m *MainScene) Draw(screen *ebiten.Image) {
 func (m *MainScene) drawBg(screen *ebiten.Image) {
 	opts := &ebiten.DrawImageOptions{}
 	opts.GeoM.Scale(ScaleFactor, ScaleFactor)
-	screen.DrawImage(Resources.GetImage("bg.png"), opts)
+	screen.DrawImage(Resources.GetImage("bg_bg.png"), opts)
+
+	// TODO: draw commuters
+	opts.GeoM.Reset()
+	opts.GeoM.Scale(ScaleFactor, ScaleFactor)
+	screen.DrawImage(Resources.GetImage("bg_fg.png"), opts)
 }
 
 var OptionsBounds = rect(300, 240, 280, 80)

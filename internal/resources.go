@@ -83,11 +83,11 @@ func init() {
 	// load font faces (again?)
 	Resources.faces = make(map[string]*truetype.Font)
 
-	Resources.images["bill_1"] = placeholder(h2c("00ff00"), 18, 43)
-	Resources.images["bill_5"] = placeholder(h2c("00aa00"), 18, 43)
-	Resources.images["bill_10"] = placeholder(h2c("00cc00"), 18, 43)
-	Resources.images["bill_20"] = placeholder(h2c("00dd00"), 18, 43)
-	Resources.images["bill_100"] = placeholder(h2c("00ee00"), 18, 43)
+	Resources.images["bill_1"] = Resources.GetImage("bill_1.png")
+	Resources.images["bill_5"] = Resources.GetImage("bill_5.png")
+	Resources.images["bill_10"] = Resources.GetImage("bill_10.png")
+	Resources.images["bill_20"] = Resources.GetImage("bill_20.png")
+	Resources.images["bill_100"] = Resources.GetImage("bill_100.png")
 
 	Resources.images["coin_1"] = placeholder(h2c("ffff00"), 15, 15)
 	Resources.images["coin_5"] = placeholder(h2c("dddd00"), 15, 15)
@@ -98,7 +98,8 @@ func init() {
 	Resources.images["counter"] = placeholder(h2c("ff0000"), 208, 88)
 	Resources.images["Till"] = placeholder(h2c("0000ff"), 112, 68)
 
-	Resources.images["bg.png"] = Resources.GetImage("bg.png")
+	Resources.images["bg_bg.png"] = Resources.GetImage("bg_bg.png")
+	Resources.images["bg_fg.png"] = Resources.GetImage("bg_fg.png")
 }
 
 // GetFont returns the loaded font if it exists, nil otherwise.
