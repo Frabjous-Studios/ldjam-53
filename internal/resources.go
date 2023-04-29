@@ -18,13 +18,21 @@ import (
 )
 
 var bodies = []string{ // TODO: put them here
-	"cloak.png",
+	"body_cloak.png",
+	"body_jumpsuit.png",
+	"body_sleeveless.png",
+	"body_tshirt.png",
 }
 
 var heads = []string{ // TODO: put them here
-	"head.png",
-	"head_1.png",
-	"head_2.png",
+	"head_bunGirl.png",
+	"head_cactus.png",
+	"head_glareGaunt.png",
+	"head_grimFlattop.png",
+	"head_insect.png",
+	"head_mohawkShades.png",
+	"head_pillBot.png",
+	"head_smileScreen.png",
 }
 
 // Resources makes all multimedia resources for the game available.
@@ -197,7 +205,9 @@ func placeholder(c color.Color, w, h int) *ebiten.Image {
 func newPortrait(target *ebiten.Image, body, head string) Sprite {
 	b, h := Resources.GetImage(body), Resources.GetImage(head)
 	opts := &ebiten.DrawImageOptions{}
+	opts.GeoM.Translate(0, 32)
 	target.DrawImage(b, opts)
+	opts.GeoM.Translate(0, -32)
 	target.DrawImage(h, opts)
 	return &Portrait{
 		BaseSprite: &BaseSprite{
