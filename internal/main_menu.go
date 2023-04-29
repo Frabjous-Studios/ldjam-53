@@ -154,7 +154,7 @@ func (m *MainMenuScene) button(text string, onClick func(g *Game)) *widget.Butto
 		Disabled: hexColor("555555"),
 	}
 	return widget.NewButton(
-		widget.ButtonOpts.Text(text, Resources.GetFace(LunchtimeFont, 32), &c),
+		widget.ButtonOpts.Text(text, Resources.GetFace(FontName, 32), &c),
 		widget.ButtonOpts.Image(&widget.ButtonImage{
 			Idle:         image.NewNineSliceColor(hexColor("ff0000")),
 			Hover:        image.NewNineSliceColor(hexColor("00ff00")),

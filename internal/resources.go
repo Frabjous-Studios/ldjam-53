@@ -48,7 +48,7 @@ type resources struct {
 	bodies     map[string]*ebiten.Image
 }
 
-const LunchtimeFont = "lunchds.ttf"
+const FontName = "Munro-2LYe.ttf"
 
 //go:embed gamedata/fonts
 var fonts embed.FS

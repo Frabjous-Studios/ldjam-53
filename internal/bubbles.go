@@ -12,7 +12,7 @@ import (
 )
 
 const CrawlSpeedCPS = 120
-const fontName = "SH Pinscher Regular"
+const DialogFont = "Munro"
 const lineSpacing = 1.15
 
 var (
@@ -44,7 +44,7 @@ func NewBubbles(m *MainScene) *Bubbles {
 	result.offscrn.Fill(color.RGBA{R: 0, B: 0, G: 0, A: 0}) // TODO: use acutal ninepatch.
 	txt := etxt.NewStdRenderer()
 	txt.SetTarget(result.offscrn)
-	txt.SetFont(Resources.GetFont(fontName))
+	txt.SetFont(Resources.GetFont(DialogFont))
 	txt.SetAlign(etxt.Top, etxt.Left)
 	txt.SetSizePx(fontSize)
 	txt.SetColor(fontColor)
@@ -160,7 +160,7 @@ func NewOption(text string) *Line {
 	return &Line{Text: text}
 }
 
-const fontSize = 20
+const fontSize = 16
 
 // modified from etxt examples
 func (b *Bubbles) print(feed *etxt.Feed, line *Line, bounds image.Rectangle) image.Rectangle {
