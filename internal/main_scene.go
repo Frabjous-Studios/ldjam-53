@@ -48,6 +48,11 @@ func (s *BaseSprite) SetPos(pt image.Point) {
 	s.Y = pt.Y
 }
 
+func (s *BaseSprite) ClampToRect(r image.Rectangle) {
+	s.X = clamp(s.X, r.Min.X, r.Max.X-s.Bounds().Dx())
+	s.Y = clamp(s.Y, r.Min.Y, r.Max.Y-s.Bounds().Dy())
+}
+
 type MainScene struct {
 	Game *Game
 
@@ -56,7 +61,7 @@ type MainScene struct {
 	State  *GameState
 	Runner *DialogueRunner
 
-	till    *BaseSprite
+	till    *till
 	counter *BaseSprite
 
 	holding     Sprite
@@ -77,20 +82,38 @@ func NewMainScene(g *Game) *MainScene {
 			newBill(5, 60, 60),
 			newBill(10, 45, 60),
 			newCoin(1, 5, 20),
-			newCoin(1, 25, 20),
-			newCoin(1, 45, 20),
+			newCoin(5, 25, 20),
+			newCoin(25, 45, 20),
 		},
 		State: &GameState{
 			CurrentNode: "Start",
 			Vars:        make(yarn.MapVariableStorage),
 		},
-		till: &BaseSprite{
-			X: 112, Y: 152,
-			Img: Resources.images["counter"],
+		till: &till{
+			BaseSprite: &BaseSprite{
+				X: 0, Y: 172,
+				Img: Resources.images["till"],
+			},
+			DropTargets: [2][5]image.Rectangle{
+				CoinTargets: { //
+					rect(4, 50, 20, 15),
+					rect(25, 50, 20, 15),
+					rect(46, 50, 20, 15),
+					rect(67, 50, 20, 15),
+					rect(88, 50, 20, 15),
+				},
+				BillTargets: { // bill targets
+					rect(4, 3, 20, 45),
+					rect(25, 3, 20, 45),
+					rect(46, 3, 20, 45),
+					rect(67, 3, 20, 45),
+					rect(88, 3, 20, 45),
+				},
+			},
 		},
 		counter: &BaseSprite{
-			X: 0, Y: 172,
-			Img: Resources.images["till"],
+			X: 112, Y: 152,
+			Img: Resources.images["counter"],
 		},
 	}
 }
@@ -101,15 +124,26 @@ func (m *MainScene) Update() error {
 		m.Runner.running = true
 	}
 
+	cPos := cursorPos()
 	if inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonLeft) {
 		if m.holding != nil {
-			m.holding.SetPos(clampToCounter(m.holding.Pos()))
-			m.holding = nil
-		} else {
+			fmt.Println("tillBounds", m.till.Bounds(), "cPos", cPos)
+			if cPos.In(m.till.Bounds()) { // if over till; drop on till
+				fmt.Println("inside!")
+				if !m.till.Drop(m.holding) {
+					m.counterDrop()
+				} else {
+					m.holding = nil
+				}
+			} else {
+				m.counterDrop()
+			}
+		} else { // pick up the thing under the cursor
 			m.holding = m.spriteUnderCursor()
 			if m.holding != nil {
-				m.clickStart = cursorPos()
+				m.clickStart = cPos
 				m.clickOffset = m.holding.Pos().Sub(m.clickStart)
+				m.till.Remove(m.holding) // remove it from the till (maybe)
 			}
 		}
 	}
@@ -120,6 +154,19 @@ func (m *MainScene) Update() error {
 	}
 
 	return nil
+}
+
+func (m *MainScene) pickUp() {
+	m.holding = m.spriteUnderCursor()
+	if m.holding != nil {
+		m.clickStart = cursorPos()
+		m.clickOffset = m.holding.Pos().Sub(m.clickStart)
+	}
+}
+
+func (m *MainScene) counterDrop() {
+	m.holding.SetPos(clampToCounter(m.holding.Pos()))
+	m.holding = nil
 }
 
 func (m *MainScene) spriteUnderCursor() Sprite {
@@ -152,17 +199,19 @@ func (m *MainScene) startRunner() {
 
 type Money struct {
 	*BaseSprite
-	Value int // Value is in cents.
+	Value  int // Value is in cents.
+	IsCoin bool
 }
 
 // newBill creates in local coordinates on the counter.
-func newBill(denom int, x, y int) *Money {
+func newBill(denom int, x, y int) Sprite {
 	x = clamp(x+112, 112, 320-43)
 	y = clamp(y+152, 152, 240-43)
 
 	img := Resources.images[fmt.Sprintf("bill_%d", denom)]
 	return &Money{
-		Value: denom * 100,
+		Value:  denom * 100,
+		IsCoin: false,
 		BaseSprite: &BaseSprite{
 			X:   x,
 			Y:   y,
@@ -172,12 +221,13 @@ func newBill(denom int, x, y int) *Money {
 }
 
 // newCoin creates in local coordinates on the counter.
-func newCoin(denom int, x, y int) *Money {
+func newCoin(denom int, x, y int) Sprite {
 	x = clamp(x+112, 112, 320-15)
 	y = clamp(y+152, 152, 240-15)
 	img := Resources.images[fmt.Sprintf("coin_%d", denom)]
 	return &Money{
-		Value: denom,
+		Value:  denom,
+		IsCoin: true,
 		BaseSprite: &BaseSprite{
 			X:   x,
 			Y:   y,
@@ -205,4 +255,76 @@ func clamp(x int, min, max int) int {
 func cursorPos() image.Point {
 	mx, my := ebiten.CursorPosition()
 	return image.Pt(mx/2, my/2)
+}
+
+const CoinTargets = 0
+const BillTargets = 1
+
+type till struct {
+	*BaseSprite
+
+	DropTargets [2][5]image.Rectangle
+	BillSlots   [5][]*Money
+	CoinSlots   [5][]*Money
+}
+
+// Drop drops the provided sprite on the till; landing it in the location needed.
+func (t *till) Drop(s Sprite) bool {
+	m, ok := s.(*Money)
+	if !ok {
+		fmt.Println("not money!")
+		return false
+	}
+	var targets [5]image.Rectangle
+	if m.IsCoin {
+		targets = t.DropTargets[CoinTargets]
+	} else {
+		targets = t.DropTargets[BillTargets]
+	}
+	fmt.Println("targets", targets)
+	// find drop target with max area intersection
+	bestIdx, maxA := -1, 0
+	for idx, rect := range targets {
+		sz := m.Bounds().Intersect(rect.Add(t.Pos())).Size()
+		fmt.Println("rect:", rect, "sz:", sz, "pos:", t.Pos())
+		a := sz.X * sz.Y
+		if a > 0 && a > maxA {
+			bestIdx = idx
+			maxA = a
+		}
+	}
+	if bestIdx == -1 {
+		return false
+	}
+	r := targets[bestIdx].Add(t.Pos())
+	m.ClampToRect(r)
+	if m.IsCoin {
+		t.CoinSlots[bestIdx] = append(t.CoinSlots[bestIdx], m)
+	} else {
+		t.BillSlots[bestIdx] = append(t.BillSlots[bestIdx], m)
+	}
+	return true
+}
+
+// Remove removes the provided money from the till; checking the top of each stack of bills and coins for it.
+func (t *till) Remove(s Sprite) {
+	m, ok := s.(*Money)
+	if !ok {
+		return
+	}
+	for i := 0; i < 5; i++ {
+		if len(t.BillSlots[i]) > 0 && t.BillSlots[i][len(t.BillSlots[i])-1] == m {
+			fmt.Println("removed", m.Value, "from", i)
+			t.BillSlots[i] = t.BillSlots[i][:len(t.BillSlots[i])-1]
+			return
+		}
+		if len(t.CoinSlots[i]) > 0 && t.CoinSlots[i][len(t.CoinSlots[i])-1] == m {
+			t.CoinSlots[i] = t.CoinSlots[i][:len(t.CoinSlots[i])-1]
+			return
+		}
+	}
+}
+
+func rect(x, y, w, h int) image.Rectangle {
+	return image.Rect(x, y, x+w, y+h)
 }
