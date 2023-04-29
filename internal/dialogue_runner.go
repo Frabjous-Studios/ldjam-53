@@ -2,7 +2,6 @@ package internal
 
 import (
 	"embed"
-	"fmt"
 	"github.com/DrJosh9000/yarn"
 	"github.com/DrJosh9000/yarn/bytecode"
 	"github.com/Frabjous-Studios/ebitengine-game-template/internal/debug"
@@ -69,7 +68,6 @@ func NewDialogueRunner(vars yarn.MapVariableStorage, handler yarn.DialogueHandle
 // DoNode starts the runner, which blocks the current thread until a fatal error occurs.
 func (r *DialogueRunner) DoNode(name string) error {
 	defer func() {
-		fmt.Println("DoNode finished!")
 		r.runState = RunnerStopped
 	}()
 	r.CurrNodeName = name
@@ -112,7 +110,6 @@ func (r *DialogueRunner) IsLastLine(line yarn.Line) bool {
 	if _, ok := r.stringTable.Table[line.ID]; !ok {
 		return false
 	}
-	fmt.Println("tags", r.stringTable.Table[line.ID].Tags)
 	for _, tag := range r.stringTable.Table[line.ID].Tags {
 		if tag == "lastline" {
 			return true

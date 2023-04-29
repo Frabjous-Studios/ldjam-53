@@ -8,6 +8,7 @@ import (
 	"github.com/hajimehoshi/ebiten/v2/inpututil"
 	"golang.org/x/image/math/fixed"
 	"image"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -32,6 +33,10 @@ type BaseSprite struct {
 }
 
 func (s *BaseSprite) DrawTo(screen *ebiten.Image) {
+	if s.Img == nil {
+		debug.Println("image for sprite was nil at point:", s.X, s.Y)
+		return
+	}
 	opt := &ebiten.DrawImageOptions{}
 	opt.GeoM.Translate(float64(s.X), float64(s.Y))
 	opt.GeoM.Scale(ScaleFactor, ScaleFactor)
@@ -88,16 +93,9 @@ type MainScene struct {
 func NewMainScene(g *Game) *MainScene {
 	var err error
 	result := &MainScene{
-		Game: g,
-		Sprites: []Sprite{
-			newBill(1, 5, 60),
-			newBill(5, 60, 60),
-			newBill(10, 45, 60),
-			newCoin(1, 5, 20),
-			newCoin(5, 25, 20),
-			newCoin(25, 45, 20),
-		},
-		Day: Days[0],
+		Game:    g,
+		Sprites: []Sprite{},
+		Day:     Days[0],
 
 		till: NewTill(),
 		counter: &BaseSprite{
@@ -124,12 +122,16 @@ func (m *MainScene) Update() error {
 	}
 	m.bubbles.Update()
 
+	keys = inpututil.AppendJustPressedKeys(keys)
+
+	if len(keys) > 0 {
+		m.AdvanceDialogue()
+	}
+
 	cPos := cursorPos()
 	if inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonLeft) {
 		if m.holding != nil {
-			fmt.Println("tillBounds", m.till.Bounds(), "cPos", cPos)
 			if cPos.In(m.till.Bounds()) { // if over Till; drop on Till
-				fmt.Println("inside!")
 				if !m.till.Drop(m.holding) {
 					m.counterDrop()
 				} else {
@@ -145,14 +147,19 @@ func (m *MainScene) Update() error {
 				m.clickOffset = m.holding.Pos().Sub(m.clickStart)
 				m.till.Remove(m.holding) // remove it from the Till (maybe)
 			} else {
+				selected := false
 				// check for dialogue option
 				for idx, opt := range m.options {
 					if cPos.Mul(ScaleFactor).In(opt.Rect) {
 						m.selection = idx
 						m.selectOpt.Broadcast()
 						m.options = nil
+						selected = true
 						break
 					}
+				}
+				if !selected { // advance the dialogue if nothing was selected.
+					m.AdvanceDialogue()
 				}
 			}
 		}
@@ -182,6 +189,10 @@ func (m *MainScene) Update() error {
 	}
 
 	return nil
+}
+
+func (m *MainScene) AdvanceDialogue() {
+	m.bubbles.BeDone()
 }
 
 func (m *MainScene) Draw(screen *ebiten.Image) {
@@ -231,7 +242,6 @@ func (m *MainScene) startRunner() {
 		debug.Printf("error starting runner: %v", err)
 		return
 	}
-	fmt.Println("completed customer")
 	m.Runner.running = false
 }
 
@@ -258,7 +268,7 @@ func (m *MainScene) spriteUnderCursor() Sprite {
 }
 
 func (m *MainScene) NodeStart(name string) error {
-	fmt.Println("start node", name)
+	debug.Println("start node", name)
 	return nil
 }
 
@@ -289,26 +299,165 @@ func (m *MainScene) Options(options []yarn.Option) (int, error) {
 }
 
 func (m *MainScene) Command(command string) error {
-	fmt.Println("run command:", command)
+	debug.Println("run command:", command)
 	command = strings.TrimSpace(command)
 	tokens := strings.Split(command, " ")
 	if len(tokens) == 0 {
 		return fmt.Errorf("bad command: %s", command)
 	}
 	switch tokens[0] {
+	case "put_counter":
+		return m.putCounter(tokens[1:])
+	case "put_cash":
+		return m.putCash(tokens[1:])
+	case "put_cash_and_coins":
+		return m.putCashAndCoins(tokens[1:])
 	default:
 		return fmt.Errorf("unknown command %s", tokens[0])
 	}
 }
 
+func (m *MainScene) putCashAndCoins(args []string) error {
+	if len(args) != 1 {
+		return fmt.Errorf("call to put_cash_and_coins bad arguments: %v", args)
+	}
+	val, err := strconv.ParseFloat(args[0], 32)
+	if err != nil {
+		return fmt.Errorf("call to put_cash_and_coins wasn't integer: %v", err)
+	}
+	val *= 100
+	valInt := int(val)
+	coin := valInt % 100
+	bills := valInt / 100
+	m.putBills(bills)
+	m.putCoins(coin)
+	return nil
+}
+
+func (m *MainScene) putCash(args []string) error {
+	if len(args) != 1 {
+		return fmt.Errorf("call to put_cash bad arguments: %v", args)
+	}
+	amt, err := strconv.Atoi(args[0])
+	if err != nil {
+		return fmt.Errorf("call to put_cash wasn't integer: %v", err)
+	}
+	if amt < 0 {
+		return fmt.Errorf("amount passed to put_cash was negative: %v", err)
+	}
+	m.putBills(amt)
+	return nil
+}
+
+func (m *MainScene) putCounter(args []string) error {
+	/* TODO:
+	id - the character's randomly generated photo id.
+	check - a randomly generated check which
+	cash_check - a randomly generated check made out to "cash" for cash withdrawal.
+	deposit_slip - a randomly generated deposit slip and cash to match.
+	withdrawal_slip - a randomly generated withdrawal slip
+	*/
+	for _, arg := range args {
+		arg = strings.TrimSpace(arg)
+		if arg == "" {
+			continue
+		}
+		switch arg {
+		case "bill_1":
+			m.putBill(1)
+		case "bill_5":
+			m.putBill(5)
+		case "bill_10":
+			m.putBill(10)
+		case "bill_20":
+			m.putBill(20)
+		case "bill_100":
+			m.putBill(100)
+		case "coin_1":
+			m.Sprites = append(m.Sprites, newCoin(1, randCounterPos()))
+		case "coin_5":
+			m.Sprites = append(m.Sprites, newCoin(5, randCounterPos()))
+		case "coin_10":
+			m.Sprites = append(m.Sprites, newCoin(10, randCounterPos()))
+		case "coin_25":
+			m.Sprites = append(m.Sprites, newCoin(25, randCounterPos()))
+		case "coin_50":
+			m.Sprites = append(m.Sprites, newCoin(50, randCounterPos()))
+		default:
+			debug.Println("unrecognized argument to put_counter: %v", arg)
+		}
+	}
+	return nil
+}
+
+func (m *MainScene) putCoins(amt int) {
+	var amts []int
+	for amt > 0 {
+		switch {
+		case amt >= 50:
+			amt -= 50
+			amts = append(amts, 50)
+		case amt >= 25:
+			amt -= 25
+			amts = append(amts, 25)
+		case amt >= 10:
+			amt -= 10
+			amts = append(amts, 10)
+		case amt >= 5:
+			amt -= 5
+			amts = append(amts, 5)
+		case amt >= 1:
+			amt -= 1
+			amts = append(amts, 1)
+		}
+	}
+	for _, amt := range amts {
+		m.putCoin(amt)
+	}
+}
+
+func (m *MainScene) putBills(amt int) {
+	var amts []int
+	for amt > 0 {
+		switch {
+		case amt >= 100:
+			amt -= 100
+			amts = append(amts, 100)
+		case amt >= 20:
+			amt -= 20
+			amts = append(amts, 20)
+		case amt >= 10:
+			amt -= 10
+			amts = append(amts, 10)
+		case amt >= 5:
+			amt -= 5
+			amts = append(amts, 5)
+		case amt >= 1:
+			amt -= 1
+			amts = append(amts, 1)
+		}
+	}
+	for _, amt := range amts {
+		m.putBill(amt)
+	}
+}
+
+func (m *MainScene) putBill(denom int) {
+	m.Sprites = append(m.Sprites, newBill(denom, randCounterPos()))
+}
+
+func (m *MainScene) putCoin(denom int) {
+	m.Sprites = append(m.Sprites, newCoin(denom, randCounterPos()))
+}
+
 func (m *MainScene) NodeComplete(nodeName string) error {
-	fmt.Println("node done", nodeName)
+	debug.Println("node done", nodeName)
 	return nil
 }
 
 func (m *MainScene) DialogueComplete() error {
 	m.bubbles.SetLine("")
-	fmt.Println("dialogue complete")
+	debug.Println("dialogue complete")
 	return nil
 }
 

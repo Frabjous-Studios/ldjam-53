@@ -9,14 +9,20 @@ Hello! I would like to bank.
     -> What?
         You heard me!
     -> Okay. That'll be 200 dollars.
-        Nooooo
+        Fine; here.
+        << put_cash 200 >>
+        -> Oh, wow. Okay! Thanks.
+            No worries.
+        -> Now get out of here!
+            Wahhhh.
 ===
 title: Test2
 portrait: random
 ---
 I'd like to speak to the manager.
 -> He's busy.
-    Too bad. I'll leave then.
+    Fine. Here's a quarter
+    << put_coin 25 >>
 -> Me too! Let me know if you find him.
     What?! He's gone missing!?
 ===
@@ -25,7 +31,8 @@ portrait: random
 ---
 Can I borrow your pen?
 -> Absolutely not. I need it.
-    Ugh. Rude!!
+    What about a bribe?! I've got... er...
+    << put_cash_and_coins 2.43 >>
 -> No... sorry...
     *sigh* Makes sense.
 ===
@@ -37,4 +44,6 @@ Do you have any gum?
     Oh, okay. Sorry to bother you.
 -> Uh... sure. Here's a piece.
     Thanks!
+    Here, let me pay.
+    << put_cash_and_coins 0.27 >>
 ===

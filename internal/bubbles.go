@@ -72,6 +72,17 @@ func (b *Bubbles) Update() {
 	}
 }
 
+func (b *Bubbles) BeDone() {
+	if len(b.stack) == 0 {
+		return
+	}
+	if !b.IsDone() {
+		b.stack[0].charsShown = len(b.stack[0].Text)
+	} else {
+		b.completeTime = time.Now().Add(-bubbleDelay)
+	}
+}
+
 func (b *Bubbles) IsDone() bool {
 	if len(b.stack) == 0 {
 		return false

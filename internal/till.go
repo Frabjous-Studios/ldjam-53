@@ -3,6 +3,7 @@ package internal
 import (
 	"fmt"
 	"image"
+	"math/rand"
 )
 
 const CoinTargets = 0
@@ -46,7 +47,6 @@ func NewTill() *Till {
 func (t *Till) Drop(s Sprite) bool {
 	m, ok := s.(*Money)
 	if !ok {
-		fmt.Println("not money!")
 		return false
 	}
 	var targets [5]image.Rectangle
@@ -55,12 +55,10 @@ func (t *Till) Drop(s Sprite) bool {
 	} else {
 		targets = t.DropTargets[BillTargets]
 	}
-	fmt.Println("targets", targets)
 	// find drop target with max area intersection
 	bestIdx, maxA := -1, 0
 	for idx, rect := range targets {
 		sz := m.Bounds().Intersect(rect.Add(t.Pos())).Size()
-		fmt.Println("rect:", rect, "sz:", sz, "pos:", t.Pos())
 		a := sz.X * sz.Y
 		if a > 0 && a > maxA {
 			bestIdx = idx
@@ -88,7 +86,6 @@ func (t *Till) Remove(s Sprite) {
 	}
 	for i := 0; i < 5; i++ {
 		if len(t.BillSlots[i]) > 0 && t.BillSlots[i][len(t.BillSlots[i])-1] == m {
-			fmt.Println("removed", m.Value, "from", i)
 			t.BillSlots[i] = t.BillSlots[i][:len(t.BillSlots[i])-1]
 			return
 		}
@@ -106,9 +103,9 @@ type Money struct {
 }
 
 // newBill creates a bill of the provided denomination in local coordinates on the counter.
-func newBill(denom int, x, y int) Sprite {
-	x = clamp(x+112, 112, 320-43)
-	y = clamp(y+152, 152, 240-43)
+func newBill(denom int, pt image.Point) Sprite {
+	x := clamp(pt.X+112, 112, 320-43)
+	y := clamp(pt.Y+152, 152, 240-43)
 
 	img := Resources.images[fmt.Sprintf("bill_%d", denom)]
 	return &Money{
@@ -123,9 +120,9 @@ func newBill(denom int, x, y int) Sprite {
 }
 
 // newCoin creates a coin of the provided denomination in local coordinates on the counter.
-func newCoin(denom int, x, y int) Sprite {
-	x = clamp(x+112, 112, 320-15)
-	y = clamp(y+152, 152, 240-15)
+func newCoin(denom int, pt image.Point) Sprite {
+	x := clamp(pt.X+112, 112, 320-15)
+	y := clamp(pt.Y+152, 152, 240-15)
 	img := Resources.images[fmt.Sprintf("coin_%d", denom)]
 	return &Money{
 		Value:  denom,
@@ -136,4 +133,8 @@ func newCoin(denom int, x, y int) Sprite {
 			Img: img,
 		},
 	}
+}
+
+func randCounterPos() image.Point {
+	return image.Pt(rand.Intn(208), rand.Intn(88))
 }
