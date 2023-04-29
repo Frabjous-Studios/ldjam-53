@@ -5,11 +5,13 @@ import (
 	"fmt"
 	"github.com/Frabjous-Studios/ebitengine-game-template/internal/debug"
 	"github.com/ebitenui/ebitenui/image"
+	"github.com/ebitenui/ebitenui/utilities/colorutil"
 	"github.com/golang/freetype/truetype"
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
 	"github.com/tinne26/etxt"
 	"golang.org/x/image/font"
+	"image/color"
 	"io/fs"
 	"strings"
 )
@@ -53,6 +55,22 @@ func init() {
 
 	// load font faces (again?)
 	Resources.faces = make(map[string]*truetype.Font)
+
+	Resources.images = make(map[string]*ebiten.Image)
+	Resources.images["bill_1"] = placeholder(h2c("00ff00"), 18, 43)
+	Resources.images["bill_5"] = placeholder(h2c("00ff00"), 18, 43)
+	Resources.images["bill_10"] = placeholder(h2c("00ff00"), 18, 43)
+	Resources.images["bill_20"] = placeholder(h2c("00ff00"), 18, 43)
+	Resources.images["bill_50"] = placeholder(h2c("00ff00"), 18, 43)
+
+	Resources.images["coin_1"] = placeholder(h2c("00ff00"), 15, 15)
+	Resources.images["coin_5"] = placeholder(h2c("00ff00"), 15, 15)
+	Resources.images["coin_10"] = placeholder(h2c("00ff00"), 15, 15)
+	Resources.images["coin_25"] = placeholder(h2c("00ff00"), 15, 15)
+	Resources.images["coin_50"] = placeholder(h2c("00ff00"), 15, 15)
+
+	Resources.images["counter"] = placeholder(h2c("ff0000"), 208, 88)
+	Resources.images["till"] = placeholder(h2c("0000ff"), 112, 68)
 }
 
 // TODO: Enable //go:embed gamedata/img
@@ -122,4 +140,16 @@ func loadShader(name string) *ebiten.Shader {
 		panic(fmt.Errorf("while compiling shader: %w", err))
 	}
 	return shader
+}
+
+func h2c(hex string) color.Color {
+	c, _ := colorutil.HexToColor(hex)
+	return c
+}
+
+// NewImageColor constructs a new Image that when drawn fills with color c.
+func placeholder(c color.Color, w, h int) *ebiten.Image {
+	i := ebiten.NewImage(w, h)
+	i.Fill(c)
+	return i
 }
