@@ -6,6 +6,7 @@ import (
 	"github.com/Frabjous-Studios/ebitengine-game-template/internal/debug"
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/inpututil"
+	"golang.org/x/image/math/fixed"
 	"image"
 	"log"
 	"strings"
@@ -70,6 +71,7 @@ type MainScene struct {
 	counter *BaseSprite
 
 	bubbles *Bubbles
+	options []*Line
 
 	holding     Sprite
 	clickStart  image.Point
@@ -78,7 +80,9 @@ type MainScene struct {
 	vars yarn.MapVariableStorage
 	mut  sync.Mutex
 
-	wait *sync.Cond
+	speaking  *sync.Cond
+	selectOpt *sync.Cond
+	selection int
 }
 
 func NewMainScene(g *Game) *MainScene {
@@ -111,7 +115,8 @@ func NewMainScene(g *Game) *MainScene {
 		vars: make(yarn.MapVariableStorage),
 	}
 	result.bubbles = NewBubbles(result)
-	result.wait = sync.NewCond(&result.mut)
+	result.speaking = sync.NewCond(&result.mut)
+	result.selectOpt = sync.NewCond(&result.mut)
 	return result
 }
 
@@ -142,7 +147,29 @@ func (m *MainScene) Update() error {
 				m.clickStart = cPos
 				m.clickOffset = m.holding.Pos().Sub(m.clickStart)
 				m.till.Remove(m.holding) // remove it from the Till (maybe)
+			} else {
+				// check for dialogue option
+				for idx, opt := range m.options {
+					fmt.Println("checking!")
+					if cPos.Mul(ScaleFactor).In(opt.Rect) {
+						fmt.Println("selected", idx)
+						m.selection = idx
+						m.selectOpt.Broadcast()
+						m.options = nil
+						break
+					}
+				}
 			}
+		}
+	}
+	for _, opt := range m.options {
+		if opt == nil {
+			continue
+		}
+		if cPos.Mul(ScaleFactor).In(opt.Rect) {
+			opt.highlighted = true
+		} else {
+			opt.highlighted = false
 		}
 	}
 
@@ -166,17 +193,29 @@ func (m *MainScene) Draw(screen *ebiten.Image) {
 		sprite.DrawTo(screen)
 	}
 
-	// draw text
+	// draw dialogue bubbles.
 	m.bubbles.DrawTo(screen)
+
+	// draw dialogue options
+	m.drawOptions(screen)
 }
 
-type DialogueLine struct {
-	*BaseSprite // 9-patch
+// 290, 151, 140, 40
 
-	Line        string
-	IsCustomer  bool
-	Highlighted bool
-	Clickbox    image.Rectangle
+var OptionsBounds = rect(300, 240, 280, 80)
+
+func (m *MainScene) drawOptions(screen *ebiten.Image) {
+	m.bubbles.txt.SetTarget(screen)
+	feed := m.bubbles.txt.NewFeed(fixed.P(OptionsBounds.Min.X, OptionsBounds.Min.Y))
+	for _, opt := range m.options {
+		if opt.highlighted {
+			m.bubbles.txt.SetColor(fontColorHighlight)
+		} else {
+			m.bubbles.txt.SetColor(fontColor)
+		}
+		opt.Rect = m.bubbles.print(feed, opt, OptionsBounds)
+		feed.LineBreak()
+	}
 }
 
 func (m *MainScene) startRunner() {
@@ -221,18 +260,24 @@ func (m *MainScene) Line(line yarn.Line) error {
 	m.mut.Lock()
 	defer m.mut.Unlock()
 	m.bubbles.SetLine(m.Runner.Render(line))
-	for !m.bubbles.IsDone() {
+
+	for !m.bubbles.IsDone() && !m.Runner.IsLastLine(line) {
 		fmt.Println("locked!")
-		m.wait.Wait()
+		m.speaking.Wait()
 		fmt.Println("unlocked; checking again")
 	}
-	fmt.Println("done with line!")
 	return nil
 }
 
 func (m *MainScene) Options(options []yarn.Option) (int, error) {
-	fmt.Println("options", options)
-	return 0, nil
+	m.mut.Lock()
+	defer m.mut.Unlock()
+	m.options = make([]*Line, 0, len(options))
+	for _, opt := range options {
+		m.options = append(m.options, NewLine(m.Runner.Render(opt.Line)))
+	}
+	m.selectOpt.Wait() // wait for the player to make a selection
+	return m.selection, nil
 }
 
 func (m *MainScene) Command(command string) error {
@@ -254,6 +299,7 @@ func (m *MainScene) NodeComplete(nodeName string) error {
 }
 
 func (m *MainScene) DialogueComplete() error {
+	m.bubbles.SetLine("")
 	fmt.Println("dialogue complete")
 	return nil
 }

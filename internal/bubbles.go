@@ -1,7 +1,6 @@
 package internal
 
 import (
-	"fmt"
 	uiimg "github.com/ebitenui/ebitenui/image"
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/tinne26/etxt"
@@ -18,8 +17,11 @@ const lineSpacing = 1.15
 
 var (
 	fontColor          = h2c("ffffff")
-	fontColorHighlight = h2c("ffffff")
+	fontColorHighlight = h2c("ffff00")
 )
+
+// bubbleDelay is the min amount of time to show a bubble before moving on to the next dialogue option.
+const bubbleDelay = 5 * time.Second
 
 type Bubbles struct {
 	txt         *etxt.Renderer
@@ -28,9 +30,10 @@ type Bubbles struct {
 
 	feed *etxt.Feed
 
-	stack      []*Line
-	charsShown int
-	scene      *MainScene
+	stack        []*Line
+	charsShown   int
+	scene        *MainScene
+	completeTime time.Time
 }
 
 func NewBubbles(m *MainScene) *Bubbles {
@@ -55,50 +58,60 @@ func NewBubbles(m *MainScene) *Bubbles {
 
 func (b *Bubbles) SetLine(str string) {
 	b.stack = []*Line{NewLine(str)}
+	b.completeTime = time.Time{}
 }
 
 func (b *Bubbles) Update() {
 	if b.IsDone() {
-		fmt.Println("done updating!")
-		b.scene.wait.Broadcast()
+		if b.completeTime.IsZero() {
+			b.completeTime = time.Now()
+		}
+		if time.Now().Sub(b.completeTime) > bubbleDelay {
+			b.scene.speaking.Broadcast()
+		}
 	}
-}
-
-var TextBounds = rect(340, 12, 200, 72)
-
-func (b *Bubbles) DrawTo(screen *ebiten.Image) {
-	const padding = 3
-	b.txt.SetTarget(b.offscrn)
-	feed := b.txt.NewFeed(fixed.P(TextBounds.Min.X, TextBounds.Min.Y))
-	// draw text once offscreen to capture rectangles
-	for _, l := range b.stack {
-		l.Rect = b.print(feed, l)
-	}
-
-	//pos := b.Pos()
-	for _, line := range b.stack {
-		b.bubblePatch.Draw(screen, line.Rect.Dx()+4*padding, line.Rect.Dy()+4*padding, func(opts *ebiten.DrawImageOptions) {
-			opts.Blend = ebiten.BlendSourceOver
-			opts.GeoM.Translate(float64(line.Rect.Min.X-padding), float64(line.Rect.Min.Y-padding))
-		})
-	}
-	b.txt.SetTarget(screen)
-	feed = b.txt.NewFeed(fixed.P(TextBounds.Min.X, TextBounds.Min.Y))
-	for _, l := range b.stack {
-		l.Rect = b.print(feed, l)
-	}
-}
-
-func (b *Bubbles) Bounds() image.Rectangle {
-	return rect(340, 12, 200, 72)
 }
 
 func (b *Bubbles) IsDone() bool {
 	if len(b.stack) == 0 {
 		return false
 	}
-	fmt.Println("shown: ", b.stack[0].charsShown, len(b.stack[0].Text))
 	return b.stack[0].charsShown == len(b.stack[0].Text)
+}
+
+var TextBounds = rect(340, 12, 200, 72)
+
+func (b *Bubbles) DrawTo(screen *ebiten.Image) {
+	if b.Empty() {
+		return
+	}
+	const padding = 3
+	b.txt.SetTarget(b.offscrn)
+	feed := b.txt.NewFeed(fixed.P(TextBounds.Min.X, TextBounds.Min.Y))
+	// draw text once offscreen to capture rectangles
+	for _, l := range b.stack {
+		l.Rect = b.print(feed, l, TextBounds)
+	}
+
+	//pos := b.Pos()
+	for _, line := range b.stack {
+		b.bubblePatch.Draw(screen, line.Rect.Dx()+4*padding, line.Rect.Dy()+4*padding, func(opts *ebiten.DrawImageOptions) {
+			opts.GeoM.Translate(float64(line.Rect.Min.X-padding), float64(line.Rect.Min.Y-padding))
+		})
+	}
+	b.txt.SetTarget(screen)
+	feed = b.txt.NewFeed(fixed.P(TextBounds.Min.X, TextBounds.Min.Y))
+	for _, l := range b.stack {
+		b.txt.SetColor(fontColor)
+		l.Rect = b.print(feed, l, TextBounds)
+	}
+}
+func (b *Bubbles) Empty() bool {
+	return len(b.stack) == 0 || len(b.stack[0].Text) == 0
+}
+
+func (b *Bubbles) Bounds() image.Rectangle {
+	return rect(340, 12, 200, 72)
 }
 
 func (b *Bubbles) Pos() image.Point {
@@ -110,10 +123,11 @@ func (b *Bubbles) SetPos(point image.Point) {
 }
 
 type Line struct {
-	Rect       image.Rectangle
-	Text       string
-	crawlStart time.Time
-	charsShown int
+	Rect        image.Rectangle
+	Text        string
+	crawlStart  time.Time
+	charsShown  int
+	highlighted bool
 }
 
 // charsToShow yields the number of characters of the currently displaying text to show based on time since the message
@@ -132,7 +146,7 @@ func NewLine(text string) *Line {
 const fontSize = 20
 
 // modified from etxt examples
-func (b *Bubbles) print(feed *etxt.Feed, line *Line) image.Rectangle {
+func (b *Bubbles) print(feed *etxt.Feed, line *Line, bounds image.Rectangle) image.Rectangle {
 	charsToShow := line.charsToShow()
 	// helper function
 	var getNextWord = func(str string, index int) string {
@@ -153,7 +167,7 @@ func (b *Bubbles) print(feed *etxt.Feed, line *Line) image.Rectangle {
 
 	// create Feed and iterate each rune / word
 	if feed == nil {
-		feed = b.txt.NewFeed(fixed.P(TextBounds.Min.X, TextBounds.Min.Y-fontSize)) // -fontSize enables choice highlighting.
+		feed = b.txt.NewFeed(fixed.P(bounds.Min.X, bounds.Min.Y-fontSize)) // -fontSize enables choice highlighting.
 	}
 	index := 0
 	totalChars := 0
@@ -171,12 +185,12 @@ func (b *Bubbles) print(feed *etxt.Feed, line *Line) image.Rectangle {
 			// get next word and measure it to see if it fits
 			word := getNextWord(line.Text, index)
 			width := b.txt.SelectionRect(word).Width
-			if (feed.Position.X + width).Ceil() > TextBounds.Max.X {
+			if (feed.Position.X + width).Ceil() > bounds.Max.X {
 				feed.LineBreak() // didn't fit, jump to next line before drawing
 			}
 
 			// abort if we are going beyond the vertical working area
-			if feed.Position.Y.Floor() >= TextBounds.Max.Y {
+			if feed.Position.Y.Floor() >= bounds.Max.Y {
 				return used
 			}
 			used.Max.X = max(used.Max.X, (feed.Position.X + width).Ceil())

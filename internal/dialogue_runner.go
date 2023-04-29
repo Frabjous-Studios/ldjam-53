@@ -2,6 +2,7 @@ package internal
 
 import (
 	"embed"
+	"fmt"
 	"github.com/DrJosh9000/yarn"
 	"github.com/DrJosh9000/yarn/bytecode"
 	"github.com/Frabjous-Studios/ebitengine-game-template/internal/debug"
@@ -74,6 +75,18 @@ func (r *DialogueRunner) GameState() *GameState {
 	r.gameState.CurrentNode = r.CurrNodeName
 	return r.gameState
 }
+func (r *DialogueRunner) IsLastLine(line yarn.Line) bool {
+	if _, ok := r.stringTable.Table[line.ID]; !ok {
+		return false
+	}
+	fmt.Println("tags", r.stringTable.Table[line.ID].Tags)
+	for _, tag := range r.stringTable.Table[line.ID].Tags {
+		if tag == "lastline" {
+			return true
+		}
+	}
+	return false
+}
 
 func (r *DialogueRunner) Render(line yarn.Line) string {
 	s, err := r.stringTable.Render(line)
@@ -83,57 +96,3 @@ func (r *DialogueRunner) Render(line yarn.Line) string {
 	}
 	return s.String()
 }
-
-//
-//// Lines returns the set of lines currently displayed, or nil and an error if the runner has not yet started.
-//func (r *DialogueRunner) Lines() ([]*yarn.AttributedString, error) {
-//	r.mut.RLock()
-//	defer r.mut.RUnlock()
-//	if r.runState == RunnerStopped {
-//		return nil, nil
-//	}
-//	if len(r.handler.buffered) == 0 {
-//		return nil, nil
-//	}
-//	var result []*yarn.AttributedString
-//	for _, line := range r.handler.buffered {
-//		as, err := r.stringTable.Render(line)
-//		if err != nil {
-//			return nil, fmt.Errorf("error rendering line '%s': %w", line.ID, err)
-//		}
-//		result = append(result, as)
-//	}
-//	return result, nil
-//}
-//
-//// Options returns the current set of options which dialogue runner is waiting on the player to choose from. Returns
-//// nil if the RunnerState is not RunnerWaiting
-//func (r *DialogueRunner) Options() ([]*yarn.AttributedString, error) {
-//	var err error
-//	r.mut.RLock()
-//	defer r.mut.RUnlock()
-//	if r.runState == RunnerStopped {
-//		return nil, nil
-//	}
-//
-//	result := make([]*yarn.AttributedString, len(r.handler.options)) // defensive copy
-//	for i, opt := range r.handler.options {
-//		result[i], err = r.stringTable.Render(opt.Line)
-//		if err != nil {
-//			return nil, fmt.Errorf("error rendering dialogueOption '%d': %w", opt.ID, err)
-//		}
-//	}
-//	return result, nil
-//}
-//
-//// Choose selects the dialogueOption from the list of current options.
-//func (r *DialogueRunner) Choose(choice int) error {
-//	r.mut.RLock()
-//	defer r.mut.RUnlock()
-//	if r.runState != RunnerWaiting {
-//		return errors.New("choose not called in the waiting runState")
-//	}
-//	r.handler.options = nil     // unset the options
-//	r.handler.choices <- choice // send and unblock the runner
-//	return nil
-//}
