@@ -70,7 +70,7 @@ func init() {
 	Resources.images["coin_50"] = placeholder(h2c("00ff00"), 15, 15)
 
 	Resources.images["counter"] = placeholder(h2c("ff0000"), 208, 88)
-	Resources.images["till"] = placeholder(h2c("0000ff"), 112, 68)
+	Resources.images["Till"] = placeholder(h2c("0000ff"), 112, 68)
 }
 
 // TODO: Enable //go:embed gamedata/img
