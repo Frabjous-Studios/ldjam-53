@@ -3,6 +3,7 @@ package internal
 import (
 	"errors"
 	"github.com/hajimehoshi/ebiten/v2"
+	"github.com/hajimehoshi/ebiten/v2/audio"
 	"github.com/hajimehoshi/ebiten/v2/inpututil"
 	"sync"
 )
@@ -16,6 +17,8 @@ type Game struct {
 	Width     int
 	Height    int
 	CurrScene Scene
+
+	ACtx *audio.Context
 }
 
 type Scene interface {

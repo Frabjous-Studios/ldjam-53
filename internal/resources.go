@@ -2,6 +2,7 @@ package internal
 
 import (
 	"bufio"
+	"bytes"
 	"embed"
 	"fmt"
 	"github.com/Frabjous-Studios/ebitengine-game-template/internal/debug"
@@ -9,6 +10,8 @@ import (
 	"github.com/ebitenui/ebitenui/utilities/colorutil"
 	"github.com/golang/freetype/truetype"
 	"github.com/hajimehoshi/ebiten/v2"
+	"github.com/hajimehoshi/ebiten/v2/audio"
+	"github.com/hajimehoshi/ebiten/v2/audio/vorbis"
 	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
 	"github.com/tinne26/etxt"
 	"golang.org/x/image/font"
@@ -49,6 +52,7 @@ type resources struct {
 	heads      map[string]*ebiten.Image
 	bodies     map[string]*ebiten.Image
 	lists      map[string][]string
+	players    map[string]*audio.Player
 }
 
 const FontName = "Munro-2LYe.ttf"
@@ -87,6 +91,10 @@ func init() {
 	// load font faces (again?)
 	Resources.faces = make(map[string]*truetype.Font)
 
+	// load audio
+	Resources.players = make(map[string]*audio.Player)
+
+	// load images
 	Resources.images["bill_1"] = Resources.GetImage("bill_1.png")
 	Resources.images["bill_5"] = Resources.GetImage("bill_5.png")
 	Resources.images["bill_10"] = Resources.GetImage("bill_10.png")
@@ -116,6 +124,40 @@ func init() {
 
 	Resources.images["bg_bg.png"] = Resources.GetImage("bg_bg.png")
 	Resources.images["bg_fg.png"] = Resources.GetImage("bg_fg.png")
+}
+
+const SampleRate = 44100
+
+//go:embed gamedata/audio
+var audioFiles embed.FS
+
+func (r *resources) GetSound(aCtx *audio.Context, filename string) *audio.Player {
+	if p, ok := r.players[filename]; ok {
+		return p
+	}
+	b, err := audioFiles.ReadFile(fmt.Sprintf("gamedata/audio/%s", filename))
+	if err != nil {
+		debug.Printf("error opening audio file: %v", err)
+	}
+
+	reader := bytes.NewReader(b)
+
+	stream, err := vorbis.DecodeWithSampleRate(SampleRate, reader)
+	if err != nil {
+		debug.Printf("error decoding wav file: %v", err)
+	}
+
+	p, err := aCtx.NewPlayer(stream)
+	if err != nil {
+		debug.Printf("error creating a new player: %v", err)
+	}
+	r.players[filename] = p
+	return p
+}
+
+func (r *resources) GetRandSound(aCtx *audio.Context, files ...string) *audio.Player {
+	f := files[rand.Intn(len(files))]
+	return r.GetSound(aCtx, f)
 }
 
 // GetFont returns the loaded font if it exists, nil otherwise.

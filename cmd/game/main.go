@@ -6,6 +6,7 @@ package main
 
 import (
 	"github.com/Frabjous-Studios/ebitengine-game-template/internal"
+	"github.com/hajimehoshi/ebiten/v2/audio"
 	"log"
 
 	"github.com/hajimehoshi/ebiten/v2"
@@ -21,6 +22,7 @@ func main() {
 	game := &internal.Game{
 		Width:  gameWidth,
 		Height: gameHeight,
+		ACtx:   audio.NewContext(internal.SampleRate),
 	}
 	game.CurrScene, err = internal.NewMainMenuScene(game)
 	if err != nil {

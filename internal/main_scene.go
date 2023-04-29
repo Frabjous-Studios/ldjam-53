@@ -17,7 +17,7 @@ import (
 	"time"
 )
 
-// global ScaleFactor for pixel art.
+// ScaleFactor global scaling factor for pixel art.
 const ScaleFactor = 2.0
 
 type BaseScene struct {
@@ -207,7 +207,7 @@ func (m *MainScene) Update() error {
 	return nil
 }
 
-const debounceDuration = 100 * time.Millisecond
+const debounceDuration = 300 * time.Millisecond
 
 // updateInput is debounced.
 func (m *MainScene) updateInput() error {
@@ -293,7 +293,7 @@ func (m *MainScene) handleGrabbed(grabbed Sprite) {
 	} else { // only pick up money in stacks of the same denomination.
 		c1, grabbedMoney := grabbed.(*Money)
 		c2, haveMoney := m.holding[0].(*Money)
-		if grabbedMoney && haveMoney && c1.Value == c2.Value {
+		if grabbedMoney && haveMoney && c1.IsCoin == c2.IsCoin && c1.Value == c2.Value {
 			m.addHolding(grabbed)
 		}
 	}
@@ -440,7 +440,24 @@ func (m *MainScene) counterDrop() {
 	for _, s := range m.holding { // drop ALL
 		s.SetPos(clampToCounter(s.Pos()))
 	}
+	m.soundDrop(m.holding[0], "counter")
 	m.holding = nil
+}
+
+// play the sound of dropping something on the counter
+func (m *MainScene) soundDrop(s Sprite, surface string) {
+	switch s := s.(type) {
+	case *Money:
+		if !s.IsCoin {
+			return
+		}
+		switch surface {
+		case "counter":
+			p := Resources.GetRandSound(m.Game.ACtx, "Coin_Drop-1.ogg", "Coin_Drop-2.ogg")
+			p.Rewind()
+			p.Play()
+		}
+	}
 }
 
 func (m *MainScene) spriteUnderCursor() Sprite {
