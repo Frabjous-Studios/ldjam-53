@@ -21,7 +21,8 @@ type MainMenuScene struct {
 	selected int
 }
 
-var keys []ebiten.Key
+var newKeys []ebiten.Key
+var heldKeys []ebiten.Key
 
 func NewMainMenuScene(game *Game) (*MainMenuScene, error) {
 	var (
@@ -40,9 +41,9 @@ func NewMainMenuScene(game *Game) (*MainMenuScene, error) {
 
 func (m *MainMenuScene) Update() error {
 	m.ui.Update()
-	keys = inpututil.AppendJustPressedKeys(keys)
+	newKeys = inpututil.AppendJustPressedKeys(newKeys)
 
-	for _, key := range keys {
+	for _, key := range newKeys {
 		if key == ebiten.KeyUp || key == ebiten.KeyW {
 			m.up()
 		}

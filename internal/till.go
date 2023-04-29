@@ -18,8 +18,7 @@ type Till struct {
 }
 
 func NewTill() *Till {
-	// TODO: generate random bills in the Till
-	return &Till{
+	result := &Till{
 		BaseSprite: &BaseSprite{
 			X: 0, Y: 172,
 			Img: Resources.images["Till"],
@@ -41,6 +40,21 @@ func NewTill() *Till {
 			},
 		},
 	}
+
+	return result
+}
+
+func randPoint(dx, dy int) image.Point {
+	return image.Pt(rand.Intn(dx), rand.Intn(dy))
+}
+
+func (t *Till) DropAll(sprites []Sprite) bool {
+	for _, s := range sprites {
+		if !t.Drop(s) {
+			return false
+		}
+	}
+	return true
 }
 
 // Drop drops the provided sprite on the Till; landing it in the location needed.

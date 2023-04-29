@@ -93,11 +93,11 @@ func init() {
 	Resources.images["bill_20"] = Resources.GetImage("bill_20.png")
 	Resources.images["bill_100"] = Resources.GetImage("bill_100.png")
 
-	Resources.images["coin_1"] = placeholder(h2c("ffff00"), 15, 15)
-	Resources.images["coin_5"] = placeholder(h2c("dddd00"), 15, 15)
-	Resources.images["coin_10"] = placeholder(h2c("cccc00"), 15, 15)
-	Resources.images["coin_25"] = placeholder(h2c("bbbb00"), 15, 15)
-	Resources.images["coin_50"] = placeholder(h2c("aaaa00"), 15, 15)
+	Resources.images["coin_1"] = Resources.GetImage("coin_1.png")
+	Resources.images["coin_5"] = Resources.GetImage("coin_5.png")
+	Resources.images["coin_10"] = Resources.GetImage("coin_10.png")
+	Resources.images["coin_25"] = Resources.GetImage("coin_25.png")
+	Resources.images["coin_50"] = Resources.GetImage("coin_50.png")
 
 	Resources.images["check_front"] = Resources.GetImage("check_front.png")
 	Resources.images["check_back"] = Resources.GetImage("check_back.png")
@@ -108,7 +108,10 @@ func init() {
 
 	Resources.images["photo_id"] = Resources.GetImage("photo_id.png")
 
-	Resources.images["counter"] = placeholder(h2c("ff0000"), 208, 88)
+	Resources.images["call_button_holo"] = Resources.GetImage("call_button_hologram.png")
+	Resources.images["call_button"] = Resources.GetImage("call_button.png")
+	Resources.images["counter"] = Resources.GetImage("countertop.png")
+	Resources.images["terminal"] = Resources.GetImage("terminal_bg.png")
 	Resources.images["Till"] = Resources.GetImage("placeholer_till.png")
 
 	Resources.images["bg_bg.png"] = Resources.GetImage("bg_bg.png")

@@ -9,7 +9,7 @@ import (
 var Days = []Day{
 	0: {
 		Sequence: []string{"random"},
-		Random:   []string{"Test1"},
+		Random:   []string{"RandomDeposit_Polite"},
 	},
 }
 

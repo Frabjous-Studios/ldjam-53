@@ -31,7 +31,7 @@ func (g *Game) Layout(outsideWidth int, outsideHeight int) (screenWidth int, scr
 // Update calculates game logic
 func (g *Game) Update() error {
 	TPSOnce.Do(func() {
-		ebiten.SetTPS(60)
+		ebiten.SetTPS(240)
 		TPS = float64(ebiten.TPS())
 	})
 

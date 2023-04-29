@@ -64,6 +64,24 @@ func (s *BaseSprite) ClampToRect(r image.Rectangle) {
 	s.Y = clamp(s.Y, r.Min.Y, r.Max.Y-s.Bounds().Dy())
 }
 
+type Hologram struct {
+	*BaseSprite
+	StartTime time.Time
+}
+
+func (s *Hologram) DrawTo(screen *ebiten.Image) {
+	if s.Img == nil {
+		debug.Println("image for sprite was nil at point:", s.X, s.Y)
+		return
+	}
+	opt := &ebiten.DrawImageOptions{}
+	opt.Blend = ebiten.BlendSourceOver
+	opt.GeoM.Translate(float64(s.X), float64(s.Y))
+	opt.GeoM.Scale(ScaleFactor, ScaleFactor)
+	opt.ColorScale.Scale(1.0, 1.0, 1.0, 0.7) // TODO: animate this with dT using a curve
+	screen.DrawImage(s.Img, opt)
+}
+
 type MainScene struct {
 	Game *Game
 
@@ -76,13 +94,16 @@ type MainScene struct {
 	State  *GameState
 	Runner *DialogueRunner
 
-	till    *Till
-	counter *BaseSprite
+	till       *Till
+	counter    *BaseSprite
+	terminal   *BaseSprite
+	buttonBase *BaseSprite
+	buttonHolo *Hologram
 
 	bubbles *Bubbles
 	options []*Line
 
-	holding     Sprite
+	holding     []Sprite
 	clickStart  image.Point
 	clickOffset image.Point
 
@@ -105,12 +126,33 @@ func NewMainScene(g *Game) *MainScene {
 		Sprites: []Sprite{},
 		Day:     Days[0],
 
-		till: NewTill(),
-		counter: &BaseSprite{
-			X: 112, Y: 152,
-			Img: Resources.images["counter"],
+		till:       NewTill(),
+		counter:    &BaseSprite{X: 112, Y: 152, Img: Resources.images["counter"]},
+		terminal:   &BaseSprite{X: 0, Y: 72, Img: Resources.images["terminal"]},
+		buttonBase: &BaseSprite{X: 259, Y: 147, Img: Resources.images["call_button"]},
+		buttonHolo: &Hologram{
+			BaseSprite: &BaseSprite{X: 263, Y: 124, Img: Resources.images["call_button_holo"]},
+			StartTime:  time.Now(),
 		},
 		vars: make(yarn.MapVariableStorage),
+	}
+	// generate random bills; [5-20] each.
+	for idx, denom := range []int{1, 5, 10, 20, 100} {
+		count := rand.Intn(15) + 5
+		for i := 0; i < count; i++ {
+			bill := newBill(denom, result.till.DropTargets[BillTargets][idx].Min.Add(result.till.Pos().Add(randPoint(2, 2))))
+			result.till.BillSlots[idx] = append(result.till.BillSlots[idx], bill.(*Money))
+			result.Sprites = append(result.Sprites, bill)
+		}
+	}
+	// generate random coins; [10-50] each.
+	for idx, denom := range []int{1, 5, 10, 25, 50} {
+		count := rand.Intn(40) + 10
+		for i := 0; i < count; i++ {
+			coin := newCoin(denom, result.till.DropTargets[CoinTargets][idx].Min.Add(result.till.Pos().Add(randPoint(3, 3))))
+			result.till.CoinSlots[idx] = append(result.till.CoinSlots[idx], coin.(*Money))
+			result.Sprites = append(result.Sprites, coin)
+		}
 	}
 	result.bubbles = NewBubbles(result)
 	result.speaking = sync.NewCond(&result.mut)
@@ -157,52 +199,69 @@ func (m *MainScene) Update() error {
 
 	if m.holding != nil {
 		mPos := cursorPos()
-		m.holding.SetPos(mPos.Add(m.clickOffset))
+		for _, h := range m.holding { // TODO: does this work?
+			h.SetPos(mPos.Add(m.clickOffset))
+		}
 	}
 
 	return nil
 }
 
-const debounceDuration = 300 * time.Millisecond
+const debounceDuration = 100 * time.Millisecond
 
 // updateInput is debounced.
 func (m *MainScene) updateInput() error {
-	if time.Now().Before(m.debouceTime) {
-		return nil
-	}
 
 	if !m.Runner.running {
 		go m.startRunner()
 		m.Runner.running = true
 	}
 
-	keys = inpututil.AppendJustPressedKeys(keys)
+	newKeys = inpututil.AppendJustPressedKeys(newKeys[:0])
+	heldKeys = inpututil.AppendPressedKeys(heldKeys[:0])
 
-	if len(keys) > 0 {
+	if time.Now().Before(m.debouceTime) {
+		return nil
+	}
+
+	if len(newKeys) > 0 {
 		m.AdvanceDialogue()
 		m.debouceTime = time.Now().Add(debounceDuration)
 	}
 
 	cPos := cursorPos()
 	if inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonLeft) {
-		if m.holding != nil {
-			if cPos.In(m.till.Bounds()) { // if over Till; drop on Till
-				if !m.till.Drop(m.holding) {
-					m.counterDrop()
+		debug.Println("left mouse press", m.holding)
+		if len(m.holding) > 0 {
+			debug.Println("holding something")
+			if contains(heldKeys, ebiten.KeyShift) {
+				// TODO: grab all the sprites under cursor?? if they match??
+				grabbed := m.spriteUnderCursor()
+				if grabbed != nil {
+					m.handleGrabbed(grabbed)
 				} else {
-					m.holding = nil
+					debug.Println("counter drop")
+					m.counterDrop()
 				}
 			} else {
-				m.counterDrop()
+				if cPos.In(m.till.Bounds()) { // if over Till; drop on Till
+					debug.Println("over till")
+					if m.till.DropAll(m.holding) {
+						m.holding = nil
+					} else {
+						debug.Println("unable to drop on till")
+					}
+				} else {
+					debug.Println("counter drop")
+					m.counterDrop()
+				}
 			}
 		} else { // pick up the thing under the cursor
-			m.holding = m.spriteUnderCursor()
-			if m.holding != nil {
-				m.BringToFront(m.holding)
-				m.clickStart = cPos
-				m.clickOffset = m.holding.Pos().Sub(m.clickStart)
-				m.till.Remove(m.holding) // remove it from the Till (maybe)
+			grabbed := m.spriteUnderCursor()
+			if grabbed != nil {
+				m.handleGrabbed(grabbed)
 			} else {
+				debug.Println("grabbed nothing; dialog select?")
 				selected := false
 				// check for dialogue option
 				for idx, opt := range m.options {
@@ -215,6 +274,7 @@ func (m *MainScene) updateInput() error {
 					}
 				}
 				if !selected { // advance the dialogue if nothing was selected.
+					debug.Println("no dialogue selected; player is impatient.")
 					m.AdvanceDialogue()
 				}
 			}
@@ -222,6 +282,42 @@ func (m *MainScene) updateInput() error {
 		m.debouceTime = time.Now().Add(debounceDuration)
 	}
 	return nil
+}
+
+func (m *MainScene) handleGrabbed(grabbed Sprite) {
+	debug.Println("grabbed sprite", grabbed)
+	cPos := cursorPos()
+	m.BringToFront(grabbed)
+	if len(m.holding) == 0 {
+		m.addHolding(grabbed)
+	} else { // only pick up money in stacks of the same denomination.
+		c1, grabbedMoney := grabbed.(*Money)
+		c2, haveMoney := m.holding[0].(*Money)
+		if grabbedMoney && haveMoney && c1.Value == c2.Value {
+			m.addHolding(grabbed)
+		}
+	}
+	m.clickStart = cPos
+	m.clickOffset = grabbed.Pos().Sub(m.clickStart)
+	m.till.Remove(grabbed) // remove it from the Till (maybe)
+}
+
+func (m *MainScene) addHolding(grabbed Sprite) {
+	for _, h := range m.holding {
+		if grabbed == h {
+			return
+		}
+	}
+	m.holding = append(m.holding, grabbed)
+}
+
+func contains[T comparable](arr []T, val T) bool {
+	for _, t := range arr {
+		if t == val {
+			return true
+		}
+	}
+	return false
 }
 
 func (m *MainScene) BringToFront(s Sprite) {
@@ -247,6 +343,13 @@ func (m *MainScene) Draw(screen *ebiten.Image) {
 
 	m.counter.DrawTo(screen)
 
+	// draw terminal
+	m.terminal.DrawTo(screen)
+
+	// draw next button
+	m.buttonBase.DrawTo(screen)
+	m.buttonHolo.DrawTo(screen)
+
 	// draw all the sprites in their draw order.
 	for _, sprite := range m.Sprites {
 		sprite.DrawTo(screen)
@@ -256,6 +359,34 @@ func (m *MainScene) Draw(screen *ebiten.Image) {
 	if m.bubbles.DrawTo(screen) { // draw options only if the bubbles are already totally drawn
 		m.drawOptions(screen)
 	}
+
+	// draw cash indicator
+	m.drawCashIndicator(screen)
+}
+
+var IndicatorColor = h2c("00ff00")
+
+const IndicatorFontSize = 36
+const IndicatorOffset = -40
+
+func (m *MainScene) drawCashIndicator(screen *ebiten.Image) {
+	if len(m.holding) < 2 {
+		return
+	}
+	money, ok := m.holding[0].(*Money)
+	if !ok {
+		return
+	}
+	value := len(m.holding) * money.Value / 100
+
+	cPos := cursorPos()
+	m.txt.SetColor(IndicatorColor)
+	m.txt.SetSizePx(IndicatorFontSize)
+	m.txt.SetTarget(screen)
+	v, h := m.txt.GetAlign()
+	m.txt.SetAlign(etxt.YCenter, etxt.XCenter)
+	m.txt.Draw(fmt.Sprintf("$%d", value), ScaleFactor*cPos.X, ScaleFactor*cPos.Y+IndicatorOffset)
+	m.txt.SetAlign(v, h)
 }
 
 func (m *MainScene) drawBg(screen *ebiten.Image) {
@@ -297,15 +428,18 @@ func (m *MainScene) startRunner() {
 }
 
 func (m *MainScene) pickUp() {
-	m.holding = m.spriteUnderCursor()
-	if m.holding != nil {
+	grabbed := m.spriteUnderCursor()
+	if grabbed != nil {
+		m.holding = append(m.holding, grabbed)
 		m.clickStart = cursorPos()
-		m.clickOffset = m.holding.Pos().Sub(m.clickStart)
+		m.clickOffset = grabbed.Pos().Sub(m.clickStart)
 	}
 }
 
 func (m *MainScene) counterDrop() {
-	m.holding.SetPos(clampToCounter(m.holding.Pos()))
+	for _, s := range m.holding { // drop ALL
+		s.SetPos(clampToCounter(s.Pos()))
+	}
 	m.holding = nil
 }
 
@@ -439,6 +573,7 @@ func (m *MainScene) putCounter(args []string) error {
 			slip := m.randDepositSlip()
 			m.Runner.SetDepositSlip(slip)
 			m.put(slip)
+			m.putBills(slip.Value / 100)
 		case "withdrawal_slip":
 			slip := m.randWithdrawalSlip()
 			m.Runner.SetDepositSlip(slip)
@@ -552,6 +687,8 @@ func (m *MainScene) randWithdrawalSlip() *DepositSlip {
 	return result
 }
 
+var MaxTransactionValue = 1000 // TODO: make this go _DOWN_ as the days go on.
+
 func (m *MainScene) randSlip(path string) *DepositSlip {
 	img := ebiten.NewImage(43, 32)
 	img.DrawImage(Resources.GetImage(path), nil)
@@ -583,7 +720,7 @@ func randomAccountValue() int {
 }
 
 func randomTransactionValue() int {
-	return rand.Intn(1000) * 100 // TODO: make this more realistic
+	return rand.Intn(MaxTransactionValue) * 100 // TODO: make this more realistic
 }
 
 func randomAcctNumber() int {
