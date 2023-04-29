@@ -1,14 +1,14 @@
 id,text,file,node,lineNumber
-line:/Users/kalexmills/repos/personal/ldjam-53/internal/gamedata/yarn/Test.yarn-Test1-0,Hello! I would like to bank.,/Users/kalexmills/repos/personal/ldjam-53/internal/gamedata/yarn/Test.yarn,Test1,6
-line:/Users/kalexmills/repos/personal/ldjam-53/internal/gamedata/yarn/Test.yarn-Test1-1,How much is this for?,/Users/kalexmills/repos/personal/ldjam-53/internal/gamedata/yarn/Test.yarn,Test1,10
-line:/Users/kalexmills/repos/personal/ldjam-53/internal/gamedata/yarn/Test.yarn-Test1-2,${0}; just like it says.,/Users/kalexmills/repos/personal/ldjam-53/internal/gamedata/yarn/Test.yarn,Test1,11
-line:/Users/kalexmills/repos/personal/ldjam-53/internal/gamedata/yarn/Test.yarn-Test1-3,What's the account number?,/Users/kalexmills/repos/personal/ldjam-53/internal/gamedata/yarn/Test.yarn,Test1,12
-line:/Users/kalexmills/repos/personal/ldjam-53/internal/gamedata/yarn/Test.yarn-Test1-4,It's {0}. I wrote it down.,/Users/kalexmills/repos/personal/ldjam-53/internal/gamedata/yarn/Test.yarn,Test1,13
-line:/Users/kalexmills/repos/personal/ldjam-53/internal/gamedata/yarn/Test.yarn-Test1-5,What?,/Users/kalexmills/repos/personal/ldjam-53/internal/gamedata/yarn/Test.yarn,Test1,14
-line:/Users/kalexmills/repos/personal/ldjam-53/internal/gamedata/yarn/Test.yarn-Test1-6,You heard me!,/Users/kalexmills/repos/personal/ldjam-53/internal/gamedata/yarn/Test.yarn,Test1,15
-line:/Users/kalexmills/repos/personal/ldjam-53/internal/gamedata/yarn/Test.yarn-Test1-7,Okay. That'll be 200 dollars.,/Users/kalexmills/repos/personal/ldjam-53/internal/gamedata/yarn/Test.yarn,Test1,16
-line:/Users/kalexmills/repos/personal/ldjam-53/internal/gamedata/yarn/Test.yarn-Test1-8,Fine; here.,/Users/kalexmills/repos/personal/ldjam-53/internal/gamedata/yarn/Test.yarn,Test1,17
-line:/Users/kalexmills/repos/personal/ldjam-53/internal/gamedata/yarn/Test.yarn-Test1-9,"Oh, wow. Okay! Thanks.",/Users/kalexmills/repos/personal/ldjam-53/internal/gamedata/yarn/Test.yarn,Test1,19
-line:/Users/kalexmills/repos/personal/ldjam-53/internal/gamedata/yarn/Test.yarn-Test1-10,No worries.,/Users/kalexmills/repos/personal/ldjam-53/internal/gamedata/yarn/Test.yarn,Test1,20
-line:/Users/kalexmills/repos/personal/ldjam-53/internal/gamedata/yarn/Test.yarn-Test1-11,Now get out of here!,/Users/kalexmills/repos/personal/ldjam-53/internal/gamedata/yarn/Test.yarn,Test1,21
-line:/Users/kalexmills/repos/personal/ldjam-53/internal/gamedata/yarn/Test.yarn-Test1-12,Wahhhh.,/Users/kalexmills/repos/personal/ldjam-53/internal/gamedata/yarn/Test.yarn,Test1,22
+line:/Users/kalexmills/repos/personal/ldjam-53/internal/gamedata/yarn/Test.yarn-Test1-0,Hello! I would like to bank.,/Users/kalexmills/repos/personal/ldjam-53/internal/gamedata/yarn/Test.yarn,Test1,9
+line:/Users/kalexmills/repos/personal/ldjam-53/internal/gamedata/yarn/Test.yarn-Test1-1,How much is this for?,/Users/kalexmills/repos/personal/ldjam-53/internal/gamedata/yarn/Test.yarn,Test1,13
+line:/Users/kalexmills/repos/personal/ldjam-53/internal/gamedata/yarn/Test.yarn-Test1-2,${0}; just like it says.,/Users/kalexmills/repos/personal/ldjam-53/internal/gamedata/yarn/Test.yarn,Test1,14
+line:/Users/kalexmills/repos/personal/ldjam-53/internal/gamedata/yarn/Test.yarn-Test1-3,What's the account number?,/Users/kalexmills/repos/personal/ldjam-53/internal/gamedata/yarn/Test.yarn,Test1,15
+line:/Users/kalexmills/repos/personal/ldjam-53/internal/gamedata/yarn/Test.yarn-Test1-4,It's {0}. I wrote it down.,/Users/kalexmills/repos/personal/ldjam-53/internal/gamedata/yarn/Test.yarn,Test1,16
+line:/Users/kalexmills/repos/personal/ldjam-53/internal/gamedata/yarn/Test.yarn-Test1-5,What?,/Users/kalexmills/repos/personal/ldjam-53/internal/gamedata/yarn/Test.yarn,Test1,17
+line:/Users/kalexmills/repos/personal/ldjam-53/internal/gamedata/yarn/Test.yarn-Test1-6,You heard me!,/Users/kalexmills/repos/personal/ldjam-53/internal/gamedata/yarn/Test.yarn,Test1,18
+line:/Users/kalexmills/repos/personal/ldjam-53/internal/gamedata/yarn/Test.yarn-Test1-7,Okay. That'll be 200 dollars.,/Users/kalexmills/repos/personal/ldjam-53/internal/gamedata/yarn/Test.yarn,Test1,19
+line:/Users/kalexmills/repos/personal/ldjam-53/internal/gamedata/yarn/Test.yarn-Test1-8,Fine; here.,/Users/kalexmills/repos/personal/ldjam-53/internal/gamedata/yarn/Test.yarn,Test1,20
+line:/Users/kalexmills/repos/personal/ldjam-53/internal/gamedata/yarn/Test.yarn-Test1-9,"Oh, wow. Okay! Thanks.",/Users/kalexmills/repos/personal/ldjam-53/internal/gamedata/yarn/Test.yarn,Test1,22
+line:/Users/kalexmills/repos/personal/ldjam-53/internal/gamedata/yarn/Test.yarn-Test1-10,No worries.,/Users/kalexmills/repos/personal/ldjam-53/internal/gamedata/yarn/Test.yarn,Test1,23
+line:/Users/kalexmills/repos/personal/ldjam-53/internal/gamedata/yarn/Test.yarn-Test1-11,Now get out of here!,/Users/kalexmills/repos/personal/ldjam-53/internal/gamedata/yarn/Test.yarn,Test1,24
+line:/Users/kalexmills/repos/personal/ldjam-53/internal/gamedata/yarn/Test.yarn-Test1-12,Wahhhh.,/Users/kalexmills/repos/personal/ldjam-53/internal/gamedata/yarn/Test.yarn,Test1,25

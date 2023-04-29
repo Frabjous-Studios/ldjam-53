@@ -78,6 +78,21 @@ func (t *Till) Drop(s Sprite) bool {
 	return true
 }
 
+func (t *Till) Value() int {
+	var result int
+	for _, stack := range t.BillSlots {
+		for _, bill := range stack {
+			result += bill.Value
+		}
+	}
+	for _, stack := range t.CoinSlots {
+		for _, coin := range stack {
+			result += coin.Value
+		}
+	}
+	return result
+}
+
 // Remove removes the provided money from the Till; checking the top of each stack of bills and coins for it.
 func (t *Till) Remove(s Sprite) {
 	m, ok := s.(*Money)

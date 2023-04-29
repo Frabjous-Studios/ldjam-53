@@ -70,6 +70,7 @@ func init() {
 	})
 	debug.Println("fonts available:", strings.Join(fonts, ","))
 	Resources.fontLib = fontLib
+	Resources.lists = make(map[string][]string)
 
 	Resources.images = make(map[string]*ebiten.Image)
 	Resources.bodies = Resources.loadImages(bodies)
@@ -185,9 +186,9 @@ func (r *resources) GetList(filename string) []string {
 	if result, ok := r.lists[filename]; ok {
 		return result
 	}
-	f, err := text.Open(filename)
+	f, err := text.Open(fmt.Sprintf("gamedata/%s", filename))
 	if err != nil {
-		debug.Printf("error opening text file %s: %v", filename)
+		debug.Printf("error opening text file %s: %v", filename, err)
 	}
 	s := bufio.NewScanner(f)
 	var result []string

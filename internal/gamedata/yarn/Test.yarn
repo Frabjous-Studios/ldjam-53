@@ -1,8 +1,11 @@
 title: Test1
 portrait: random
 ---
-<< set $slip_amount to 0>>
-<< set $account_number to 0>>
+<< set $slip_amount to 0 >>
+<< set $account_number to 0 >>
+<< set $char_first_name to "" >>
+<< set $char_last_name to "" >>
+<< set $char_full_name to "" >>
 Hello! I would like to bank.
 << put_counter deposit_slip >>
 << put_counter empty_slip >>

@@ -67,8 +67,9 @@ func (s *BaseSprite) ClampToRect(r image.Rectangle) {
 type MainScene struct {
 	Game *Game
 
-	Day      Day // Customers is a list of Yarnspinner nodes happening on the current day
-	Customer Sprite
+	Day          Day // Customers is a list of Yarnspinner nodes happening on the current day
+	Customer     Sprite
+	CustomerName string
 
 	Sprites []Sprite
 
@@ -138,6 +139,7 @@ func (m *MainScene) Update() error {
 	} else {
 		// TODO: animate the customer into position
 		m.Customer = runnerP
+		m.CustomerName = m.Runner.RandomName()
 		m.Customer.SetPos(image.Pt(170, 53))
 	}
 
