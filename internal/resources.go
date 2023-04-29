@@ -75,7 +75,7 @@ func init() {
 	// load nineslices
 	Resources.nineSlices = make(map[string]*image.NineSlice)
 	// TODO: use a real image
-	Resources.nineSlices["bubble"] = image.NewNineSliceColor(color.RGBA{R: 50, B: 50, G: 50, A: 50})
+	Resources.nineSlices["bubble"] = image.NewNineSlice(Resources.GetImage("dialog_9patch2x2cells.png"), [3]int{2, 2, 2}, [3]int{2, 2, 2})
 
 	// load shaders
 	Resources.shaders = make(map[string]*ebiten.Shader)
@@ -97,6 +97,8 @@ func init() {
 
 	Resources.images["counter"] = placeholder(h2c("ff0000"), 208, 88)
 	Resources.images["Till"] = placeholder(h2c("0000ff"), 112, 68)
+
+	Resources.images["bg.png"] = Resources.GetImage("bg.png")
 }
 
 // GetFont returns the loaded font if it exists, nil otherwise.

@@ -22,7 +22,7 @@ portrait: random
 I'd like to speak to the manager.
 -> He's busy.
     Fine. Here's a quarter
-    << put_coin 25 >>
+    << put_coins 25 >>
 -> Me too! Let me know if you find him.
     What?! He's gone missing!?
 ===

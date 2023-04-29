@@ -88,6 +88,8 @@ type MainScene struct {
 	speaking  *sync.Cond
 	selectOpt *sync.Cond
 	selection int
+
+	debouceTime time.Time
 }
 
 func NewMainScene(g *Game) *MainScene {
@@ -116,16 +118,58 @@ func NewMainScene(g *Game) *MainScene {
 }
 
 func (m *MainScene) Update() error {
+	if err := m.updateInput(); err != nil {
+		debug.Printf("error from updateInput: %v", err)
+	}
+	m.bubbles.Update()
+
+	runnerP := m.Runner.Portrait()
+	if runnerP == nil {
+		m.Customer = nil
+	} else {
+		// TODO: animate the customer into position
+		m.Customer = runnerP
+		m.Customer.SetPos(image.Pt(170, 53))
+	}
+
+	cPos := cursorPos()
+	for _, opt := range m.options {
+		if opt == nil {
+			continue
+		}
+		if cPos.Mul(ScaleFactor).In(opt.Rect) {
+			opt.highlighted = true
+		} else {
+			opt.highlighted = false
+		}
+	}
+
+	if m.holding != nil {
+		mPos := cursorPos()
+		m.holding.SetPos(mPos.Add(m.clickOffset))
+	}
+
+	return nil
+}
+
+const debounceDuration = 300 * time.Millisecond
+
+// updateInput is debounced.
+func (m *MainScene) updateInput() error {
+	if time.Now().Before(m.debouceTime) {
+		return nil
+	}
+
 	if !m.Runner.running {
 		go m.startRunner()
 		m.Runner.running = true
 	}
-	m.bubbles.Update()
 
 	keys = inpututil.AppendJustPressedKeys(keys)
 
 	if len(keys) > 0 {
 		m.AdvanceDialogue()
+		m.debouceTime = time.Now().Add(debounceDuration)
 	}
 
 	cPos := cursorPos()
@@ -163,31 +207,8 @@ func (m *MainScene) Update() error {
 				}
 			}
 		}
+		m.debouceTime = time.Now().Add(debounceDuration)
 	}
-	runnerP := m.Runner.Portrait()
-	if runnerP == nil {
-		m.Customer = nil
-	} else {
-		// TODO: animate the customer into position
-		m.Customer = runnerP
-		m.Customer.SetPos(image.Pt(170, 52))
-	}
-	for _, opt := range m.options {
-		if opt == nil {
-			continue
-		}
-		if cPos.Mul(ScaleFactor).In(opt.Rect) {
-			opt.highlighted = true
-		} else {
-			opt.highlighted = false
-		}
-	}
-
-	if m.holding != nil {
-		mPos := cursorPos()
-		m.holding.SetPos(mPos.Add(m.clickOffset))
-	}
-
 	return nil
 }
 
@@ -196,14 +217,13 @@ func (m *MainScene) AdvanceDialogue() {
 }
 
 func (m *MainScene) Draw(screen *ebiten.Image) {
-	// draw Till
+	m.drawBg(screen)
 	m.till.DrawTo(screen)
 
 	if m.Customer != nil {
 		m.Customer.DrawTo(screen)
 	}
 
-	// draw counter
 	m.counter.DrawTo(screen)
 
 	// draw all the sprites in their draw order.
@@ -212,10 +232,15 @@ func (m *MainScene) Draw(screen *ebiten.Image) {
 	}
 
 	// draw dialogue bubbles.
-	if m.bubbles.DrawTo(screen) {
-		// draw dialogue options if the bubbles are drawn.
+	if m.bubbles.DrawTo(screen) { // draw options only if the bubbles are already totally drawn
 		m.drawOptions(screen)
 	}
+}
+
+func (m *MainScene) drawBg(screen *ebiten.Image) {
+	opts := &ebiten.DrawImageOptions{}
+	opts.GeoM.Scale(ScaleFactor, ScaleFactor)
+	screen.DrawImage(Resources.GetImage("bg.png"), opts)
 }
 
 var OptionsBounds = rect(300, 240, 280, 80)
@@ -310,11 +335,28 @@ func (m *MainScene) Command(command string) error {
 		return m.putCounter(tokens[1:])
 	case "put_cash":
 		return m.putCash(tokens[1:])
+	case "put_coins":
+		return m.putCoinsCmd(tokens[1:])
 	case "put_cash_and_coins":
 		return m.putCashAndCoins(tokens[1:])
 	default:
 		return fmt.Errorf("unknown command %s", tokens[0])
 	}
+}
+
+func (m *MainScene) putCoinsCmd(args []string) error {
+	if len(args) != 1 {
+		return fmt.Errorf("call to put_coins bad arguments: %v", args)
+	}
+	amt, err := strconv.Atoi(args[0])
+	if err != nil {
+		return fmt.Errorf("call to put_coins wasn't integer: %v", err)
+	}
+	if amt < 0 {
+		return fmt.Errorf("amount passed to put_coins was negative: %v", err)
+	}
+	m.putCoins(amt)
+	return nil
 }
 
 func (m *MainScene) putCashAndCoins(args []string) error {
