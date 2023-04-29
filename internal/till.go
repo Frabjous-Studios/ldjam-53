@@ -99,6 +99,12 @@ func (t *Till) Remove(s Sprite) {
 	}
 }
 
+type Money struct {
+	*BaseSprite
+	Value  int // Value is in cents.
+	IsCoin bool
+}
+
 // newBill creates a bill of the provided denomination in local coordinates on the counter.
 func newBill(denom int, x, y int) Sprite {
 	x = clamp(x+112, 112, 320-43)

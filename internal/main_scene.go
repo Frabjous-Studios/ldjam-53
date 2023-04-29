@@ -8,6 +8,8 @@ import (
 	"github.com/hajimehoshi/ebiten/v2/inpututil"
 	"image"
 	"log"
+	"strings"
+	"sync"
 )
 
 // global ScaleFactor for pixel art.
@@ -56,7 +58,8 @@ func (s *BaseSprite) ClampToRect(r image.Rectangle) {
 type MainScene struct {
 	Game *Game
 
-	Customers []string // Customers is a list of Yarnspinner nodes happening on the current day.
+	Day      Day // Customers is a list of Yarnspinner nodes happening on the current day
+	Customer Sprite
 
 	Sprites []Sprite
 
@@ -66,12 +69,16 @@ type MainScene struct {
 	till    *Till
 	counter *BaseSprite
 
+	bubbles *Bubbles
+
 	holding     Sprite
 	clickStart  image.Point
 	clickOffset image.Point
 
-	lines []*DialogueLine
-	opts  []*DialogueLine
+	vars yarn.MapVariableStorage
+	mut  sync.Mutex
+
+	wait *sync.Cond
 }
 
 func NewMainScene(g *Game) *MainScene {
@@ -79,7 +86,7 @@ func NewMainScene(g *Game) *MainScene {
 	if err != nil {
 		log.Fatal(err)
 	}
-	return &MainScene{
+	result := &MainScene{
 		Game:   g,
 		Runner: runner,
 		Sprites: []Sprite{
@@ -90,17 +97,22 @@ func NewMainScene(g *Game) *MainScene {
 			newCoin(5, 25, 20),
 			newCoin(25, 45, 20),
 		},
-		Customers: Days[0],
+		Day: Days[0],
 		State: &GameState{
 			CurrentNode: "Start",
 			Vars:        make(yarn.MapVariableStorage),
 		},
+
 		till: NewTill(),
 		counter: &BaseSprite{
 			X: 112, Y: 152,
 			Img: Resources.images["counter"],
 		},
+		vars: make(yarn.MapVariableStorage),
 	}
+	result.bubbles = NewBubbles(result)
+	result.wait = sync.NewCond(&result.mut)
+	return result
 }
 
 func (m *MainScene) Update() error {
@@ -108,6 +120,7 @@ func (m *MainScene) Update() error {
 		go m.startRunner()
 		m.Runner.running = true
 	}
+	m.bubbles.Update()
 
 	cPos := cursorPos()
 	if inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonLeft) {
@@ -138,51 +151,7 @@ func (m *MainScene) Update() error {
 		m.holding.SetPos(mPos.Add(m.clickOffset))
 	}
 
-	// update dialogue
-	m.updateDialogue()
 	return nil
-}
-
-func (m *MainScene) updateDialogue() {
-	lines, err := m.Runner.Lines()
-	if err != nil {
-		debug.Println("error getting lines: ", err)
-	}
-	opts, err := m.Runner.Options()
-	if err != nil {
-		debug.Println("error getting options:", err)
-		return
-	}
-
-	m.lines = renderAttributedStr(lines)
-	m.opts = m.renderOpts(opts)
-
-	// TODO: have the bubbles push themselves upwards until they're off the screen and can be safely culled.
-}
-
-func (m *MainScene) renderOpts(astrs []*yarn.AttributedString) []*DialogueLine {
-	lines := renderAttributedStr(astrs)
-	result := make([]*DialogueLine, len(lines))
-	for i, line := range lines {
-		result[i] = line
-		fmt.Println(line.Line)
-		if i < len(m.opts) {
-			result[i].Highlighted = m.opts[i].Highlighted // transfer highlighted and clicked info from last frame
-		}
-	}
-	return result
-}
-
-func renderAttributedStr(strs []*yarn.AttributedString) []*DialogueLine {
-	var result []*DialogueLine
-	for _, str := range strs {
-		result = append(result, &DialogueLine{
-			Line:       str.String(),
-			IsCustomer: true,
-			// TODO: set BaseSprite
-		})
-	}
-	return result
 }
 
 func (m *MainScene) Draw(screen *ebiten.Image) {
@@ -196,6 +165,9 @@ func (m *MainScene) Draw(screen *ebiten.Image) {
 	for _, sprite := range m.Sprites {
 		sprite.DrawTo(screen)
 	}
+
+	// draw text
+	m.bubbles.DrawTo(screen)
 }
 
 type DialogueLine struct {
@@ -208,7 +180,7 @@ type DialogueLine struct {
 }
 
 func (m *MainScene) startRunner() {
-	if err := m.Runner.Start(m.State); err != nil {
+	if err := m.Runner.Start(m.vars, m); err != nil {
 		debug.Printf("error starting runner: %v", err)
 		return
 	}
@@ -236,10 +208,76 @@ func (m *MainScene) spriteUnderCursor() Sprite {
 	return nil
 }
 
-type Money struct {
+func (m *MainScene) NodeStart(name string) error {
+	fmt.Println("start node", name)
+	return nil
+}
+
+func (m *MainScene) PrepareForLines(lineIDs []string) error {
+	return nil
+}
+
+func (m *MainScene) Line(line yarn.Line) error {
+	m.mut.Lock()
+	defer m.mut.Unlock()
+	m.bubbles.SetLine(m.Runner.Render(line))
+	for !m.bubbles.IsDone() {
+		fmt.Println("locked!")
+		m.wait.Wait()
+		fmt.Println("unlocked; checking again")
+	}
+	fmt.Println("done with line!")
+	return nil
+}
+
+func (m *MainScene) Options(options []yarn.Option) (int, error) {
+	fmt.Println("options", options)
+	return 0, nil
+}
+
+func (m *MainScene) Command(command string) error {
+	fmt.Println("run command:", command)
+	command = strings.TrimSpace(command)
+	tokens := strings.Split(command, " ")
+	if len(tokens) == 0 {
+		return fmt.Errorf("bad command: %s", command)
+	}
+	switch tokens[0] {
+	default:
+		return fmt.Errorf("unknown command %s", tokens[0])
+	}
+}
+
+func (m *MainScene) NodeComplete(nodeName string) error {
+	fmt.Println("node done", nodeName)
+	return nil
+}
+
+func (m *MainScene) DialogueComplete() error {
+	fmt.Println("dialogue complete")
+	return nil
+}
+
+type Portrait struct {
 	*BaseSprite
-	Value  int // Value is in cents.
-	IsCoin bool
+}
+
+func newPortrait(body, head string) Sprite {
+	b, h := Resources.bodies[body], Resources.heads[head]
+	img := ebiten.NewImage(100, 100)
+	img.DrawImage(b, nil)
+	img.DrawImage(h, nil)
+	return &Portrait{
+		BaseSprite: &BaseSprite{
+			Img: img,
+			X:   170,
+			Y:   52,
+		},
+	}
+}
+
+func newRandPortrait() Sprite {
+	return newPortrait(randMapKey(Resources.bodies), randMapKey(Resources.heads))
 }
 
 // clampToCounter clamps the provided point to the counter range (hardcoded)

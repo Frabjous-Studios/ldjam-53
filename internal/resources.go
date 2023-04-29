@@ -16,8 +16,16 @@ import (
 	"strings"
 )
 
+var bodies = []string{ // TODO: put them here
+	"cloak.png",
+}
+
+var heads = []string{ // TODO: put them here
+	"head.png",
+}
+
 // Resources makes all multimedia resources for the game available.
-var Resources = resources{} // TODO: deferred loading & caching of resources
+var Resources = resources{}
 
 type resources struct {
 	fontLib    *etxt.FontLibrary
@@ -25,6 +33,8 @@ type resources struct {
 	nineSlices map[string]*image.NineSlice
 	images     map[string]*ebiten.Image
 	shaders    map[string]*ebiten.Shader
+	heads      map[string]*ebiten.Image
+	bodies     map[string]*ebiten.Image
 }
 
 const LunchtimeFont = "lunchds.ttf"
@@ -47,8 +57,13 @@ func init() {
 	debug.Println("fonts available:", strings.Join(fonts, ","))
 	Resources.fontLib = fontLib
 
+	Resources.bodies = Resources.loadImages(bodies)
+	Resources.heads = Resources.loadImages(heads)
+
 	// load nineslices
 	Resources.nineSlices = make(map[string]*image.NineSlice)
+	// TODO: use a real image
+	Resources.nineSlices["bubble"] = image.NewNineSliceColor(color.RGBA{R: 50, B: 50, G: 50, A: 50})
 
 	// load shaders
 	Resources.shaders = make(map[string]*ebiten.Shader)
@@ -71,6 +86,24 @@ func init() {
 
 	Resources.images["counter"] = placeholder(h2c("ff0000"), 208, 88)
 	Resources.images["Till"] = placeholder(h2c("0000ff"), 112, 68)
+}
+
+// GetFont returns the loaded font if it exists, nil otherwise.
+func (r *resources) GetFont(fontName string) *etxt.Font {
+	return r.fontLib.GetFont(fontName)
+}
+
+// GetNineSlice returns the loaded nineslice if it exists, nil otherwise.
+func (r *resources) GetNineSlice(id string) *image.NineSlice {
+	return r.nineSlices[id]
+}
+
+func (r *resources) loadImages(paths []string) map[string]*ebiten.Image {
+	result := make(map[string]*ebiten.Image)
+	for _, path := range paths {
+		result[path] = r.GetImage(path)
+	}
+	return result
 }
 
 // TODO: Enable //go:embed gamedata/img
@@ -152,4 +185,20 @@ func placeholder(c color.Color, w, h int) *ebiten.Image {
 	i := ebiten.NewImage(w, h)
 	i.Fill(c)
 	return i
+}
+
+func randMapValue[K comparable, V any](m map[K]V) V {
+	var zero V
+	for _, v := range m { // uses fact that map range loops are random
+		return v
+	}
+	return zero
+}
+
+func randMapKey[K comparable, V any](m map[K]V) K {
+	var zero K
+	for k := range m { // uses fact that map range loops are random
+		return k
+	}
+	return zero
 }
