@@ -588,11 +588,19 @@ func (m *MainScene) soundDrop(s Sprite, surface string) {
 
 func (m *MainScene) spriteUnderCursor() Sprite {
 	for i := len(m.Sprites) - 1; i >= 0; i-- {
-		if cursorPos().In(m.Sprites[i].Bounds()) && !contains(m.holding, m.Sprites[i]) {
+		if cursorPos().In(m.Sprites[i].Bounds()) && !m.isHeld(m.Sprites[i]) {
 			return m.Sprites[i]
 		}
 	}
 	return nil
+}
+func (m *MainScene) isHeld(sprite Sprite) bool {
+	for _, t := range m.holding {
+		if t == sprite {
+			return true
+		}
+	}
+	return false
 }
 
 func (m *MainScene) NodeStart(name string) error {

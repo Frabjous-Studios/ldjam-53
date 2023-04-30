@@ -42,7 +42,7 @@ func (g *Game) PlayMusic(file string) {
 	g.fadeStart = time.Now()
 	loop := Resources.GetMusic(g.ACtx, file)
 	if loop == nil {
-		debug.Printf("no file found with name: %s")
+		debug.Printf("no file found with name: %s", file)
 		return
 	}
 	ch := resound.NewDSPChannel()
