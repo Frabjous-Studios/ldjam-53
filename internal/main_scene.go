@@ -88,6 +88,8 @@ type Hologram struct {
 	StartTime time.Time
 }
 
+const DayLength = 10 * time.Minute
+
 func (s *Hologram) DrawTo(screen *ebiten.Image) {
 	if s.Img == nil {
 		debug.Println("image for sprite was nil at point:", s.X, s.Y)

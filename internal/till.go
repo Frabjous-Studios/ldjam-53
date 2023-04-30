@@ -135,7 +135,7 @@ func (t *ReconciliationReport) String() {
 	var w bytes.Buffer
 	err := reportTemplate.Execute(&w, t)
 	if err != nil {
-		debug.Println("error executing template: %v", err)
+		debug.Printf("error executing template: %v", err)
 	}
 }
 
