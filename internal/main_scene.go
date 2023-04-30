@@ -147,6 +147,8 @@ type MainScene struct {
 	txt *etxt.Renderer
 }
 
+const GameMusic = "FunkyJazz.ogg"
+
 func NewMainScene(g *Game) *MainScene {
 	var err error
 	startTime = time.Now()
@@ -195,9 +197,11 @@ func NewMainScene(g *Game) *MainScene {
 	result.txt.SetFont(Resources.GetFont(IndicatorFont))
 	result.txt.SetAlign(etxt.Top, etxt.Left)
 	result.txt.SetSizePx(6)
+	g.PlayMusic(GameMusic)
 	if err != nil {
 		panic(err)
 	}
+
 	return result
 }
 

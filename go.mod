@@ -25,6 +25,8 @@ require (
 	github.com/kr/text v0.2.0 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/rogpeppe/go-internal v1.10.0 // indirect
+	github.com/solarlune/resound v0.0.0-20230424050050-0e99704df6fa // indirect
+	github.com/tanema/gween v0.0.0-20220318192052-2db1c2d931bd // indirect
 	golang.org/x/exp/shiny v0.0.0-20230425010034-47ecfdc1ba53 // indirect
 	golang.org/x/mobile v0.0.0-20230427221453-e8d11dd0ba41 // indirect
 	golang.org/x/sync v0.1.0 // indirect

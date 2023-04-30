@@ -2,10 +2,14 @@ package internal
 
 import (
 	"errors"
+	"fmt"
+	"github.com/Frabjous-Studios/ebitengine-game-template/internal/debug"
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/audio"
 	"github.com/hajimehoshi/ebiten/v2/inpututil"
+	"github.com/solarlune/resound"
 	"sync"
+	"time"
 )
 
 // TPS is the number of ticks per second, read once when the game starts.
@@ -19,6 +23,13 @@ type Game struct {
 	CurrScene Scene
 
 	ACtx *audio.Context
+
+	playingVolume  *resound.Volume
+	playingPlayer  *resound.DSPPlayer
+	incomingPlayer *resound.DSPPlayer
+	incomingVolume *resound.Volume
+
+	fadeStart time.Time
 }
 
 type Scene interface {
@@ -26,10 +37,27 @@ type Scene interface {
 	Draw(*ebiten.Image)
 }
 
+// PlayMusic fades out the last track that was playing and fades in a new track
+func (g *Game) PlayMusic(file string) {
+	g.fadeStart = time.Now()
+	loop := Resources.GetMusic(g.ACtx, file)
+	if loop == nil {
+		debug.Printf("no file found with name: %s")
+		return
+	}
+	ch := resound.NewDSPChannel()
+	g.incomingVolume = resound.NewVolume(nil).SetStrength(0.0)
+	ch.Add("volume", g.incomingVolume)
+	g.incomingPlayer = ch.CreatePlayer(loop)
+	g.incomingPlayer.Play()
+}
+
 // Layout is hardcoded for now, may be made dynamic in future
 func (g *Game) Layout(outsideWidth int, outsideHeight int) (screenWidth int, screenHeight int) {
 	return g.Width, g.Height
 }
+
+const crossFadeTime = 5 * time.Second
 
 // Update calculates game logic
 func (g *Game) Update() error {
@@ -50,6 +78,30 @@ func (g *Game) Update() error {
 		} else {
 			ebiten.SetFullscreen(true)
 		}
+	}
+
+	if g.incomingPlayer != nil && g.playingPlayer != nil {
+		fmt.Println("crosfading!")
+		dt := float64(time.Now().Sub(g.fadeStart)) / float64(crossFadeTime)
+		if dt >= 1.0 {
+			g.incomingVolume.SetStrength(1.0)
+			g.playingVolume.SetStrength(0.0)
+			g.playingPlayer.Pause()
+			g.playingVolume = g.incomingVolume
+			g.playingPlayer = g.incomingPlayer
+			g.incomingVolume = nil
+			g.incomingPlayer = nil
+		} else {
+			g.incomingVolume.SetStrength(dt)
+			g.playingVolume.SetStrength(1.0 - dt)
+		}
+	} else if g.incomingPlayer != nil {
+		fmt.Println("starting new song!")
+		g.incomingVolume.SetStrength(1.0)
+		g.playingPlayer = g.incomingPlayer
+		g.playingVolume = g.incomingVolume
+		g.incomingVolume = nil
+		g.incomingPlayer = nil
 	}
 
 	return g.CurrScene.Update()

@@ -13,6 +13,7 @@ import (
 	"github.com/hajimehoshi/ebiten/v2/audio"
 	"github.com/hajimehoshi/ebiten/v2/audio/vorbis"
 	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
+	"github.com/solarlune/resound"
 	"github.com/tinne26/etxt"
 	"golang.org/x/image/font"
 	"image/color"
@@ -53,6 +54,9 @@ type resources struct {
 	bodies     map[string]*ebiten.Image
 	lists      map[string][]string
 	players    map[string]*audio.Player
+	music      map[string]*audio.InfiniteLoop
+
+	playing *resound.Volume
 }
 
 const FontName = "Munro-2LYe.ttf"
@@ -93,6 +97,7 @@ func init() {
 
 	// load audio
 	Resources.players = make(map[string]*audio.Player)
+	Resources.music = make(map[string]*audio.InfiniteLoop)
 
 	// load images
 	Resources.images["bill_1"] = Resources.GetImage("bill_1.png")
@@ -166,6 +171,26 @@ func (r *resources) GetSound(aCtx *audio.Context, filename string) *audio.Player
 func (r *resources) GetRandSound(aCtx *audio.Context, files ...string) *audio.Player {
 	f := files[rand.Intn(len(files))]
 	return r.GetSound(aCtx, f)
+}
+
+func (r *resources) GetMusic(aCtx *audio.Context, file string) *audio.InfiniteLoop {
+	if p, ok := r.music[file]; ok {
+		return p
+	}
+	b, err := audioFiles.ReadFile(fmt.Sprintf("gamedata/audio/%s", file))
+	if err != nil {
+		debug.Printf("error opening audio file: %v", err)
+	}
+
+	reader := bytes.NewReader(b)
+
+	stream, err := vorbis.DecodeWithSampleRate(SampleRate, reader)
+	if err != nil {
+		debug.Printf("error decoding wav file: %v", err)
+	}
+	loop := audio.NewInfiniteLoop(stream, stream.Length())
+	r.music[file] = loop
+	return loop
 }
 
 // GetFont returns the loaded font if it exists, nil otherwise.
