@@ -44,6 +44,37 @@ intent: deposit
 
 << jump SmallTalk_Rude >>
 ===
+title: RandomCheck_Rude
+portrait: random
+intent: cash_check
+---
+<< set $d to 0 >>
+<< set $d to dice(10) >>
+<< if $d == 1 >>
+        What's taking you guys so long? I need to cash this check now.
+<< elseif $d == 2 >>
+        This bank is ridiculous, can you hurry up and help me cash my check?
+<< elseif $d == 3 >>
+        Do I really have to fill out this form just to cash a check?
+<< elseif $d == 4 >>
+        Excuse me, I've been waiting here for ages to cash this check.
+<< elseif $d == 5 >>
+        This bank is terrible, can you please just help me cash my check?
+<< elseif $d == 6 >>
+        Can you do your job properly, I need to cash this check ASAP.
+<< elseif $d == 7 >>
+        Why is it taking so long to cash this check, it's just a piece of paper.
+<< elseif $d == 8 >>
+        I don't have the patience for this, just hurry up and cash my check.
+<< elseif $d == 9 >>
+        This bank is a nightmare, I can't even cash a simple check without a long wait.
+<< elseif $d == 10 >>
+        Can you please just help me cash this check, I don't have time for this.
+<<endif>>
+
+<< put_counter check >>
+<< jump SmallTalk_Rude >>
+===
 title: RandomWithdrawal_Rude
 portrait: random
 intent: withdraw

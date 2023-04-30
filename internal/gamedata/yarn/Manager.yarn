@@ -87,6 +87,7 @@ But be careful, we can only cash valid checks.
     Watch it! I won't take attitude from a subordinate!
     Anyway...
 You can use that shredder next to you to scan the checks.
+<< terminal_on >> // TODO: Remove
 << shredder_on >>
 -> Wait, what?
 You heard right. It's a combination shredder and check scanner.
@@ -101,6 +102,8 @@ So calm down any customers that may be worrying about this.
 Just keep up the good work, and we'll get through this together.
 -> Right...
 -> Of course! We'll do it together...
+
+<< depart >>
 ===
 title: Manager_Day3_End
 portrait: manager.png

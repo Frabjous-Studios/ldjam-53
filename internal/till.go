@@ -22,6 +22,7 @@ type Till struct {
 	StartValue int // StartValue is the starting value of the till at the beginning of the day.
 
 	DepositSlips []*DepositSlip
+	Checks       []*Check
 }
 
 func NewTill() *Till {
@@ -155,9 +156,16 @@ func (t *Till) Drop(s Sprite) bool {
 		return t.dropSlip(s)
 	case *Stack:
 		return t.dropStack(s)
+	case *Check:
+		return t.dropCheck(s)
 	default:
 		return false
 	}
+}
+
+func (t *Till) dropCheck(s *Check) bool {
+	t.Checks = append(t.Checks, s)
+	return true
 }
 
 func (t *Till) dropStack(s *Stack) bool {
@@ -300,8 +308,8 @@ func newStack(denom int, pt image.Point) Sprite {
 }
 
 func randCounterPos() image.Point {
-	pt := image.Pt(rand.Intn(208), rand.Intn(88))
-	pt.X = clamp(pt.X+112, 112, 320-15)
-	pt.Y = clamp(pt.Y+152, 152, 240-15)
+	pt := image.Pt(rand.Intn(184), rand.Intn(88))
+	pt.X = clamp(pt.X+136, 136, 320-30)
+	pt.Y = clamp(pt.Y+152, 152, 240-30)
 	return pt
 }

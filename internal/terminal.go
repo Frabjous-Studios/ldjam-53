@@ -126,6 +126,14 @@ func union[T comparable](A, B []T) []T {
 	return maps.Keys(keys)
 }
 
+func (t *Terminal) ValidateCheck(check *Check) {
+	if check.Valid {
+		t.lines = []string{"CHECK IS VALID"}
+	} else {
+		t.lines = []string{"INVALID INVALID INVALID"}
+	}
+}
+
 func (t *Terminal) backspace() {
 	if len(t.accountNumber) == 0 {
 		return

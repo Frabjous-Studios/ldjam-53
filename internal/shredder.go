@@ -48,7 +48,7 @@ func (s *Shredder) DrawTo(screen *ebiten.Image) {
 
 func (s *Shredder) enable() {
 	s.Operational = true
-	s.Mode = ModeScan
+	s.Mode = ModeShred
 }
 
 func (s *Shredder) toggle() {

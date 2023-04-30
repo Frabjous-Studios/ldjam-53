@@ -46,6 +46,41 @@ intent: deposit
 
 << jump SmallTalk_Polite >>
 ===
+title: RandomCheck_Polite
+portrait: random
+intent: cash_check
+---
+<< set $d to 0 >>
+<< set $d to dice(12) >>
+<< if $d == 1 >>
+        "Good day! I'm here to cash this check and buy myself a nice cup of coffee."
+<< elseif $d == 2 >>
+        "Hi! I'm so excited to deposit this check, I feel like I won the lottery."
+<< elseif $d == 3 >>
+        "Hello! I'm just stopping by to cash my paycheck and treat myself to some ice cream."
+<< elseif $d == 4 >>
+        "Hello! I'm here to cash this check and hopefully not spend it all in one place."
+<< elseif $d == 5 >>
+        "Hello! I'm just stopping by to cash this check and buy some treats for my furry friend."
+<< elseif $d == 6 >>
+        "Hello! I'm just stopping by to cash this check and maybe treat myself to a nice dinner."
+<< elseif $d == 7 >>
+        "Good afternoon! I'm here to cash this check and hopefully start a new hobby."
+<< elseif $d == 8 >>
+        "Hey, can you help me cash this check? I promise to be in a good mood all day."
+<< elseif $d == 9 >>
+        "Hello! I'm just stopping by to cash this check and treat myself to a little shopping."
+<< elseif $d == 10 >>
+        "Good afternoon! I'm here to cash this check and hopefully put a smile on someone's face."
+<< elseif $d == 11 >>
+        "Hey, can you help me cash this check? I promise to share the good vibes."
+<< elseif $d == 12 >>
+        "Hello! I'm just stopping by to cash this check and treat myself to a little self-care
+<<endif>>
+
+<< put_counter check >>
+<< jump SmallTalk_Polite >>
+===
 title: RandomWithdrawal_Polite
 portrait: random
 intent: withdraw

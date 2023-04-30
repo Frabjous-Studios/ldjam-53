@@ -188,7 +188,7 @@ func NewMainScene(g *Game) *MainScene {
 		black:        placeholder(colornames.Black, 1, 1),
 		shredder:     NewShredder(),
 	}
-	result.Day = result.Days[0]
+	result.Day = result.Days[2] // TODO: Day 0
 	// generate random bills; [5-20] each.
 	for idx, denom := range []int{1, 5, 10, 20, 100} {
 		count := rand.Intn(15) + 5
@@ -370,6 +370,15 @@ func (m *MainScene) updateInput() error {
 	}
 
 	cPos := cursorPos()
+	if inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonRight) {
+		debug.Println("right mouse press", m.holding)
+		if len(m.holding) > 0 {
+			check, ok := m.holding[0].(*Check)
+			if ok {
+				check.flip()
+			}
+		}
+	}
 	if inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonLeft) {
 		debug.Println("left mouse press", m.holding)
 		if len(m.holding) > 0 {
@@ -516,8 +525,9 @@ func (m *MainScene) shredderDrop() {
 		m.removeSprite(m.holding[0]) // goodbye whatever you were!
 		m.holding = m.holding[1:]
 	case ModeScan:
-		fmt.Println("item would be scanned")
-		// TODO: validate a check.
+		if check, ok := m.holding[0].(*Check); ok {
+			m.terminal.ValidateCheck(check)
+		}
 	}
 }
 
@@ -527,6 +537,9 @@ func (m *MainScene) tillDrop() {
 			m.removeSprite(m.holding[0])
 		}
 		if _, ok := m.holding[0].(*Stack); ok {
+			m.removeSprite(m.holding[0])
+		}
+		if _, ok := m.holding[0].(*Check); ok {
 			m.removeSprite(m.holding[0])
 		}
 		m.holding = nil
@@ -1010,6 +1023,9 @@ func (m *MainScene) putCounter(args []string) error {
 			continue
 		}
 		switch {
+		case arg == "check":
+			check := m.randCheck()
+			m.put(check)
 		case arg == "empty_slip":
 			slip := m.randEmptySlip()
 			m.Runner.SetDepositSlip(slip)
@@ -1214,6 +1230,102 @@ func (m *MainScene) randSlip(path string) *DepositSlip {
 
 	// TODO: signature?
 	return slip
+}
+
+type Check struct {
+	*BaseSprite
+	reverse  *ebiten.Image // swapped with front when right-clicked.
+	Value    int
+	Signed   bool
+	Endorsed bool
+	Valid    bool
+}
+
+func (c *Check) flip() {
+	c.Img, c.reverse = c.reverse, c.Img
+}
+
+func (m *MainScene) randCheck() *Check {
+	front := ebiten.NewImage(76, 32)
+	back := ebiten.NewImage(32, 76)
+	opts := &ebiten.DrawImageOptions{}
+	// TODO: random hue-shift for background.
+	front.DrawImage(Resources.GetImage("check_front"), opts)
+	back.DrawImage(Resources.GetImage("check_back"), opts)
+
+	pos := randCounterPos()
+	check := &Check{
+		BaseSprite: &BaseSprite{Img: front, X: pos.X, Y: pos.Y},
+		reverse:    back,
+		Value:      randomCheckValue(),
+		Signed:     randomSignedValue(),
+		Endorsed:   randomEndorsedValue(),
+		Valid:      randomCheckValidity(),
+	}
+
+	m.txt.SetFont(Resources.GetFont(DialogFont)) // TODO: make look like handwriting
+	m.txt.SetSizePx(10)
+	m.txt.SetTarget(front)
+	m.txt.Draw(fmt.Sprintf("%d.00", check.Value/100), 50, 2)
+
+	if check.Signed {
+		m.txt.SetColor(depositSlipColor)
+		m.txt.SetSizePx(12)
+		m.txt.SetFont(Resources.RandomScriptFont())
+		m.txt.SetTarget(front)
+		m.txt.Draw(m.Runner.RandomName(), 35, 17)
+	}
+	m.txt.SetColor(depositSlipColor)
+	m.txt.SetSizePx(12)
+	m.txt.SetFont(Resources.RandomScriptFont())
+	m.txt.SetTarget(back)
+	if check.Endorsed {
+		m.txt.Draw(m.Runner.FullName(), 2, 2)
+	} else if randomWrongNameValue() {
+		m.txt.Draw(m.Runner.RandomName(), 2, 2)
+		check.Endorsed = false // technically; no.
+	}
+	return check
+}
+
+const CheckValidityConstant = 0.75
+
+func randomCheckValidity() bool {
+	if rand.Float64() < CheckValidityConstant {
+		return true
+	}
+	return false
+}
+
+const CheckSignedBadName = 0.15
+
+func randomWrongNameValue() bool {
+	if rand.Float64() < CheckSignedBadName {
+		return true
+	}
+	return false
+}
+
+const CheckSignedProbability = 0.9
+
+func randomSignedValue() bool {
+	if rand.Float64() < CheckSignedProbability {
+		return true
+	}
+	return false
+}
+
+const CheckEndorsedProbability = 0.95
+
+func randomEndorsedValue() bool {
+	if rand.Float64() < CheckEndorsedProbability {
+		return true
+	}
+	return false
+}
+
+func randomCheckValue() int {
+	return rand.Intn(10000)
 }
 
 func randomAccountValue() int {
