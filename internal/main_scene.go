@@ -477,15 +477,24 @@ const IndicatorFontSize = 36
 const IndicatorOffset = -40
 
 func (m *MainScene) drawCashIndicator(screen *ebiten.Image) {
-	if len(m.holding) < 2 {
+	if len(m.holding) == 0 {
 		return
 	}
-	money, ok := m.holding[0].(*Money)
-	if !ok {
+	var (
+		value, fracVal int
+		isCoin         bool
+	)
+
+	if money, ok := m.holding[0].(*Money); ok {
+		value = len(m.holding) * money.Value / 100
+		fracVal = len(m.holding) * money.Value
+		isCoin = money.IsCoin
+	} else if stack, ok := m.holding[0].(*Stack); ok {
+		value = stack.Count * stack.Value
+		isCoin = false
+	} else {
 		return
 	}
-	value := len(m.holding) * money.Value / 100
-	fracVal := len(m.holding) * money.Value
 
 	cPos := cursorPos()
 	m.txt.SetColor(IndicatorColor)
@@ -493,7 +502,7 @@ func (m *MainScene) drawCashIndicator(screen *ebiten.Image) {
 	m.txt.SetTarget(screen)
 	v, h := m.txt.GetAlign()
 	m.txt.SetAlign(etxt.YCenter, etxt.XCenter)
-	if money.IsCoin {
+	if isCoin {
 		m.txt.Draw(fmt.Sprintf("$%.02f", float32(fracVal)/100), ScaleFactor*cPos.X, ScaleFactor*cPos.Y+IndicatorOffset)
 	} else {
 		m.txt.Draw(fmt.Sprintf("$%d", value), ScaleFactor*cPos.X, ScaleFactor*cPos.Y+IndicatorOffset)
