@@ -828,6 +828,12 @@ func (m *MainScene) Command(command string) error {
 		return m.showReconciliationReport()
 	case "next_day":
 		return m.nextDay()
+	case "terminal_on":
+		m.terminal.Operational = true
+		return nil
+	case "terminal_off":
+		m.terminal.Operational = false
+		return nil
 	default:
 		return fmt.Errorf("unknown command %s", tokens[0])
 	}

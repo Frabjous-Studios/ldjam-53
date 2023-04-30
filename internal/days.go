@@ -33,14 +33,13 @@ type Day struct {
 func Days() []*Day {
 	result := []*Day{
 		0: { // more deposits than withdrawals
-			EndNode: "Manager_Day1_End",
-			// TODO: manager intro day
-			Sequence: []string{"random", "random", "random", "drone", "random", "random", "OldMan"},
+			EndNode:  "Manager_Day1_End",
+			Sequence: []string{"Manager_Day1", "random", "random", "random", "drone", "random", "random", "OldMan_Day1"},
 			Random:   []string{"RandomDeposit_Polite", "RandomDeposit_Rude", "RandomDeposit_Polite", "RandomDeposit_Rude", "RandomWithdrawal_Polite", "RandomWithdrawal_Rude"},
 		},
 		1: {
 			EndNode:  "Manager_Day2_End",
-			Sequence: []string{},
+			Sequence: []string{"Manager_Day2", "random", "random", "drone", "random", "random", "OldMan_Day2"},
 			Random:   []string{"RandomDeposit_Polite", "RandomDeposit_Rude", "RandomDeposit_Polite", "RandomDeposit_Rude", "RandomWithdrawal_Polite", "RandomWithdrawal_Rude"},
 		},
 	}
@@ -49,7 +48,7 @@ func Days() []*Day {
 			day.Random[i], day.Random[j] = day.Random[j], day.Random[i]
 		})
 		day.Accounts = make(map[string]*Account)
-		// TODO: create some initial random accounts.
+		// TODO: create some initial random accounts, in case the player goes searching.
 	}
 	return result
 }

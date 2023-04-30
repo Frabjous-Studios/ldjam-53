@@ -15,7 +15,7 @@ type Terminal struct {
 	scene *MainScene // yay coupling!!
 	txt   *etxt.Renderer
 
-	operational bool
+	Operational bool
 
 	bg *ebiten.Image
 
@@ -33,7 +33,6 @@ func NewTerminal(txt *etxt.Renderer, scene *MainScene) *Terminal {
 			X: 0,
 			Y: 72,
 		},
-		operational: true, // TODO: turn this OFF for the first day!
 	}
 	result.bg = Resources.images["terminal"]
 	result.Img = ebiten.NewImage(result.bg.Bounds().Dx(), result.bg.Bounds().Dy())
@@ -47,7 +46,7 @@ func (t *Terminal) DrawTo(screen *ebiten.Image) {
 	opts := &ebiten.DrawImageOptions{}
 	t.Img.DrawImage(t.bg, opts)
 
-	if !t.operational {
+	if !t.Operational {
 		t.BaseSprite.DrawTo(screen)
 		return
 	}

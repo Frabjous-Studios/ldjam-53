@@ -5,7 +5,7 @@ Good morning youngster! I hope you're having a good day.
 -> Good morning! How can I assist you?
 -> Morning.
 -> Yeah yeah, what do you want?
-    Back in my day people were more polite.
+    Hrmph! Back in my day people were more polite.
 I need to withdraw some money.
 My wife is in hospice, and I have to pay $75 every day to keep her there.
 -> I'm sorry to hear that. Do you do this every day?
@@ -35,4 +35,30 @@ Cherish it when you have it. You never know how long it will last.
 -> Sure sure, whatever.
 
 Have a good day.
+===
+title: OldMan_Day2
+portrait: random
+---
+Good morning again! How are you today?
+-> Good morning! I'm fine thanks.
+-> Ugh, you know... work.
+    That's too bad.
+Just like yesterday, I need to withdraw the $75 for my wife.
+-> Right right.
+-> Sure thing. Do you have a withdrawal slip?
+I have it around here somewhere.
+-> ...
+-> Could you hurry please?
+    Just a minute!
+Ah! There it is.
+<< put_counter withdrawal_slip_7500 >>
+Say, have you ever read any good books lately?
+-> I'm currently reading a book called "Too Big To Fail"
+    Oh, I've heard of that one.
+    It’s not my usual thing, but I'll have to check it out. Thanks!
+-> What? You still read?
+    Hrmph... Youngsters these days...
+Anyway, thanks.
+-> You're welcome. Have a good day.
+-> Yeah, yeah... see you tomorrow!
 ===
