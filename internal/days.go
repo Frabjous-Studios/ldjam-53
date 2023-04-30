@@ -42,6 +42,11 @@ func Days() []*Day {
 			Sequence: []string{"Manager_Day2", "random", "random", "drone", "random", "random", "OldMan_Day2"},
 			Random:   []string{"RandomDeposit_Polite", "RandomDeposit_Rude", "RandomDeposit_Polite", "RandomDeposit_Rude", "RandomWithdrawal_Polite", "RandomWithdrawal_Rude"},
 		},
+		2: {
+			EndNode:  "Manager_Day3_End",
+			Sequence: []string{"Manager_Day3", "random", "random", "drone", "random", "random", "OldMan_Day3"},
+			Random:   []string{"RandomDeposit_Polite", "RandomDeposit_Rude", "RandomDeposit_Polite", "RandomDeposit_Rude", "RandomWithdrawal_Polite", "RandomWithdrawal_Rude"},
+		},
 	}
 	for _, day := range result {
 		rand.Shuffle(len(day.Random), func(i, j int) {

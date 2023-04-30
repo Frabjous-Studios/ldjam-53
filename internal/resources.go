@@ -13,6 +13,7 @@ import (
 	"github.com/hajimehoshi/ebiten/v2/audio"
 	"github.com/hajimehoshi/ebiten/v2/audio/vorbis"
 	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
+	"github.com/kalexmills/asebiten"
 	"github.com/solarlune/resound"
 	"github.com/tinne26/etxt"
 	"golang.org/x/image/font"
@@ -60,6 +61,7 @@ type resources struct {
 	lists      map[string][]string
 	players    map[string]*audio.Player
 	music      map[string]*audio.InfiniteLoop
+	anims      map[string]*asebiten.Animation
 
 	playing *resound.Volume
 }
@@ -85,6 +87,11 @@ func init() {
 	Resources.fontLib = fontLib
 	Resources.lists = make(map[string][]string)
 
+	// anims
+	Resources.anims = make(map[string]*asebiten.Animation)
+	Resources.anims["shredder"] = Resources.GetAnim("scan_shreder.json")
+
+	// images
 	Resources.images = make(map[string]*ebiten.Image)
 	Resources.bodies = Resources.loadImages(bodies)
 	Resources.heads = Resources.loadImages(heads)
@@ -196,6 +203,17 @@ func (r *resources) GetMusic(aCtx *audio.Context, file string) *audio.InfiniteLo
 	loop := audio.NewInfiniteLoop(stream, stream.Length())
 	r.music[file] = loop
 	return loop
+}
+
+func (r *resources) GetAnim(path string) *asebiten.Animation {
+	if _, ok := r.anims[path]; !ok {
+		a, err := asebiten.LoadAnimation(art, fmt.Sprintf("gamedata/img/%s", path))
+		if err != nil {
+			debug.Printf("error loading animation: %s: %v", path, err)
+		}
+		r.anims[path] = a
+	}
+	return r.anims[path]
 }
 
 // GetFont returns the loaded font if it exists, nil otherwise.

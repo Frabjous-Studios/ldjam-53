@@ -2,6 +2,7 @@ title: Manager_Day1
 portrait: manager.png
 ---
 Good morning and welcome to your first day on the job!
+
 -> Hello!
 -> Good morning.
 -> *yawn*; Yeah whatever.
@@ -74,5 +75,44 @@ Let's reconcile your till. Here's your report.
 Try to do better tomorrow.
 -> Okay...
 -> Fine...
+<< next_day >>
+===
+title: Manager_Day3
+portrait: manager.png
+---
+We're adding a new task to your job - cashing checks.
+But be careful, we can only cash valid checks.
+-> Of course.
+-> Well duh!
+    Watch it! I won't take attitude from a subordinate!
+    Anyway...
+You can use that shredder next to you to scan the checks.
+<< shredder_on >>
+-> Wait, what?
+You heard right. It's a combination shredder and check scanner.
+Press the button to put it into shred mode. Or was it scan mode?
+-> Which is which?!
+I can't remember. You'll figure it out.
+-> Um...
+And I have some news to share with you. The stock market is a bit volatile...
+-> Is... is that bad?
+But don't worry, we're prepared for it! Our bank is literally as solid as bedrock.
+So calm down any customers that may be worrying about this.
+Just keep up the good work, and we'll get through this together.
+-> Right...
+-> Of course! We'll do it together...
+===
+title: Manager_Day3_End
+portrait: manager.png
+---
+Well that was a fine mess. How about we call it for the day?
+You know the drill. Here's your report.
+
+<< show_reconciliation_report >>
+
+This could definitely improve. I think you're slipping.
+-> Really?
+-> Got it...
+
 << next_day >>
 ===

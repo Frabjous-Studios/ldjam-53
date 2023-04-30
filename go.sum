@@ -36,6 +36,10 @@ github.com/jfreymuth/oggvorbis v1.0.5 h1:u+Ck+R0eLSRhgq8WTmffYnrVtSztJcYrl588DM4
 github.com/jfreymuth/oggvorbis v1.0.5/go.mod h1:1U4pqWmghcoVsCJJ4fRBKv9peUJMBHixthRlBeD6uII=
 github.com/jfreymuth/vorbis v1.0.2 h1:m1xH6+ZI4thH927pgKD8JOH4eaGRm18rEE9/0WKjvNE=
 github.com/jfreymuth/vorbis v1.0.2/go.mod h1:DoftRo4AznKnShRl1GxiTFCseHr4zR9BN3TWXyuzrqQ=
+github.com/kalexmills/asebiten v0.4.1 h1:5B8PDwAjlEsYxtNr/+9qCYrKSroeLBRMpkUXS+4+yVw=
+github.com/kalexmills/asebiten v0.4.1/go.mod h1:IBZpXKN6fB3q/3WKF7LYR5sSWArZw41FIw5KNuBFsxw=
+github.com/kalexmills/asebiten v0.4.2 h1:xH/vcpRJjMrxxeYJnTs0Mtxv60yHAwIbXICEjDKQP3k=
+github.com/kalexmills/asebiten v0.4.2/go.mod h1:IBZpXKN6fB3q/3WKF7LYR5sSWArZw41FIw5KNuBFsxw=
 github.com/kr/pretty v0.3.1 h1:flRD4NNwYAUpkphVc1HcthR4KEIFJ65n8Mw5qdRn3LE=
 github.com/kr/text v0.2.0 h1:5Nx0Ya0ZqY2ygV366QzturHI13Jq95ApcVaJBhpS+AY=
 github.com/kr/text v0.2.0/go.mod h1:eLer722TekiGuMkidMxC/pM04lWEeraHUUmBw8l2grE=

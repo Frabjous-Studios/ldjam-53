@@ -8,12 +8,17 @@ import (
 	"github.com/Frabjous-Studios/ebitengine-game-template/internal"
 	"github.com/hajimehoshi/ebiten/v2/audio"
 	"log"
+	"os"
 
 	"github.com/hajimehoshi/ebiten/v2"
 )
 
 func main() {
 	var err error
+	err = os.Setenv("EBITENGINE_GRAPHICS_LIBRARY", "opengl")
+	if err != nil {
+		log.Println("unable to set graphics lib to opengl:", err)
+	}
 	gameWidth, gameHeight := 640, 480
 
 	ebiten.SetWindowSize(gameWidth, gameHeight)

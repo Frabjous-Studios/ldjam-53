@@ -112,6 +112,7 @@ const (
 	StateDismissing
 	StateReporting
 	StateFadingToNewDay
+	StateOpeningCheckShredder
 )
 
 var startTime time.Time
@@ -136,6 +137,7 @@ type MainScene struct {
 	terminal   *Terminal
 	buttonBase *BaseSprite
 	buttonHolo *Hologram
+	shredder   *Shredder
 
 	bubbles *Bubbles
 	options []*Line
@@ -184,6 +186,7 @@ func NewMainScene(g *Game) *MainScene {
 		dayStartTime: time.Now(),
 		vars:         make(yarn.MapVariableStorage),
 		black:        placeholder(colornames.Black, 1, 1),
+		shredder:     NewShredder(),
 	}
 	result.Day = result.Days[0]
 	// generate random bills; [5-20] each.
@@ -324,6 +327,7 @@ func (m *MainScene) maybeHoverDrone() {
 }
 
 var NextButtonHotspot = rect(275, 151, 14, 8)
+var ShredderButtonHotspot = rect(116, 174, 8, 10)
 
 const debounceDuration = 300 * time.Millisecond
 
@@ -372,6 +376,8 @@ func (m *MainScene) updateInput() error {
 			debug.Println("holding something")
 			if cPos.In(CustomerDropZone) {
 				m.customerDrop()
+			} else if cPos.In(m.shredder.Bounds()) {
+				m.shredderDrop()
 			} else if contains(heldKeys, ebiten.KeyShift) {
 				// TODO: grab all the sprites under cursor?? if they match??
 				grabbed := m.spriteUnderCursor()
@@ -393,6 +399,8 @@ func (m *MainScene) updateInput() error {
 		} else { // pick up the thing under the cursor
 			if cPos.In(NextButtonHotspot) {
 				m.nextButton()
+			} else if cPos.In(ShredderButtonHotspot) {
+				m.shredder.toggle()
 			} else {
 				grabbed := m.spriteUnderCursor()
 				if grabbed != nil {
@@ -502,6 +510,17 @@ func (m *MainScene) customerDrop() {
 	}
 }
 
+func (m *MainScene) shredderDrop() {
+	switch m.shredder.Mode {
+	case ModeShred:
+		m.removeSprite(m.holding[0]) // goodbye whatever you were!
+		m.holding = m.holding[1:]
+	case ModeScan:
+		fmt.Println("item would be scanned")
+		// TODO: validate a check.
+	}
+}
+
 func (m *MainScene) tillDrop() {
 	if m.till.DropAll(m.holding) {
 		if _, ok := m.holding[0].(*DepositSlip); ok {
@@ -583,6 +602,7 @@ func (m *MainScene) Draw(screen *ebiten.Image) {
 	}
 
 	m.counter.DrawTo(screen)
+	m.shredder.DrawTo(screen)
 
 	// draw terminal
 	m.terminal.DrawTo(screen)
@@ -834,6 +854,9 @@ func (m *MainScene) Command(command string) error {
 	case "terminal_off":
 		m.terminal.Operational = false
 		return nil
+	case "shredder_on":
+		m.shredder.enable()
+		return nil
 	default:
 		return fmt.Errorf("unknown command %s", tokens[0])
 	}
@@ -852,7 +875,8 @@ func (m *MainScene) nextDay() error {
 		m.Day = m.Days[m.dayIdx]
 	} else {
 		// TODO: thanks for playing! Credits
-		m.Game.ChangeScene(NewMainScene(m.Game))
+		mainMenu, _ := NewMainMenuScene(m.Game)
+		m.Game.ChangeScene(mainMenu)
 	}
 	return nil
 }

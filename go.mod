@@ -7,6 +7,7 @@ require (
 	github.com/ebitenui/ebitenui v0.5.1
 	github.com/golang/freetype v0.0.0-20170609003504-e2365dfdc4a0
 	github.com/hajimehoshi/ebiten/v2 v2.5.3
+	github.com/kalexmills/asebiten v0.4.2 // indirect
 	github.com/razor-1/localizer-cldr v0.2.0
 	github.com/stretchr/testify v1.8.2
 	github.com/tinne26/etxt v0.0.8

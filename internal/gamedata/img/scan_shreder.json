@@ -16,6 +16,15 @@
     "spriteSourceSize": { "x": 0, "y": 0, "w": 28, "h": 70 },
     "sourceSize": { "w": 28, "h": 70 },
     "duration": 100
+   },
+   {
+    "filename": "scan_shreder 2.aseprite",
+    "frame": { "x": 56, "y": 0, "w": 28, "h": 70 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 28, "h": 70 },
+    "sourceSize": { "w": 28, "h": 70 },
+    "duration": 100
    }
  ],
  "meta": {
@@ -23,7 +32,7 @@
   "version": "1.3-rc2-x64",
   "image": "scan_shreder.png",
   "format": "RGBA8888",
-  "size": { "w": 56, "h": 70 },
+  "size": { "w": 84, "h": 70 },
   "scale": "1",
   "frameTags": [
   ],
