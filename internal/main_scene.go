@@ -132,7 +132,7 @@ type MainScene struct {
 
 	till       *Till
 	counter    *BaseSprite
-	terminal   *BaseSprite
+	terminal   *Terminal
 	buttonBase *BaseSprite
 	buttonHolo *Hologram
 
@@ -175,7 +175,6 @@ func NewMainScene(g *Game) *MainScene {
 		State:      StateFadeIn,
 		till:       NewTill(),
 		counter:    &BaseSprite{X: 112, Y: 152, Img: Resources.images["counter"]},
-		terminal:   &BaseSprite{X: 0, Y: 72, Img: Resources.images["terminal"]},
 		buttonBase: &BaseSprite{X: 259, Y: 147, Img: Resources.images["call_button"]},
 		buttonHolo: &Hologram{
 			BaseSprite: &BaseSprite{X: 263, Y: 124, Img: Resources.images["call_button_holo"]},
@@ -216,6 +215,9 @@ func NewMainScene(g *Game) *MainScene {
 	result.txt.SetFont(Resources.GetFont(IndicatorFont))
 	result.txt.SetAlign(etxt.Top, etxt.Left)
 	result.txt.SetSizePx(6)
+
+	result.terminal = NewTerminal(result.txt, result)
+
 	g.PlayMusic(GameMusic)
 	if err != nil {
 		panic(err)
@@ -247,6 +249,7 @@ func (m *MainScene) Update() error {
 		debug.Printf("error from updateInput: %v", err)
 	}
 	m.bubbles.Update()
+	m.terminal.Update()
 
 	switch m.State {
 	case StateApproaching:

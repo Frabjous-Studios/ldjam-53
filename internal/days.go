@@ -39,7 +39,7 @@ type Day struct {
 
 	EndNode string
 
-	Accounts map[int]*Account
+	Accounts map[string]*Account
 
 	curr int
 }
