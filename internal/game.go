@@ -24,10 +24,11 @@ type Game struct {
 
 	ACtx *audio.Context
 
-	playingVolume  *resound.Volume
-	playingPlayer  *resound.DSPPlayer
-	incomingPlayer *resound.DSPPlayer
-	incomingVolume *resound.Volume
+	playingFilename string
+	playingVolume   *resound.Volume
+	playingPlayer   *resound.DSPPlayer
+	incomingPlayer  *resound.DSPPlayer
+	incomingVolume  *resound.Volume
 
 	fadeStart time.Time
 }
@@ -39,6 +40,10 @@ type Scene interface {
 
 // PlayMusic fades out the last track that was playing and fades in a new track
 func (g *Game) PlayMusic(file string) {
+	if g.playingFilename == file {
+		return
+	}
+	g.playingFilename = file
 	g.fadeStart = time.Now()
 	loop := Resources.GetMusic(g.ACtx, file)
 	if loop == nil {
