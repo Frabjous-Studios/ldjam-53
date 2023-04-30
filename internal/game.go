@@ -2,7 +2,6 @@ package internal
 
 import (
 	"errors"
-	"fmt"
 	"github.com/Frabjous-Studios/ebitengine-game-template/internal/debug"
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/audio"
@@ -86,7 +85,6 @@ func (g *Game) Update() error {
 	}
 
 	if g.incomingPlayer != nil && g.playingPlayer != nil {
-		fmt.Println("crosfading!")
 		dt := float64(time.Now().Sub(g.fadeStart)) / float64(crossFadeTime)
 		if dt >= 1.0 {
 			g.incomingVolume.SetStrength(1.0)
@@ -101,7 +99,7 @@ func (g *Game) Update() error {
 			g.playingVolume.SetStrength(1.0 - dt)
 		}
 	} else if g.incomingPlayer != nil {
-		fmt.Println("starting new song!")
+		debug.Println("starting new song!")
 		g.incomingVolume.SetStrength(1.0)
 		g.playingPlayer = g.incomingPlayer
 		g.playingVolume = g.incomingVolume

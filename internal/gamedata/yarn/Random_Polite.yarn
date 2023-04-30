@@ -1,5 +1,6 @@
 title: RandomDeposit_Polite
 portrait: random
+intent: deposit
 ---
 << set $d to 0 >>
 << set $d to dice(12) >>
@@ -47,6 +48,7 @@ portrait: random
 ===
 title: RandomWithdrawal_Polite
 portrait: random
+intent: withdraw
 ---
 << set $d to 0 >>
 << set $d to dice(8) >>

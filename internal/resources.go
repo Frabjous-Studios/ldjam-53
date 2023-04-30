@@ -324,14 +324,15 @@ func placeholder(c color.Color, w, h int) *ebiten.Image {
 	return i
 }
 
-func newPortrait(target *ebiten.Image, body, head string) *Portrait {
+func newPortrait(target *ebiten.Image, body, head string) *Customer {
 	b, h := Resources.GetImage(body), Resources.GetImage(head)
 	opts := &ebiten.DrawImageOptions{}
 	opts.GeoM.Translate(0, 32)
 	target.DrawImage(b, opts)
 	opts.GeoM.Translate(0, -32)
 	target.DrawImage(h, opts)
-	return &Portrait{
+	return &Customer{
+		ImageKey: fmt.Sprintf("%s:%s", body, head),
 		BaseSprite: &BaseSprite{
 			Img: target,
 			X:   portraitStartX,
@@ -340,14 +341,15 @@ func newPortrait(target *ebiten.Image, body, head string) *Portrait {
 	}
 }
 
-func newRandPortrait(target *ebiten.Image) *Portrait {
+func newRandPortrait(target *ebiten.Image) *Customer {
 	return newPortrait(target, randMapKey(Resources.bodies), randMapKey(Resources.heads))
 }
 
-func newSimplePortrait(target *ebiten.Image, head string) *Portrait {
+func newSimplePortrait(target *ebiten.Image, head string) *Customer {
 	h := Resources.GetImage(head)
 	target.DrawImage(h, nil)
-	return &Portrait{
+	return &Customer{
+		ImageKey: head,
 		BaseSprite: &BaseSprite{
 			Img: target,
 			X:   portraitStartX,

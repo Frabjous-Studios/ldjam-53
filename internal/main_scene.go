@@ -114,10 +114,11 @@ type MainScene struct {
 	Game *Game
 
 	Day          Day // Customers is a list of Yarnspinner nodes happening on the current day
-	Customer     *Portrait
+	Customer     *Customer
 	CustomerName string
 
-	Sprites []Sprite
+	Sprites       []Sprite
+	ReturnedSlips []*DepositSlip
 
 	State  SceneState
 	Runner *DialogueRunner
@@ -226,7 +227,6 @@ func (m *MainScene) Update() error {
 		} else if m.Customer == nil {
 			// TODO: animate the customer into position
 			m.Customer = runnerP
-			m.CustomerName = m.Runner.RandomName()
 			m.Customer.SetPos(image.Pt(170, 53))
 		}
 		if m.Customer != nil {
@@ -295,6 +295,8 @@ func (m *MainScene) resetDialogue() {
 	m.options = nil
 }
 
+var CustomerDropZone = rect(170, 52, 100, 100)
+
 // updateInput is debounced.
 func (m *MainScene) updateInput() error {
 
@@ -315,7 +317,9 @@ func (m *MainScene) updateInput() error {
 		debug.Println("left mouse press", m.holding)
 		if len(m.holding) > 0 {
 			debug.Println("holding something")
-			if contains(heldKeys, ebiten.KeyShift) {
+			if cPos.In(CustomerDropZone) {
+				m.customerDrop()
+			} else if contains(heldKeys, ebiten.KeyShift) {
 				// TODO: grab all the sprites under cursor?? if they match??
 				grabbed := m.spriteUnderCursor()
 				if grabbed != nil {
@@ -377,6 +381,70 @@ func (m *MainScene) nextButton() {
 	m.State = StateDismissing
 }
 
+// cheatValue is some random value added to required withdrawal thresholds for the customer to walk away on their own.
+// This keeps the player from letting the customer do their own counting.
+func cheatValue() int {
+	if rand.Float64() < 0.7 {
+		return 0.0
+	} else if rand.Float64() < 0.7 {
+		return rand.Intn(50)
+	} else {
+		return rand.Intn(1000) // greedy little bastard
+	}
+}
+
+func (m *MainScene) customerDrop() {
+	if len(m.holding) == 0 {
+		return
+	}
+	debug.Println("dropping on customer!")
+	if m.Customer != nil {
+		if _, ok := m.holding[0].(*Money); ok {
+			totalValue := 0 // figure out the value of this fist full o' cash.
+			for _, m := range m.holding {
+				totalValue += m.(*Money).Value
+			}
+			// giving the customer money
+			if m.Customer.CustomerIntent == IntentDeposit {
+				m.Customer.CashOnCounter -= totalValue
+				if m.Customer.DepositSlip != nil && m.Customer.DepositSlip.Value > m.Customer.CashOnCounter { // put cash back to even out deposit
+					m.bubbles.SetLine("I'd like to deposit that, actually.") // TODO: randomize
+					diff := m.Customer.DepositSlip.Value - m.Customer.CashOnCounter
+					m.putCashAndCoinsf(float32(diff) / 100) // make other money out of thin air; I'm trying to deposit; dammit. I won't leave until I do!
+				}
+			} else if m.Customer.CustomerIntent == IntentWithdraw {
+				m.Customer.CashInHand += totalValue
+				if m.Customer.DepositSlip != nil && m.Customer.CashInHand+cheatValue() >= m.Customer.DepositSlip.Value {
+					m.bubbles.SetLine("Thank you!") // TODO: randomize
+					m.depart()
+				}
+			} // TODO: other intents
+
+			for _, held := range m.holding {
+				m.removeSprite(held)
+			}
+			m.holding = nil
+		} else if slip, ok := m.holding[0].(*DepositSlip); ok {
+			m.bubbles.SetLine("What? You mean I have to get back in line?!")
+			m.removeSprite(m.holding[0])
+			m.ReturnedSlips = append(m.ReturnedSlips, slip) // we'll check these at the end of the day.
+			m.holding = nil
+			// giving back their deposit slip.
+		} else if _, ok := m.holding[0].(*Stack); ok {
+			if m.Customer.ImageKey == "drone.png" {
+				// put it back; TODO: play an error sound?
+				m.holding[0].SetPos(randCounterPos())
+			} else {
+				// you're giving away a stack of money?!!?! Yes please!
+				m.bubbles.SetLine("Oh! Thank you!") // TODO: randomize
+				m.removeSprite(m.holding[0])
+				m.holding = nil
+				m.depart() // TODO: this probably breaks the line
+			}
+		}
+	}
+}
+
 func (m *MainScene) tillDrop() {
 	if m.till.DropAll(m.holding) {
 		if _, ok := m.holding[0].(*DepositSlip); ok {
@@ -391,7 +459,13 @@ func (m *MainScene) tillDrop() {
 	}
 }
 
-// (275, 151), 14x8
+func (m *MainScene) counterDrop() {
+	for _, s := range m.holding { // drop ALL
+		s.SetPos(clampToCounter(s.Pos()))
+	}
+	m.soundDrop(m.holding[0], "counter")
+	m.holding = nil
+}
 
 // removeSprite removes the provided sprite from the draw queue.
 func (m *MainScene) removeSprite(s Sprite) {
@@ -562,14 +636,6 @@ func (m *MainScene) pickUp() {
 	}
 }
 
-func (m *MainScene) counterDrop() {
-	for _, s := range m.holding { // drop ALL
-		s.SetPos(clampToCounter(s.Pos()))
-	}
-	m.soundDrop(m.holding[0], "counter")
-	m.holding = nil
-}
-
 // play the sound of dropping something on the counter
 func (m *MainScene) soundDrop(s Sprite, surface string) {
 	switch s := s.(type) {
@@ -666,9 +732,23 @@ func (m *MainScene) Command(command string) error {
 		return m.playSound(tokens[1:])
 	case "depart":
 		return m.depart()
+	case "set_wrong":
+		return m.setWrong()
 	default:
 		return fmt.Errorf("unknown command %s", tokens[0])
 	}
+}
+
+func (m *MainScene) setWrong() error {
+	if m.Customer == nil {
+		debug.Println("set_wrong called with nil customer")
+		return nil
+	}
+	if m.Customer.DepositSlip != nil {
+		m.Customer.DepositSlip.IsWrong = true
+	}
+	// TODO: set for checks and such as well.
+	return nil
 }
 
 func (m *MainScene) NodeComplete(nodeName string) error {
@@ -727,16 +807,20 @@ func (m *MainScene) putCashAndCoins(args []string) error {
 	if err != nil {
 		return fmt.Errorf("call to put_cash_and_coins wasn't integer: %v", err)
 	}
+	m.putCashAndCoinsf(float32(val))
+	if m.State == StateDismissing {
+		return yarn.Stop
+	}
+	return nil
+}
+
+func (m *MainScene) putCashAndCoinsf(val float32) {
 	val *= 100
 	valInt := int(val)
 	coin := valInt % 100
 	bills := valInt / 100
 	m.putBills(bills)
 	m.putCoins(coin)
-	if m.State == StateDismissing {
-		return yarn.Stop
-	}
-	return nil
 }
 
 func (m *MainScene) putCash(args []string) error {
@@ -892,6 +976,7 @@ type DepositSlip struct {
 	ForDeposit    bool
 	ForWithdrawal bool
 	AcctNum       int
+	IsWrong       bool // IsWrong means the customer did not fill out this paperwork correctly.
 }
 
 var depositSlipColor = colornames.Black
@@ -957,15 +1042,37 @@ func randomAcctNumber() int {
 }
 
 func (m *MainScene) putBill(denom int) {
+	if m.Customer != nil {
+		m.Customer.CashOnCounter += denom * 100
+	}
 	m.Sprites = append(m.Sprites, newBill(denom, randCounterPos()))
 }
 
 func (m *MainScene) putCoin(denom int) {
+	if m.Customer != nil {
+		m.Customer.CashOnCounter += denom
+	}
 	m.Sprites = append(m.Sprites, newCoin(denom, randCounterPos()))
 }
 
-type Portrait struct {
+type Intent string
+
+const (
+	IntentWithdraw     = "withdraw"
+	IntentDeposit      = "deposit"
+	IntentCashCheck    = "cash_check"
+	IntentDepositCheck = "deposit_check"
+)
+
+type Customer struct {
 	*BaseSprite
+	MoneyInHand    []*Money
+	CashInHand     int
+	CashOnCounter  int // CashOnCounter is the total value of the cash the customer has put on the counter.
+	ImageKey       string
+	CustomerIntent Intent
+	CustomerName   string
+	DepositSlip    *DepositSlip // DepositSlip may be nil for some customers.
 }
 
 // clampToCounter clamps the provided point to the counter range (hardcoded)

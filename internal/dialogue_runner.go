@@ -41,7 +41,7 @@ type DialogueRunner struct {
 	mut *sync.RWMutex
 
 	portraitImg *ebiten.Image
-	portrait    *Portrait
+	portrait    *Customer
 
 	running bool
 }
@@ -112,6 +112,9 @@ func (r *DialogueRunner) LastName() string {
 func (r *DialogueRunner) SetDepositSlip(slip *DepositSlip) {
 	r.SetDepositAmt(slip.Value)
 	r.SetAccountNumber(slip.AcctNum)
+	if r.portrait != nil {
+		r.portrait.DepositSlip = slip
+	}
 }
 
 func (r *DialogueRunner) SetDepositAmt(val int) {
@@ -121,7 +124,39 @@ func (r *DialogueRunner) SetAccountNumber(val int) {
 	r.vm.Vars.SetValue(VarAccountNumber, val)
 }
 
-func (r *DialogueRunner) Portrait() *Portrait {
+// CustomerIntent gets the intent set for this node.
+func (r *DialogueRunner) CustomerIntent() Intent {
+	node, ok := r.vm.Program.Nodes[r.CurrNodeName]
+	if !ok {
+		debug.Printf("could not find node %v when looking for intent", r.CurrNodeName)
+		return ""
+	}
+	for _, h := range node.Headers {
+		if h.Key == "intent" {
+			switch h.Value {
+			case IntentCashCheck:
+				return IntentCashCheck
+			case IntentDeposit:
+				return IntentDeposit
+			case IntentDepositCheck:
+				return IntentDepositCheck
+			case IntentWithdraw:
+				return IntentWithdraw
+			default:
+				debug.Printf("Unknown intent '%s' in node %s", h.Value, r.CurrNodeName)
+			}
+		}
+	}
+	return ""
+}
+
+func (r *DialogueRunner) Portrait() (p *Customer) {
+	defer func() {
+		if p != nil {
+			p.CustomerIntent = r.CustomerIntent()
+			p.CustomerName = r.RandomName()
+		}
+	}()
 	if r.portrait != nil {
 		return r.portrait // TODO: this caching is making the drone be re-used.
 	}

@@ -9,7 +9,7 @@ import (
 var Days = []Day{
 	0: { // more deposits than withdrawals
 		Sequence: []string{"random", "random", "random", "drone", "random", "random", "random"},
-		Random:   []string{"RandomDeposit_Polite", "RandomDeposit_Rude", "RandomDeposit_Polite", "RandomDeposit_Rude", "RandomWithdrawal_Polite", "RandomWithdrawal_Rude"},
+		Random:   []string{"RandomWithdrawal_Polite", "RandomWithdrawal_Rude"},
 	},
 }
 
