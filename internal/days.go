@@ -6,23 +6,9 @@ import (
 	"time"
 )
 
-// Days is the list of Yarnspinner nodes that happen each day... in this order.
-var Days = []Day{
-	0: { // more deposits than withdrawals
-		EndNode:  "Manager_Day1_End",
-		Sequence: []string{"Manager_Day1", "random", "random", "random", "drone", "random", "random", "OldMan"},
-		Random:   []string{"RandomDeposit_Polite", "RandomDeposit_Rude", "RandomDeposit_Polite", "RandomDeposit_Rude", "RandomWithdrawal_Polite", "RandomWithdrawal_Rude"},
-	},
-	1: {
-		EndNode:  "Manager_Day2_End",
-		Sequence: []string{},
-		Random:   []string{"RandomDeposit_Polite", "RandomDeposit_Rude", "RandomDeposit_Polite", "RandomDeposit_Rude", "RandomWithdrawal_Polite", "RandomWithdrawal_Rude"},
-	},
-}
-
 type Account struct {
 	Owner    string
-	Number   int
+	Number   string
 	Checking int
 }
 
@@ -42,6 +28,30 @@ type Day struct {
 	Accounts map[string]*Account
 
 	curr int
+}
+
+func Days() []*Day {
+	result := []*Day{
+		0: { // more deposits than withdrawals
+			EndNode: "Manager_Day1_End",
+			// TODO: manager intro day
+			Sequence: []string{"random", "random", "random", "drone", "random", "random", "OldMan"},
+			Random:   []string{"RandomDeposit_Polite", "RandomDeposit_Rude", "RandomDeposit_Polite", "RandomDeposit_Rude", "RandomWithdrawal_Polite", "RandomWithdrawal_Rude"},
+		},
+		1: {
+			EndNode:  "Manager_Day2_End",
+			Sequence: []string{},
+			Random:   []string{"RandomDeposit_Polite", "RandomDeposit_Rude", "RandomDeposit_Polite", "RandomDeposit_Rude", "RandomWithdrawal_Polite", "RandomWithdrawal_Rude"},
+		},
+	}
+	for _, day := range result {
+		rand.Shuffle(len(day.Random), func(i, j int) {
+			day.Random[i], day.Random[j] = day.Random[j], day.Random[i]
+		})
+		day.Accounts = make(map[string]*Account)
+		// TODO: create some initial random accounts.
+	}
+	return result
 }
 
 // Next retrieves the next node on the given day. Pass in the amount of time spent on this day to determine when to
@@ -69,13 +79,4 @@ func (d *Day) Next(t time.Duration) string {
 
 func (d *Day) AcceptSlip(slip *DepositSlip) {
 	d.Slips = append(d.Slips, slip)
-}
-
-func init() {
-	// shuffle the decks
-	for _, day := range Days {
-		rand.Shuffle(len(day.Random), func(i, j int) {
-			day.Random[i], day.Random[j] = day.Random[j], day.Random[i]
-		})
-	}
 }

@@ -119,7 +119,8 @@ var startTime time.Time
 type MainScene struct {
 	Game *Game
 
-	Day          Day // Customers is a list of Yarnspinner nodes happening on the current day
+	Days         []*Day
+	Day          *Day // Customers is a list of Yarnspinner nodes happening on the current day
 	dayIdx       int
 	Customer     *Customer
 	CustomerName string
@@ -171,7 +172,7 @@ func NewMainScene(g *Game) *MainScene {
 	result := &MainScene{
 		Game:       g,
 		Sprites:    []Sprite{},
-		Day:        Days[0],
+		Days:       Days(),
 		State:      StateFadeIn,
 		till:       NewTill(),
 		counter:    &BaseSprite{X: 112, Y: 152, Img: Resources.images["counter"]},
@@ -184,6 +185,7 @@ func NewMainScene(g *Game) *MainScene {
 		vars:         make(yarn.MapVariableStorage),
 		black:        placeholder(colornames.Black, 1, 1),
 	}
+	result.Day = result.Days[0]
 	// generate random bills; [5-20] each.
 	for idx, denom := range []int{1, 5, 10, 20, 100} {
 		count := rand.Intn(15) + 5
@@ -343,10 +345,8 @@ func (m *MainScene) updateInput() error {
 	if m.State == StateReporting {
 		m.bubbles.BeDone()
 		if inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonLeft) {
-			fmt.Println("report dismissed!")
 			m.reportDismissed = true
 			if m.reportDismissed {
-				fmt.Println("state transition back to conversing")
 				m.State = StateConversing
 			}
 			m.bubbles.TextBounds = DialogueBounds
@@ -842,8 +842,8 @@ func (m *MainScene) nextDay() error {
 	m.endOfDaySync.Wait()
 
 	m.dayIdx++
-	if m.dayIdx < len(Days) {
-		m.Day = Days[m.dayIdx]
+	if m.dayIdx < len(m.Days) {
+		m.Day = m.Days[m.dayIdx]
 	} else {
 		// TODO: thanks for playing! Credits
 		m.Game.ChangeScene(NewMainScene(m.Game))
@@ -983,6 +983,7 @@ func (m *MainScene) putCounter(args []string) error {
 		case arg == "empty_slip":
 			slip := m.randEmptySlip()
 			m.Runner.SetDepositSlip(slip)
+			m.setupAccount(slip)
 			m.put(slip)
 		case strings.HasPrefix(arg, "deposit_slip"):
 			slip := m.randDepositSlip()
@@ -995,6 +996,7 @@ func (m *MainScene) putCounter(args []string) error {
 				}
 			}
 			m.Runner.SetDepositSlip(slip)
+			m.setupAccount(slip) // just in time!
 			m.put(slip)
 			m.putBills(slip.Value / 100)
 		case strings.HasPrefix(arg, "withdrawal_slip"):
@@ -1008,6 +1010,7 @@ func (m *MainScene) putCounter(args []string) error {
 				}
 			}
 			m.Runner.SetDepositSlip(slip)
+			m.setupAccount(slip)
 			m.put(slip)
 		case arg == "bill_1":
 			m.putBill(1)
@@ -1047,6 +1050,19 @@ func (m *MainScene) putCounter(args []string) error {
 		return yarn.Stop
 	}
 	return nil
+}
+
+// setupAccount sets up the account for a deposit slip just in time.
+func (m *MainScene) setupAccount(slip *DepositSlip) {
+	// TODO: sometimes they shouldn't have an account.
+	acctNum := fmt.Sprintf("%d", slip.AcctNum)
+	if _, ok := m.Day.Accounts[acctNum]; !ok {
+		m.Day.Accounts[acctNum] = &Account{
+			Owner:    m.Customer.CustomerName,
+			Number:   acctNum,
+			Checking: randomAccountValue(),
+		}
+	}
 }
 
 func (m *MainScene) putCoins(amt int) {

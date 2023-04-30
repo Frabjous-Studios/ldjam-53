@@ -149,7 +149,6 @@ func (t *Terminal) lookup() {
 	if len(t.accountNumber) < 5 {
 		return
 	}
-	fmt.Println("lookup!")
 	acct, ok := t.scene.Day.Accounts[t.GetAccountNumber()]
 	if acct == nil || !ok {
 		t.lines = []string{"--ACCOUNT NOT FOUND--"}
@@ -159,7 +158,6 @@ func (t *Terminal) lookup() {
 		fmt.Sprintf("Owner: %s", acct.Owner),
 		fmt.Sprintf("Checking Balance: %.02f", float32(acct.Checking)/100.0),
 	}
-	fmt.Println(t.lines)
 }
 
 func (t *Terminal) GetAccountNumber() string {
