@@ -1,9 +1,12 @@
 package internal
 
 import (
+	"bytes"
 	"fmt"
+	"github.com/Frabjous-Studios/ebitengine-game-template/internal/debug"
 	"image"
 	"math/rand"
+	"text/template"
 )
 
 const CoinTargets = 0
@@ -48,26 +51,92 @@ func NewTill() *Till {
 }
 
 type ReconciliationReport struct {
-	UnsignedSlips int
-	WTFSlips      int
+	ValidSlips int
+	WTFSlips   int
 
-	Imbalance int
+	BillCount     map[string]int
+	CoinCount     map[string]int
+	ExpectedValue int
+	ActualValue   int
+	Imbalance     int
 }
 
 func (t *Till) Reconcile() ReconciliationReport {
-	var report ReconciliationReport
+	report := ReconciliationReport{
+		BillCount: make(map[string]int),
+		CoinCount: make(map[string]int),
+	}
+
 	expectedValue := t.StartValue
 	for _, slip := range t.DepositSlips {
 		if slip.ForDeposit {
 			expectedValue += slip.Value
+			report.ValidSlips++
 		} else if slip.ForWithdrawal {
 			expectedValue -= slip.Value
+			report.ValidSlips++
 		} else {
 			report.WTFSlips++ // wtf? what is this?!
 		}
 	}
+	for _, slots := range t.CoinSlots {
+		for _, money := range slots {
+			report.CoinCount[fmt.Sprintf("c%d", money.Value)]++
+		}
+	}
+	for _, slots := range t.BillSlots {
+		for _, money := range slots {
+			report.BillCount[fmt.Sprintf("b%d", money.Value)]++
+		}
+	}
+	report.ExpectedValue = expectedValue
+	report.ActualValue = t.Value()
 	report.Imbalance = t.Value() - expectedValue
+
 	return report
+}
+
+var reportTemplate *template.Template
+
+func init() {
+	var err error
+	const T = `
+--Scrip-- 
+  1: {{.BillCount.b1}}
+  5: {{.BillCount.b5}}
+ 10: {{.BillCount.b10}}
+ 20: {{.BillCount.b20}}
+100: {{.BillCount.b100}}
+
+--Tokens--
+  1: {{.CoinCount.c1}}
+  5: {{.CoinCount.c5}}
+ 10: {{.CoinCount.c10}}
+ 25: {{.CoinCount.c25}}
+ 50: {{.CoinCount.c50}}
+
+--Deposit Slips--
+  Valid:  {{.ValidSlips}}
+Invalid:  {{.WTFSlips}}
+
+   -- RECONCILIATION REPORT --
+Expected  =  ${{.ExpectedValue}}
+Actual    =  ${{.ActualValue}}
+  BALANCE =  ${{.Imbalance}}
+`
+	reportTemplate, err = template.New("").Parse(T)
+	if err != nil {
+		panic(fmt.Errorf("unable to parse reconciliation template: %v", err))
+	}
+
+}
+
+func (t *ReconciliationReport) String() {
+	var w bytes.Buffer
+	err := reportTemplate.Execute(&w, t)
+	if err != nil {
+		debug.Println("error executing template: %v", err)
+	}
 }
 
 func randPoint(dx, dy int) image.Point {

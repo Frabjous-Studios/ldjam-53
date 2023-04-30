@@ -5,6 +5,7 @@ import (
 	"github.com/DrJosh9000/yarn"
 	"github.com/Frabjous-Studios/ebitengine-game-template/internal/debug"
 	"github.com/hajimehoshi/ebiten/v2"
+	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
 	"github.com/hajimehoshi/ebiten/v2/inpututil"
 	"github.com/tinne26/etxt"
 	"golang.org/x/image/colornames"
@@ -378,7 +379,7 @@ func (m *MainScene) nextButton() {
 	s := Resources.GetSound(m.Game.ACtx, "Bell-1.ogg")
 	s.Rewind()
 	s.Play()
-	if m.Customer.ImageKey == "manager.png" {
+	if m.Customer != nil && m.Customer.ImageKey == "manager.png" {
 		m.bubbles.SetLine("What?! You think you can dismiss me?!!? I wasn't through talking!") // TODO: randomize
 	} else {
 		m.State = StateDismissing
@@ -550,6 +551,8 @@ func (m *MainScene) Draw(screen *ebiten.Image) {
 
 	// draw cash indicator
 	m.drawCashIndicator(screen)
+
+	ebitenutil.DebugPrintAt(screen, fmt.Sprintf("%.0f", ebiten.ActualFPS()), 600, 0)
 }
 
 var IndicatorColor = h2c("00ff00")
@@ -1073,6 +1076,10 @@ func (m *MainScene) putCoin(denom int) {
 		m.Customer.CashOnCounter += denom
 	}
 	m.Sprites = append(m.Sprites, newCoin(denom, randCounterPos()))
+}
+
+func (m *MainScene) Reconcile() {
+	m.till.Reconcile()
 }
 
 type Intent string
