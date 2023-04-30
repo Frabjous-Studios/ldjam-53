@@ -80,6 +80,14 @@ func (t *Till) Reconcile() *ReconciliationReport {
 			report.WTFSlips++ // wtf? what is this?!
 		}
 	}
+	// TODO: handle checks separately
+	for _, check := range t.Checks {
+		if check.Valid && check.Endorsed && check.Signed {
+			report.ValidSlips++
+		} else {
+			report.WTFSlips++
+		}
+	}
 	for _, slots := range t.CoinSlots {
 		for _, money := range slots {
 			report.CoinCount[fmt.Sprintf("c%d", money.Value)]++

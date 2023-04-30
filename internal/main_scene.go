@@ -1225,7 +1225,6 @@ func (m *MainScene) randSlip(path string) *DepositSlip {
 
 	m.txt.SetFont(Resources.GetFont(DialogFont)) // TODO: make look like handwriting
 	m.txt.SetSizePx(10)
-	m.txt.SetTarget(img)
 	m.txt.Draw(fmt.Sprintf("%d.00", slip.Value/100), 16, 17)
 
 	// TODO: signature?
@@ -1272,7 +1271,6 @@ func (m *MainScene) randCheck() *Check {
 		m.txt.SetColor(depositSlipColor)
 		m.txt.SetSizePx(12)
 		m.txt.SetFont(Resources.RandomScriptFont())
-		m.txt.SetTarget(front)
 		m.txt.Draw(m.Runner.RandomName(), 35, 17)
 	}
 	m.txt.SetColor(depositSlipColor)
