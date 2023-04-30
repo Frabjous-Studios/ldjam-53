@@ -2,31 +2,30 @@ title: RandomDeposit_Polite
 portrait: random
 ---
 << set $d to 0 >>
-<< set $d to dice(12 )>>
-
-<< if $d == 0 >>
+<< set $d to dice(12) >>
+<< if $d == 1 >>
     Good afternoon! I'm here to deposit some money and support my local bank.
-<< elseif $d == 1 >>
-    Good day! I'm here to deposit some money and hopefully make a small dent in the universe.
 << elseif $d == 2 >>
-    Hi there! I'm just stopping by to deposit some money and spread some positive vibes.
+    Good day! I'm here to deposit some money and hopefully make a small dent in the universe.
 << elseif $d == 3 >>
-    Good afternoon! I'm here to deposit some money and support my local economy.
+    Hi there! I'm just stopping by to deposit some money and spread some positive vibes.
 << elseif $d == 4 >>
-    Hi there! I'm looking to deposit some money and maybe start saving for a trip to the beach.
+    Good afternoon! I'm here to deposit some money and support my local economy.
 << elseif $d == 5 >>
-    Good day! I'm here to deposit some money and hopefully make a difference in the world.
+    Hi there! I'm looking to deposit some money and maybe start saving for a trip to the beach.
 << elseif $d == 6 >>
-    Hey, can you help me deposit some money? I promise to be a good customer.
+    Good day! I'm here to deposit some money and hopefully make a difference in the world.
 << elseif $d == 7 >>
-    Hello! I'm just stopping by to deposit some money and support my local businesses.
+    Hey, can you help me deposit some money? I promise to be a good customer.
 << elseif $d == 8 >>
-    Good day! I'm here to deposit some money and hopefully make my future a little brighter.
+    Hello! I'm just stopping by to deposit some money and support my local businesses.
 << elseif $d == 9 >>
-    Hey, can you help me deposit some money? I promise to be a loyal customer.
+    Good day! I'm here to deposit some money and hopefully make my future a little brighter.
 << elseif $d == 10 >>
-    Hello! I'm just stopping by to deposit some money and maybe start a new business venture.
+    Hey, can you help me deposit some money? I promise to be a loyal customer.
 << elseif $d == 11 >>
+    Hello! I'm just stopping by to deposit some money and maybe start a new business venture.
+<< elseif $d == 12 >>
     Good day! I'm here to deposit some money and hopefully inspire someone else to save.
 << endif >>
 
@@ -34,10 +33,8 @@ portrait: random
 << set $correct to dice(10) >>
 << if $correct == 0 >>
     << put_counter withdrawal_slip >>
-    << jump RandomDeposit_Polite_Withdrawal >>
 << elseif $correct == 1 >>
     << put_counter empty_slip >>
-    << jump RandomDeposit_Polite_Empty >>
 << elseif $correct < 8 >>
     << put_counter deposit_slip >>
 << else >>
@@ -47,12 +44,4 @@ portrait: random
 
 -> All done.
 -> Have a nice day.
-===
-title: RandomDeposit_Polite_Empty
----
-What lovely weather we're having.
-===
-title: RandomDeposit_Polite_Withdrawal
----
-Oh, I'm sorry, is something wrong?
 ===

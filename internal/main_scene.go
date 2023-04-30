@@ -10,6 +10,7 @@ import (
 	"golang.org/x/image/colornames"
 	"golang.org/x/image/math/fixed"
 	"image"
+	"math"
 	"math/rand"
 	"strconv"
 	"strings"
@@ -28,11 +29,14 @@ type Sprite interface {
 	Bounds() image.Rectangle
 	Pos() image.Point
 	SetPos(image.Point)
+	MoveX(float64)
+	MoveY(float64)
 }
 
 type BaseSprite struct {
-	X, Y int
-	Img  *ebiten.Image
+	X, Y   int
+	fX, fY float64
+	Img    *ebiten.Image
 }
 
 func (s *BaseSprite) DrawTo(screen *ebiten.Image) {
@@ -64,6 +68,20 @@ func (s *BaseSprite) ClampToRect(r image.Rectangle) {
 	s.Y = clamp(s.Y, r.Min.Y, r.Max.Y-s.Bounds().Dy())
 }
 
+func (s *BaseSprite) MoveX(amt float64) {
+	s.fX += amt
+	px, fx := math.Modf(s.fX)
+	s.fX = fx
+	s.X = s.X + int(math.Round(px))
+}
+
+func (s *BaseSprite) MoveY(amt float64) {
+	s.fY += amt
+	px, fx := math.Modf(s.fY)
+	s.fY = fx
+	s.Y = s.Y + int(px)
+}
+
 type Hologram struct {
 	*BaseSprite
 	StartTime time.Time
@@ -82,16 +100,26 @@ func (s *Hologram) DrawTo(screen *ebiten.Image) {
 	screen.DrawImage(s.Img, opt)
 }
 
+type SceneState uint8
+
+const (
+	StateApproaching SceneState = iota
+	StateConversing
+	StateDismissing
+)
+
+var startTime time.Time
+
 type MainScene struct {
 	Game *Game
 
 	Day          Day // Customers is a list of Yarnspinner nodes happening on the current day
-	Customer     Sprite
+	Customer     *Portrait
 	CustomerName string
 
 	Sprites []Sprite
 
-	State  *GameState
+	State  SceneState
 	Runner *DialogueRunner
 
 	till       *Till
@@ -121,11 +149,12 @@ type MainScene struct {
 
 func NewMainScene(g *Game) *MainScene {
 	var err error
+	startTime = time.Now()
 	result := &MainScene{
-		Game:    g,
-		Sprites: []Sprite{},
-		Day:     Days[0],
-
+		Game:       g,
+		Sprites:    []Sprite{},
+		Day:        Days[0],
+		State:      StateApproaching,
 		till:       NewTill(),
 		counter:    &BaseSprite{X: 112, Y: 152, Img: Resources.images["counter"]},
 		terminal:   &BaseSprite{X: 0, Y: 72, Img: Resources.images["terminal"]},
@@ -141,7 +170,7 @@ func NewMainScene(g *Game) *MainScene {
 		count := rand.Intn(15) + 5
 		for i := 0; i < count; i++ {
 			bill := newBill(denom, result.till.DropTargets[BillTargets][idx].Min.Add(result.till.Pos().Add(randPoint(2, 2))))
-			result.till.BillSlots[idx] = append(result.till.BillSlots[idx], bill.(*Money))
+			result.till.BillSlots[idx] = append(result.till.BillSlots[idx], bill)
 			result.Sprites = append(result.Sprites, bill)
 		}
 	}
@@ -150,10 +179,12 @@ func NewMainScene(g *Game) *MainScene {
 		count := rand.Intn(40) + 10
 		for i := 0; i < count; i++ {
 			coin := newCoin(denom, result.till.DropTargets[CoinTargets][idx].Min.Add(result.till.Pos().Add(randPoint(3, 3))))
-			result.till.CoinSlots[idx] = append(result.till.CoinSlots[idx], coin.(*Money))
+			result.till.CoinSlots[idx] = append(result.till.CoinSlots[idx], coin)
 			result.Sprites = append(result.Sprites, coin)
 		}
 	}
+	result.till.StartValue = result.till.Value()
+
 	result.bubbles = NewBubbles(result)
 	result.speaking = sync.NewCond(&result.mut)
 	result.selectOpt = sync.NewCond(&result.mut)
@@ -161,6 +192,7 @@ func NewMainScene(g *Game) *MainScene {
 	result.Runner, err = NewDialogueRunner(result.vars, result)
 
 	result.txt = etxt.NewStdRenderer()
+	result.txt.SetFont(Resources.GetFont(IndicatorFont))
 	result.txt.SetAlign(etxt.Top, etxt.Left)
 	result.txt.SetSizePx(6)
 	if err != nil {
@@ -169,21 +201,44 @@ func NewMainScene(g *Game) *MainScene {
 	return result
 }
 
+const DismissalPxPerSecond = 100
+
 func (m *MainScene) Update() error {
 	if err := m.updateInput(); err != nil {
 		debug.Printf("error from updateInput: %v", err)
 	}
 	m.bubbles.Update()
 
-	runnerP := m.Runner.Portrait()
-	if runnerP == nil {
-		m.Customer = nil
-	} else {
-		// TODO: animate the customer into position
-		m.Customer = runnerP
-		m.CustomerName = m.Runner.RandomName()
-		m.Customer.SetPos(image.Pt(170, 53))
+	switch m.State {
+	case StateApproaching:
+		if !m.Runner.running {
+			go m.startRunner()
+			m.Runner.running = true
+		}
+		// TODO: animate the customer approaching
+		runnerP := m.Runner.Portrait()
+		if runnerP == nil {
+			m.Customer = nil
+		} else if m.Customer == nil {
+			// TODO: animate the customer into position
+			m.Customer = runnerP
+			m.CustomerName = m.Runner.RandomName()
+			m.Customer.SetPos(image.Pt(170, 53))
+		}
+		if m.Customer != nil {
+			debug.Println("transition to conversing")
+			m.State = StateConversing
+		}
+	case StateDismissing:
+		m.resetDialogue()
+		m.Customer.MoveX(DismissalPxPerSecond / TPS)
+		if m.Customer.Pos().X > m.Game.Width/2 {
+			debug.Println("transition to approaching")
+			m.newCustomer()
+			m.State = StateApproaching
+		}
 	}
+	m.maybeHoverDrone()
 
 	cPos := cursorPos()
 	for _, opt := range m.options {
@@ -207,15 +262,37 @@ func (m *MainScene) Update() error {
 	return nil
 }
 
+func (m *MainScene) newCustomer() {
+	m.Customer = nil
+	m.Runner.portrait = nil
+	m.Runner.portraitImg.Clear()
+}
+
+const HoverHeight = 0.2
+const HoverSpeedPerSecond = 2 * math.Pi
+
+func (m *MainScene) maybeHoverDrone() {
+	if m.Runner == nil || m.Customer == nil {
+		return
+	}
+	if strings.HasPrefix(m.Runner.CurrNodeName, "drone") {
+		m.Customer.MoveY(HoverHeight * math.Sin(HoverSpeedPerSecond*time.Now().Sub(startTime).Seconds()))
+	}
+}
+
+var NextButtonHotspot = rect(275, 151, 14, 8)
+
 const debounceDuration = 300 * time.Millisecond
+
+func (m *MainScene) resetDialogue() {
+	m.bubbles.SetLine("")
+	m.selectOpt.Broadcast()
+	m.speaking.Broadcast()
+	m.options = nil
+}
 
 // updateInput is debounced.
 func (m *MainScene) updateInput() error {
-
-	if !m.Runner.running {
-		go m.startRunner()
-		m.Runner.running = true
-	}
 
 	newKeys = inpututil.AppendJustPressedKeys(newKeys[:0])
 	heldKeys = inpututil.AppendPressedKeys(heldKeys[:0])
@@ -246,42 +323,80 @@ func (m *MainScene) updateInput() error {
 			} else {
 				if cPos.In(m.till.Bounds()) { // if over Till; drop on Till
 					debug.Println("over till")
-					if m.till.DropAll(m.holding) {
-						m.holding = nil
-					} else {
-						debug.Println("unable to drop on till")
-					}
+					m.tillDrop()
 				} else {
 					debug.Println("counter drop")
 					m.counterDrop()
 				}
 			}
 		} else { // pick up the thing under the cursor
-			grabbed := m.spriteUnderCursor()
-			if grabbed != nil {
-				m.handleGrabbed(grabbed)
+			if cPos.In(NextButtonHotspot) {
+				m.nextButton()
 			} else {
-				debug.Println("grabbed nothing; dialog select?")
-				selected := false
-				// check for dialogue option
-				for idx, opt := range m.options {
-					if cPos.Mul(ScaleFactor).In(opt.Rect) {
-						m.selection = idx
-						m.selectOpt.Broadcast()
-						m.options = nil
-						selected = true
-						break
+				grabbed := m.spriteUnderCursor()
+				if grabbed != nil {
+					m.handleGrabbed(grabbed)
+				} else {
+					debug.Println("grabbed nothing; dialog select?")
+					selected := false
+					// check for dialogue option
+					for idx, opt := range m.options {
+						if cPos.Mul(ScaleFactor).In(opt.Rect) {
+							m.selection = idx
+							m.selectOpt.Broadcast()
+							m.options = nil
+							selected = true
+							break
+						}
 					}
-				}
-				if !selected { // advance the dialogue if nothing was selected.
-					debug.Println("no dialogue selected; player is impatient.")
-					m.AdvanceDialogue()
+					if !selected { // advance the dialogue if nothing was selected.
+						debug.Println("no dialogue selected; player is impatient.")
+						m.AdvanceDialogue()
+					}
 				}
 			}
 		}
 		m.debouceTime = time.Now().Add(debounceDuration)
 	}
 	return nil
+}
+
+func (m *MainScene) depart() error {
+	m.State = StateDismissing // without playing a sound
+	return nil
+}
+
+func (m *MainScene) nextButton() {
+	s := Resources.GetSound(m.Game.ACtx, "Bell-1.ogg")
+	s.Rewind()
+	s.Play()
+	m.State = StateDismissing
+}
+
+func (m *MainScene) tillDrop() {
+	if m.till.DropAll(m.holding) {
+		if _, ok := m.holding[0].(*DepositSlip); ok {
+			m.removeSprite(m.holding[0])
+		}
+		if _, ok := m.holding[0].(*Stack); ok {
+			m.removeSprite(m.holding[0])
+		}
+		m.holding = nil
+	} else {
+		debug.Println("unable to drop on till")
+	}
+}
+
+// (275, 151), 14x8
+
+// removeSprite removes the provided sprite from the draw queue.
+func (m *MainScene) removeSprite(s Sprite) {
+	for idx, o := range m.Sprites {
+		if s == o {
+			m.Sprites = append(m.Sprites[:idx], m.Sprites[idx+1:]...)
+			return
+		}
+	}
 }
 
 func (m *MainScene) handleGrabbed(grabbed Sprite) {
@@ -309,15 +424,6 @@ func (m *MainScene) addHolding(grabbed Sprite) {
 		}
 	}
 	m.holding = append(m.holding, grabbed)
-}
-
-func contains[T comparable](arr []T, val T) bool {
-	for _, t := range arr {
-		if t == val {
-			return true
-		}
-	}
-	return false
 }
 
 func (m *MainScene) BringToFront(s Sprite) {
@@ -366,6 +472,7 @@ func (m *MainScene) Draw(screen *ebiten.Image) {
 
 var IndicatorColor = h2c("00ff00")
 
+const IndicatorFont = "Munro"
 const IndicatorFontSize = 36
 const IndicatorOffset = -40
 
@@ -378,6 +485,7 @@ func (m *MainScene) drawCashIndicator(screen *ebiten.Image) {
 		return
 	}
 	value := len(m.holding) * money.Value / 100
+	fracVal := len(m.holding) * money.Value
 
 	cPos := cursorPos()
 	m.txt.SetColor(IndicatorColor)
@@ -385,7 +493,12 @@ func (m *MainScene) drawCashIndicator(screen *ebiten.Image) {
 	m.txt.SetTarget(screen)
 	v, h := m.txt.GetAlign()
 	m.txt.SetAlign(etxt.YCenter, etxt.XCenter)
-	m.txt.Draw(fmt.Sprintf("$%d", value), ScaleFactor*cPos.X, ScaleFactor*cPos.Y+IndicatorOffset)
+	if money.IsCoin {
+		m.txt.Draw(fmt.Sprintf("$%.02f", float32(fracVal)/100), ScaleFactor*cPos.X, ScaleFactor*cPos.Y+IndicatorOffset)
+	} else {
+		m.txt.Draw(fmt.Sprintf("$%d", value), ScaleFactor*cPos.X, ScaleFactor*cPos.Y+IndicatorOffset)
+	}
+
 	m.txt.SetAlign(v, h)
 }
 
@@ -471,10 +584,16 @@ func (m *MainScene) spriteUnderCursor() Sprite {
 
 func (m *MainScene) NodeStart(name string) error {
 	debug.Println("start node", name)
+	if m.State == StateDismissing {
+		return yarn.Stop
+	}
 	return nil
 }
 
 func (m *MainScene) PrepareForLines(lineIDs []string) error {
+	if m.State == StateDismissing {
+		return yarn.Stop
+	}
 	return nil
 }
 
@@ -485,6 +604,9 @@ func (m *MainScene) Line(line yarn.Line) error {
 
 	for !m.bubbles.IsDone() && !m.Runner.IsLastLine(line) {
 		m.speaking.Wait()
+	}
+	if m.State == StateDismissing {
+		return yarn.Stop
 	}
 	return nil
 }
@@ -497,6 +619,9 @@ func (m *MainScene) Options(options []yarn.Option) (int, error) {
 		m.options = append(m.options, NewOption(m.Runner.Render(opt.Line)))
 	}
 	m.selectOpt.Wait() // wait for the player to make a selection
+	if m.State == StateDismissing {
+		return 0, yarn.Stop
+	}
 	return m.selection, nil
 }
 
@@ -516,9 +641,30 @@ func (m *MainScene) Command(command string) error {
 		return m.putCoinsCmd(tokens[1:])
 	case "put_cash_and_coins":
 		return m.putCashAndCoins(tokens[1:])
+	case "play_sound":
+		return m.playSound(tokens[1:])
+	case "depart":
+		return m.depart()
 	default:
 		return fmt.Errorf("unknown command %s", tokens[0])
 	}
+}
+
+func (m *MainScene) NodeComplete(nodeName string) error {
+	debug.Println("node done", nodeName)
+	if m.State == StateDismissing {
+		return yarn.Stop
+	}
+	return nil
+}
+
+func (m *MainScene) DialogueComplete() error {
+	m.resetDialogue()
+	debug.Println("dialogue complete")
+	if m.State == StateDismissing {
+		return yarn.Stop
+	}
+	return nil
 }
 
 func (m *MainScene) putCoinsCmd(args []string) error {
@@ -533,6 +679,22 @@ func (m *MainScene) putCoinsCmd(args []string) error {
 		return fmt.Errorf("amount passed to put_coins was negative: %v", err)
 	}
 	m.putCoins(amt)
+	if m.State == StateDismissing {
+		return yarn.Stop
+	}
+	return nil
+}
+
+func (m *MainScene) playSound(args []string) error {
+	if len(args) != 1 {
+		return fmt.Errorf("call to play_sound had bad number of arguments: %v", args)
+	}
+	player := Resources.GetSound(m.Game.ACtx, args[0])
+	if player == nil {
+		return fmt.Errorf("call to play_sound with missing sound file: %v", args[0])
+	}
+	player.Rewind()
+	player.Play()
 	return nil
 }
 
@@ -550,6 +712,9 @@ func (m *MainScene) putCashAndCoins(args []string) error {
 	bills := valInt / 100
 	m.putBills(bills)
 	m.putCoins(coin)
+	if m.State == StateDismissing {
+		return yarn.Stop
+	}
 	return nil
 }
 
@@ -565,6 +730,9 @@ func (m *MainScene) putCash(args []string) error {
 		return fmt.Errorf("amount passed to put_cash was negative: %v", err)
 	}
 	m.putBills(amt)
+	if m.State == StateDismissing {
+		return yarn.Stop
+	}
 	return nil
 }
 
@@ -605,6 +773,16 @@ func (m *MainScene) putCounter(args []string) error {
 			m.putBill(20)
 		case "bill_100":
 			m.putBill(100)
+		case "stack_1":
+			m.putStack(1)
+		case "stack_5":
+			m.putStack(5)
+		case "stack_10":
+			m.putStack(10)
+		case "stack_20":
+			m.putStack(20)
+		case "stack_100":
+			m.putStack(100)
 		case "coin_1":
 			m.Sprites = append(m.Sprites, newCoin(1, randCounterPos()))
 		case "coin_5":
@@ -618,6 +796,9 @@ func (m *MainScene) putCounter(args []string) error {
 		default:
 			debug.Printf("unrecognized argument to put_counter: %v", arg)
 		}
+	}
+	if m.State == StateDismissing {
+		return yarn.Stop
 	}
 	return nil
 }
@@ -648,6 +829,10 @@ func (m *MainScene) putCoins(amt int) {
 	}
 }
 
+func (m *MainScene) putStack(denom int) {
+	m.Sprites = append(m.Sprites, newStack(denom, randCounterPos()))
+}
+
 func (m *MainScene) putBills(amt int) {
 	var amts []int
 	for amt > 0 {
@@ -672,6 +857,12 @@ func (m *MainScene) putBills(amt int) {
 	for _, amt := range amts {
 		m.putBill(amt)
 	}
+}
+
+type Stack struct {
+	*BaseSprite
+	Value int
+	Count int
 }
 
 type DepositSlip struct {
@@ -752,17 +943,6 @@ func (m *MainScene) putCoin(denom int) {
 	m.Sprites = append(m.Sprites, newCoin(denom, randCounterPos()))
 }
 
-func (m *MainScene) NodeComplete(nodeName string) error {
-	debug.Println("node done", nodeName)
-	return nil
-}
-
-func (m *MainScene) DialogueComplete() error {
-	m.bubbles.SetLine("")
-	debug.Println("dialogue complete")
-	return nil
-}
-
 type Portrait struct {
 	*BaseSprite
 }
@@ -791,4 +971,13 @@ func cursorPos() image.Point {
 
 func rect(x, y, w, h int) image.Rectangle {
 	return image.Rect(x, y, x+w, y+h)
+}
+
+func contains[T comparable](arr []T, val T) bool {
+	for _, t := range arr {
+		if t == val {
+			return true
+		}
+	}
+	return false
 }

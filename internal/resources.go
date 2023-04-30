@@ -101,6 +101,12 @@ func init() {
 	Resources.images["bill_20"] = Resources.GetImage("bill_20.png")
 	Resources.images["bill_100"] = Resources.GetImage("bill_100.png")
 
+	Resources.images["stack_1"] = Resources.GetImage("bill_stack_1.png")
+	Resources.images["stack_5"] = Resources.GetImage("bill_stack_5.png")
+	Resources.images["stack_10"] = Resources.GetImage("bill_stack_10.png")
+	Resources.images["stack_20"] = Resources.GetImage("bill_stack_20.png")
+	Resources.images["stack_100"] = Resources.GetImage("bill_stack_100.png")
+
 	Resources.images["coin_1"] = Resources.GetImage("coin_1.png")
 	Resources.images["coin_5"] = Resources.GetImage("coin_5.png")
 	Resources.images["coin_10"] = Resources.GetImage("coin_10.png")
@@ -115,6 +121,8 @@ func init() {
 	Resources.images["deposit_slip_withdrawal"] = Resources.GetImage("deposit_slip_withdrawal.png")
 
 	Resources.images["photo_id"] = Resources.GetImage("photo_id.png")
+
+	Resources.images["drone"] = Resources.GetImage("drone.png")
 
 	Resources.images["call_button_holo"] = Resources.GetImage("call_button_hologram.png")
 	Resources.images["call_button"] = Resources.GetImage("call_button.png")
@@ -282,6 +290,8 @@ func h2c(hex string) color.Color {
 	return c
 }
 
+const portraitStartX, portraitStartY = 170, 52
+
 // NewImageColor constructs a new Image that when drawn fills with color c.
 func placeholder(c color.Color, w, h int) *ebiten.Image {
 	i := ebiten.NewImage(w, h)
@@ -289,7 +299,7 @@ func placeholder(c color.Color, w, h int) *ebiten.Image {
 	return i
 }
 
-func newPortrait(target *ebiten.Image, body, head string) Sprite {
+func newPortrait(target *ebiten.Image, body, head string) *Portrait {
 	b, h := Resources.GetImage(body), Resources.GetImage(head)
 	opts := &ebiten.DrawImageOptions{}
 	opts.GeoM.Translate(0, 32)
@@ -299,14 +309,26 @@ func newPortrait(target *ebiten.Image, body, head string) Sprite {
 	return &Portrait{
 		BaseSprite: &BaseSprite{
 			Img: target,
-			X:   170,
-			Y:   52,
+			X:   portraitStartX,
+			Y:   portraitStartY,
 		},
 	}
 }
 
-func newRandPortrait(target *ebiten.Image) Sprite {
+func newRandPortrait(target *ebiten.Image) *Portrait {
 	return newPortrait(target, randMapKey(Resources.bodies), randMapKey(Resources.heads))
+}
+
+func newSimplePortrait(target *ebiten.Image, head string) *Portrait {
+	h := Resources.GetImage(head)
+	target.DrawImage(h, nil)
+	return &Portrait{
+		BaseSprite: &BaseSprite{
+			Img: target,
+			X:   portraitStartX,
+			Y:   portraitStartY,
+		},
+	}
 }
 
 func drawRandom[T any](vals []T) T {

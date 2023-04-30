@@ -8,7 +8,7 @@ import (
 // Days is the list of Yarnspinner nodes that happen each day... in this order.
 var Days = []Day{
 	0: {
-		Sequence: []string{"random"},
+		Sequence: []string{"drone", "random", "random", "drone", "random", "random"},
 		Random:   []string{"RandomDeposit_Polite"},
 	},
 }

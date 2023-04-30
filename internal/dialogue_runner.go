@@ -41,7 +41,7 @@ type DialogueRunner struct {
 	mut *sync.RWMutex
 
 	portraitImg *ebiten.Image
-	portrait    Sprite
+	portrait    *Portrait
 
 	running bool
 }
@@ -121,9 +121,9 @@ func (r *DialogueRunner) SetAccountNumber(val int) {
 	r.vm.Vars.SetValue(VarAccountNumber, val)
 }
 
-func (r *DialogueRunner) Portrait() Sprite {
+func (r *DialogueRunner) Portrait() *Portrait {
 	if r.portrait != nil {
-		return r.portrait
+		return r.portrait // TODO: this caching is making the drone be re-used.
 	}
 	node, ok := r.vm.Program.Nodes[r.CurrNodeName]
 	if !ok {
@@ -137,6 +137,10 @@ func (r *DialogueRunner) Portrait() Sprite {
 		return r.portrait
 	}
 	toks := strings.Split(portraitID, ":")
+	if len(toks) == 1 {
+		r.portrait = newSimplePortrait(r.portraitImg, toks[0])
+		return r.portrait
+	}
 	if len(toks) != 2 {
 		debug.Printf("malformed portrait! using random: %v", portraitID)
 		r.portrait = newRandPortrait(r.portraitImg)

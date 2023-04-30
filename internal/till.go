@@ -15,6 +15,10 @@ type Till struct {
 	DropTargets [2][5]image.Rectangle
 	BillSlots   [5][]*Money
 	CoinSlots   [5][]*Money
+
+	StartValue int // StartValue is the starting value of the till at the beginning of the day.
+
+	DepositSlips []*DepositSlip
 }
 
 func NewTill() *Till {
@@ -40,8 +44,30 @@ func NewTill() *Till {
 			},
 		},
 	}
-
 	return result
+}
+
+type ReconciliationReport struct {
+	UnsignedSlips int
+	WTFSlips      int
+
+	Imbalance int
+}
+
+func (t *Till) Reconcile() ReconciliationReport {
+	var report ReconciliationReport
+	expectedValue := t.StartValue
+	for _, slip := range t.DepositSlips {
+		if slip.ForDeposit {
+			expectedValue += slip.Value
+		} else if slip.ForWithdrawal {
+			expectedValue -= slip.Value
+		} else {
+			report.WTFSlips++ // wtf? what is this?!
+		}
+	}
+	report.Imbalance = t.Value() - expectedValue
+	return report
 }
 
 func randPoint(dx, dy int) image.Point {
@@ -59,10 +85,52 @@ func (t *Till) DropAll(sprites []Sprite) bool {
 
 // Drop drops the provided sprite on the Till; landing it in the location needed.
 func (t *Till) Drop(s Sprite) bool {
-	m, ok := s.(*Money)
-	if !ok {
+	switch s := s.(type) {
+	case *Money:
+		return t.dropMoney(s)
+	case *DepositSlip:
+		return t.dropSlip(s)
+	case *Stack:
+		return t.dropStack(s)
+	default:
 		return false
 	}
+}
+
+func (t *Till) dropStack(s *Stack) bool {
+	idx := idxForDenom(s.Value)
+	for i := 0; i < s.Count; i++ {
+		t.dropMoney(newBill(s.Value, t.DropTargets[BillTargets][idx].Min))
+	}
+	// TODO: play sound
+	return true
+}
+
+func idxForDenom(denom int) int {
+	switch denom {
+	case 1:
+		return 0
+	case 5:
+		return 1
+	case 10:
+		return 2
+	case 20:
+		return 3
+	case 100:
+		return 4
+	default:
+		return -1
+	}
+}
+
+func (t *Till) dropSlip(s *DepositSlip) bool {
+	t.DepositSlips = append(t.DepositSlips, s)
+	// TODO: play sound
+	return true
+}
+
+func (t *Till) dropMoney(m *Money) bool {
+	// TODO: play sound
 	var targets [5]image.Rectangle
 	if m.IsCoin {
 		targets = t.DropTargets[CoinTargets]
@@ -132,7 +200,7 @@ type Money struct {
 }
 
 // newBill creates a bill of the provided denomination in local coordinates on the counter.
-func newBill(denom int, pt image.Point) Sprite {
+func newBill(denom int, pt image.Point) *Money {
 	img := Resources.images[fmt.Sprintf("bill_%d", denom)]
 	return &Money{
 		Value:  denom * 100,
@@ -146,7 +214,7 @@ func newBill(denom int, pt image.Point) Sprite {
 }
 
 // newCoin creates a coin of the provided denomination in local coordinates on the counter.
-func newCoin(denom int, pt image.Point) Sprite {
+func newCoin(denom int, pt image.Point) *Money {
 	img := Resources.images[fmt.Sprintf("coin_%d", denom)]
 	return &Money{
 		Value:  denom,
@@ -156,6 +224,15 @@ func newCoin(denom int, pt image.Point) Sprite {
 			Y:   pt.Y,
 			Img: img,
 		},
+	}
+}
+
+func newStack(denom int, pt image.Point) Sprite {
+	img := Resources.images[fmt.Sprintf("stack_%d", denom)]
+	return &Stack{
+		Value:      denom,
+		Count:      50,
+		BaseSprite: &BaseSprite{X: pt.X, Y: pt.Y, Img: img},
 	}
 }
 

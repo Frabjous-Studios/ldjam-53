@@ -1,0 +1,15 @@
+title: drone
+portrait: drone.png
+---
+<< play_sound Computer_Beep_Short-1.ogg >>
+-> Oh, hello.
+-> What do you want?
+
+<< put_counter stack_1 stack_5 stack_10 stack_100 >>
+
+-> Oh! Thank you!
+-> Cool... I guess.
+
+<< play_sound Computer_Beep_Short-2.ogg >>
+<< depart >>
+===
