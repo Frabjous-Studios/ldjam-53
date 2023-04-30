@@ -1,0 +1,247 @@
+title: RandomDeposit_Polite
+portrait: random
+---
+<< set $d to 0 >>
+<< set $d to dice(12) >>
+<< if $d == 1 >>
+    Good afternoon! I'm here to deposit some money and support my local bank.
+<< elseif $d == 2 >>
+    Good day! I'm here to deposit some money and hopefully make a small dent in the universe.
+<< elseif $d == 3 >>
+    Hi there! I'm just stopping by to deposit some money and spread some positive vibes.
+<< elseif $d == 4 >>
+    Good afternoon! I'm here to deposit some money and support my local economy.
+<< elseif $d == 5 >>
+    Hi there! I'm looking to deposit some money and maybe start saving for a trip to the beach.
+<< elseif $d == 6 >>
+    Good day! I'm here to deposit some money and hopefully make a difference in the world.
+<< elseif $d == 7 >>
+    Hey, can you help me deposit some money? I promise to be a good customer.
+<< elseif $d == 8 >>
+    Hello! I'm just stopping by to deposit some money and support my local businesses.
+<< elseif $d == 9 >>
+    Good day! I'm here to deposit some money and hopefully make my future a little brighter.
+<< elseif $d == 10 >>
+    Hey, can you help me deposit some money? I promise to be a loyal customer.
+<< elseif $d == 11 >>
+    Hello! I'm just stopping by to deposit some money and maybe start a new business venture.
+<< elseif $d == 12 >>
+    Good day! I'm here to deposit some money and hopefully inspire someone else to save.
+<< endif >>
+
+// generate a slip
+<< set $correct to 0 >>
+<< set $correct to dice(10) >>
+<< if $correct == 0 >>
+    << put_counter withdrawal_slip >>
+<< elseif $correct == 1 >>
+    << put_counter empty_slip >>
+<< elseif $correct < 8 >>
+    << put_counter deposit_slip >>
+<< else >>
+    << put_counter deposit_slip >>
+    << put_cash {dice(35)} >>  // lay down some extra cash and see if the player notices.
+<< endif>>
+
+<< jump SmallTalk_Polite >>
+===
+title: RandomWithdrawal_Polite
+portrait: random
+---
+<< set $d to 0 >>
+<< set $d to dice(8) >>
+<< if $d == 1 >>
+    Hey, could you help me withdraw some cash to buy my mom a birthday gift?
+<< elseif $d == 2 >>
+    Hey, can you help me withdraw some cash? I promise to use it wisely.
+<< elseif $d == 3 >>
+    Hey! I'm looking to withdraw some cash and maybe donate some to a good cause."
+<< elseif $d == 4 >>
+    Hey, can you help me withdraw some cash? I promise to use it for something fun.
+<< elseif $d == 5 >>
+    Hi there! I'm looking to withdraw some cash and maybe surprise my loved ones with a gift.
+<< elseif $d == 6 >>
+    Hi there! I'm looking to withdraw some cash and maybe take my family out for a fun day.
+<< elseif $d == 7 >>
+    Hi there! I'm looking to withdraw some cash and maybe surprise my friends with a gift.
+<< else >>
+    Hi there! I'm looking to withdraw some cash and maybe support a local charity.
+<< endif >>
+
+// generate a slip
+<< set $correct to 0 >>
+<< set $correct to dice(10) >>
+<< if $correct == 0 >>
+    << put_counter deposit_slip >>  // very incorrect
+    -> Um... do you know what "withdrawal" means?
+        Huh?
+<< elseif $correct < 3 >>
+    << put_counter empty_slip >>
+<< elseif $correct < 9 >>
+    << put_counter withdrawal_slip >>
+<< else >>
+    << put_counter withdrawal_slip >>
+    << put_cash {dice(5)} >>  // lay down some extra cash and see if the player notices.
+<< endif>>
+
+<< jump SmallTalk_Polite >>
+===
+title: SmallTalk_Polite
+---
+<< set $d to 0 >>
+<< set $d to dice(35) >>
+<< if $d == 1 >>
+        It's such a beautiful day outside, isn't it?
+<< elseif $d == 2 >>
+        How's your day going so far?
+<< elseif $d == 3 >>
+        I'm so glad it's Friday, aren't you?
+<< elseif $d == 4 >>
+        Do you have any fun plans for the weekend?
+<< elseif $d == 5 >>
+        I love your earrings, where did you get them?
+<< elseif $d == 6 >>
+        This line is moving so slowly today, isn't it?
+<< elseif $d == 7 >>
+        I'm so happy to finally have some time off work.
+<< elseif $d == 8 >>
+        Do you have any recommendations for a good restaurant around here?
+<< elseif $d == 9 >>
+        I can't wait for the holidays, how about you?
+<< elseif $d == 10 >>
+        Have you seen any good movies lately?
+<< elseif $d == 11 >>
+        This rain is really coming down, isn't it?
+<< elseif $d == 12 >>
+        I'm sorry for holding up the line, I just have to vent about my boss for a second.
+<< elseif $d == 13 >>
+        I always appreciate how friendly and efficient you are here.
+<< elseif $d == 14 >>
+        This is my favorite bank branch to come to, the staff is always so nice.
+<< elseif $d == 15 >>
+        I love the decor in this bank, it's so cozy and inviting.
+<< elseif $d == 16 >>
+        Do you have any plans for the summer?
+<< elseif $d == 17 >>
+        I'm trying to get better at managing my finances, any tips for me?
+<< elseif $d == 18 >>
+        I'm so happy to be able to deposit this check, it's been a long time coming.
+<< elseif $d == 19 >>
+        I really appreciate how hard you guys work to keep our money safe.
+<< elseif $d == 20 >>
+        I'm looking forward to the weekend, how about you?
+<< elseif $d == 21 >>
+        It's been a while since I've been in this bank, anything new happening?
+<< elseif $d == 22 >>
+        I always feel like I'm in good hands when I come here, thank you.
+<< elseif $d == 23 >>
+        I love your tie, it's so stylish.
+<< elseif $d == 24 >>
+        I'm so glad I can rely on this bank for all my financial needs.
+<< elseif $d == 25 >>
+        I'm looking forward to my vacation next month, how about you?
+<< elseif $d == 26 >>
+        I can't believe how fast the year is going by, can you?
+<< elseif $d == 27 >>
+        I always feel like I'm part of a family when I come here, it's so welcoming.
+<< elseif $d == 28 >>
+        I'm sorry for being chatty, I just don't get out much.
+<< elseif $d == 29 >>
+        I love the music you guys are playing, it's so relaxing.
+<< elseif $d == 30 >>
+        I always feel like I'm getting the best service when I come here.
+<< elseif $d == 31 >>
+        I hope you have a great rest of your day, you deserve it.
+<< elseif $d == 32 >>
+        I'm so glad I can count on this bank to help me with all my financial needs.
+<< elseif $d == 33 >>
+        I appreciate how patient and understanding you are with all the customers.
+<< elseif $d == 34 >>
+        I'm so grateful for all the hard work you guys do to keep our money safe.
+<< elseif $d == 35 >>
+        I always feel like I'm in good hands when I come to this bank, thank you for that.
+<<endif>>
+
+-> All done.
+-> Have a nice day.
+
+<< jump Goodbye_Polite >>
+===
+title: Goodbye_Polite
+---
+<< set $d to 0 >>
+<< set $d to dice(35) >>
+<< if $d == 1 >>
+        Thank you for your help, have a great day!
+<< elseif $d == 2 >>
+        Goodbye, I appreciate your assistance.
+<< elseif $d == 3 >>
+        Thanks, I'll be back soon.
+<< elseif $d == 4 >>
+        Have a good one!
+<< elseif $d == 5 >>
+        Take care and have a great day!
+<< elseif $d == 6 >>
+        Thanks for your time, bye!
+<< elseif $d == 7 >>
+        Bye, see you later!
+<< elseif $d == 8 >>
+        Thank you, you were very helpful.
+<< elseif $d == 9 >>
+        Have a great day, bye!
+<< elseif $d == 10 >>
+        Goodbye, thanks for everything!
+<< elseif $d == 11 >>
+        Thank you for your patience, goodbye!
+<< elseif $d == 12 >>
+        See you soon, bye!
+<< elseif $d == 13 >>
+        Thank you, have a nice day!
+<< elseif $d == 14 >>
+        Bye for now!
+<< elseif $d == 15 >>
+        Goodbye, I'll be back next week.
+<< elseif $d == 16 >>
+        Thanks, have a good one!
+<< elseif $d == 17 >>
+        Take care, bye!
+<< elseif $d == 18 >>
+        Thanks for your assistance, goodbye!
+<< elseif $d == 19 >>
+        Goodbye, I'll recommend this bank to my friends.
+<< elseif $d == 20 >>
+        Thank you, you've been very helpful.
+<< elseif $d == 21 >>
+        Goodbye, have a great day!
+<< elseif $d == 22 >>
+        Thanks for everything, see you next time.
+<< elseif $d == 23 >>
+        Bye, thanks again!
+<< elseif $d == 24 >>
+        Thank you, I appreciate your help.
+<< elseif $d == 25 >>
+        Have a nice day, goodbye!
+<< elseif $d == 26 >>
+        See you later, thanks!
+<< elseif $d == 27 >>
+        Goodbye, it was a pleasure doing business with you.
+<< elseif $d == 28 >>
+        Thanks for your time, bye for now!
+<< elseif $d == 29 >>
+        Bye, I'll be back soon.
+<< elseif $d == 30 >>
+        Thank you, have a great day ahead!
+<< elseif $d == 31 >>
+        Goodbye, take care!
+<< elseif $d == 32 >>
+        Thanks, see you next time.
+<< elseif $d == 33 >>
+        Bye for now, have a great day!
+<< elseif $d == 34 >>
+        Thank you, goodbye!
+<< elseif $d == 35 >>
+        See you soon, bye!
+<<endif>>
+
+<< depart >>
+===

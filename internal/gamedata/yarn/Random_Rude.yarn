@@ -1,0 +1,248 @@
+title: RandomDeposit_Rude
+portrait: random
+---
+<< set $d to 0 >>
+<< set $d to dice(11) >>
+<< if $d == 1 >>
+        Why is there such a long line just to deposit some money?
+<< elseif $d == 2 >>
+        Ugh, this bank is always so slow. I just want to deposit some money.
+<< elseif $d == 3 >>
+        I can't believe how long the wait is just to deposit some cash.
+<< elseif $d == 4 >>
+        I don't have time for this, just hurry up and help me deposit this money.
+<< elseif $d == 5 >>
+        This is ridiculous, I shouldn't have to wait this long just to deposit some cash.
+<< elseif $d == 6 >>
+        Can you please just help me deposit this money quickly?
+<< elseif $d == 7 >>
+        Can you please do your job properly, I just need to deposit this cash.
+<< elseif $d == 8 >>
+        Why is the line moving so slowly, I just need to deposit some money.
+<< elseif $d == 9 >>
+        This bank is always so disorganized, I can't wait here forever.
+<< elseif $d == 10 >>
+        Can you hurry up and help me, I have places to be.
+<< elseif $d == 11 >>
+        Can you please speed up the process, I have other things to do.
+<<endif>>
+
+// generate a slip
+<< set $correct to 0 >>
+<< set $correct to dice(10) >>
+<< if $correct == 0 >>
+    << put_counter withdrawal_slip >>
+<< elseif $correct == 1 >>
+    << put_counter empty_slip >>
+<< elseif $correct < 8 >>
+    << put_counter deposit_slip >>
+<< else >>
+    << put_counter deposit_slip >>
+    << put_cash {dice(35)} >>  // lay down some extra cash and see if the player notices.
+<< endif  >>
+
+<< jump SmallTalk_Rude >>
+===
+title: RandomWithdrawal_Rude
+portrait: random
+---
+<< set $d to 0 >>
+<< set $d to dice(12) >>
+<< if $d == 1 >>
+        Finally, I've been waiting here forever to withdraw some cash.
+<< elseif $d == 2 >>
+        I don't have all day, I need to withdraw this money quickly.
+<< elseif $d == 3 >>
+        Why is it so hard to withdraw money from this bank?
+<< elseif $d == 4 >>
+        Why do I have to wait in this line just to withdraw my own money?
+<< elseif $d == 5 >>
+        I can't believe how slow this bank is. I just need to withdraw some money.
+<< elseif $d == 6 >>
+        I don't understand why it's so hard to withdraw my own money from this bank.
+<< elseif $d == 7 >>
+        This bank is a joke, I can't even withdraw my own money without a long wait.
+<< elseif $d == 8 >>
+        Why do I have to fill out so many forms just to withdraw my own money?
+<< elseif $d == 9 >>
+        I don't understand why it's so difficult to withdraw money from this bank.
+<< elseif $d == 10 >>
+        This bank is always so disorganized, I can't wait here forever.
+<< elseif $d == 11 >>
+        Can you hurry up and help me, I have places to be.
+<< elseif $d == 12 >>
+        Can you please speed up the process, I have other things to do.
+<<endif>>
+
+
+// generate a slip
+<< set $correct to 0 >>
+<< set $correct to dice(10) >>
+<< if $correct == 0 >>
+    << put_counter deposit_slip >>  // very incorrect
+    -> Um... do you know what "withdrawal" means?
+        Excuse me!? Just who do you think you're talking to?!
+<< elseif $correct < 3 >>
+    << put_counter empty_slip >>
+<< elseif $correct < 9 >>
+    << put_counter withdrawal_slip >>
+<< else >>
+    << put_counter withdrawal_slip >>
+    << put_cash {dice(5)} >>  // lay down some extra cash and see if the player notices.
+<< endif>>
+
+<< jump SmallTalk_Rude >>
+===
+title: SmallTalk_Rude
+---
+<< set $d to 0 >>
+<< set $d to dice(32) >>
+<< if $d == 1 >>
+        Why is this line moving so slowly? Don't you guys know how to do your job?
+<< elseif $d == 2 >>
+        I can't believe I have to waste my time here, it's not like anyone here is doing anything important.
+<< elseif $d == 3 >>
+        I hope you're not expecting a tip for this terrible service.
+<< elseif $d == 4 >>
+        This bank needs to get its act together, it's a joke.
+<< elseif $d == 5 >>
+        I don't understand why you're asking me all these questions, just cash my check and let me go.
+<< elseif $d == 6 >>
+        Why do I have to fill out this stupid form? I'm not giving you my life story.
+<< elseif $d == 7 >>
+        I can't believe you're making me wait in line for so long, do you have any idea who I am?
+<< elseif $d == 8 >>
+        Why do I have to show you my ID? I come here all the time.
+<< elseif $d == 9 >>
+        I don't have all day to stand around here, hurry up.
+<< elseif $d == 10 >>
+        Can you believe how terrible the weather is today? It's probably your fault somehow.
+<< elseif $d == 11 >>
+        I don't know why you bother coming to work if you're going to be this slow.
+<< elseif $d == 12 >>
+        Why do I have to wait in line behind all these other people? They're obviously less important than me.
+<< elseif $d == 13 >>
+        I can't believe you expect me to wait for my turn, don't you know who I am?
+<< elseif $d == 14 >>
+        I can't believe you don't have any more of the money I want. It's not like I'm asking for the world.
+<< elseif $d == 15 >>
+        I don't understand why you're asking me to verify my account information. Can't you see it right there on your computer?
+<< elseif $d == 16 >>
+        I can't believe I have to deal with all this just to get my own money.
+<< elseif $d == 17 >>
+        Why do I have to go through all these security checks? It's not like I'm going to rob the place.
+<< elseif $d == 18 >>
+        I don't have time for all this paperwork. Just give me what I want and let me go.
+<< elseif $d == 19 >>
+        I can't believe I have to keep coming back here for the same thing over and over again.
+<< elseif $d == 20 >>
+        Why do I have to talk to you when I can just use an ATM? You're not even that helpful.
+<< elseif $d == 21 >>
+        I can't believe you're making me fill out all these forms. You should already know all this information.
+<< elseif $d == 22 >>
+        Why do I have to stand here and listen to you? You're not even that interesting.
+<< elseif $d == 23 >>
+        I don't understand why you're asking me for my social security number. That's none of your business.
+<< elseif $d == 24 >>
+        I can't believe you're making me wait so long. I have better things to do with my time.
+<< elseif $d == 25 >>
+        Why do I have to go through all this hassle just to get my own money?
+<< elseif $d == 26 >>
+        I don't understand why I have to give you my phone number. You're not going to call me, are you?
+<< elseif $d == 27 >>
+        I can't believe you're asking me all these questions. It's not like I'm trying to rob the place.
+<< elseif $d == 28 >>
+        Why do I have to deal with all this bureaucracy? Can't you just give me what I want?
+<< elseif $d == 29 >>
+        I don't have time for all this nonsense. Just give me my money and let me go.
+<< elseif $d == 30 >>
+        I can't believe I have to keep coming back here just to deal with you people.
+<< elseif $d == 31 >>
+        Why do I have to talk to you? You're not even that smart.
+<< elseif $d == 32 >>
+        I don't understand why I have to give you my address. What are you going to do with it?
+<<endif>>
+
+-> That's all. Next!
+-> Have a nice day.
+
+<< jump Goodbye_Rude >>
+===
+title: Goodbye_Rude
+---
+<< set $d to 0 >>
+<< set $d to dice(35) >>
+<< if $d == 1 >>
+        Whatever, bye.
+<< elseif $d == 2 >>
+        I can't believe how long this took, you need to work on your efficiency. Bye.
+<< elseif $d == 3 >>
+        Thanks for nothing. Bye.
+<< elseif $d == 4 >>
+        I hope you do better next time. Bye.
+<< elseif $d == 5 >>
+        This is ridiculous, I'll be finding another bank. Bye.
+<< elseif $d == 6 >>
+        I can't believe I wasted my time here. Bye.
+<< elseif $d == 7 >>
+        You really need to work on your customer service skills. Bye.
+<< elseif $d == 8 >>
+        I hope you get your act together. Bye.
+<< elseif $d == 9 >>
+        I don't have time for this nonsense. Bye.
+<< elseif $d == 10 >>
+        You really need to speed things up. Bye.
+<< elseif $d == 11 >>
+        I'm not impressed, bye.
+<< elseif $d == 12 >>
+        I can't believe how incompetent you are. Bye.
+<< elseif $d == 13 >>
+        This is unacceptable, bye.
+<< elseif $d == 14 >>
+        I don't have patience for this kind of service. Bye.
+<< elseif $d == 15 >>
+        I'm going to let your supervisor know how terrible this was. Bye.
+<< elseif $d == 16 >>
+        I'm so disappointed in this experience. Bye.
+<< elseif $d == 17 >>
+        I hope you take some customer service classes. Bye.
+<< elseif $d == 18 >>
+        I can't believe how unprofessional this was. Bye.
+<< elseif $d == 19 >>
+        You've just lost a customer. Bye.
+<< elseif $d == 20 >>
+        This was a waste of my time. Bye.
+<< elseif $d == 21 >>
+        I hope the next customer has a better experience than me. Bye.
+<< elseif $d == 22 >>
+        I'm done with this bank. Bye.
+<< elseif $d == 23 >>
+        I'm glad to be done dealing with you. Bye.
+<< elseif $d == 24 >>
+        You really need to learn how to do your job. Bye.
+<< elseif $d == 25 >>
+        I don't have any patience left for this kind of service. Bye.
+<< elseif $d == 26 >>
+        I'm not coming back here, bye.
+<< elseif $d == 27 >>
+        You've just lost my trust. Bye.
+<< elseif $d == 28 >>
+        I can't believe how bad this was. Bye.
+<< elseif $d == 29 >>
+        I'll be taking my business elsewhere. Bye.
+<< elseif $d == 30 >>
+        You need to step up your game. Bye.
+<< elseif $d == 31 >>
+        I hope you do better in the future. Bye.
+<< elseif $d == 32 >>
+        I don't have any faith in this bank. Bye.
+<< elseif $d == 33 >>
+        This is the worst service I've ever received. Bye.
+<< elseif $d == 34 >>
+        I hope this experience was a learning lesson for you. Bye.
+<< elseif $d == 35 >>
+        I'm going to tell everyone I know about this terrible service. Bye.
+<<endif>>
+
+<< depart >>
+===
