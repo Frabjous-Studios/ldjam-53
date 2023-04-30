@@ -23,21 +23,26 @@ import (
 	"strings"
 )
 
-var bodies = []string{ // TODO: put them here
+var bodies = []string{
 	"body_cloak.png",
 	"body_jumpsuit.png",
 	"body_sleeveless.png",
+	"body_suit.png",
 	"body_tshirt.png",
 }
 
-var heads = []string{ // TODO: put them here
+var heads = []string{
+	"head_blank.png",
 	"head_bunGirl.png",
 	"head_cactus.png",
+	"head_cat.png",
 	"head_glareGaunt.png",
 	"head_grimFlattop.png",
 	"head_insect.png",
 	"head_mohawkShades.png",
 	"head_pillBot.png",
+	"head_ponytails.png",
+	"head_psychoClown",
 	"head_smileScreen.png",
 }
 

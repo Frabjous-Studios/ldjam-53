@@ -17,8 +17,10 @@ require (
 	github.com/alecthomas/participle/v2 v2.0.0 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/ebitengine/purego v0.3.2 // indirect
+	github.com/gabstv/ebiten-imgui v0.5.0 // indirect
 	github.com/go-gl/glfw/v3.3/glfw v0.0.0-20221017161538-93cebf72946b // indirect
 	github.com/hajimehoshi/oto/v2 v2.4.0 // indirect
+	github.com/inkyblackness/imgui-go/v4 v4.4.0 // indirect
 	github.com/jezek/xgb v1.1.0 // indirect
 	github.com/jfreymuth/oggvorbis v1.0.5 // indirect
 	github.com/jfreymuth/vorbis v1.0.2 // indirect

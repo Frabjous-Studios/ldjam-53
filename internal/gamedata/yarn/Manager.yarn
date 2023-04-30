@@ -1,5 +1,5 @@
 title: Manager_Day1
-portrait: random
+portrait: manager.png
 ---
 Good morning and welcome to your first day on the job!
 -> Hello!
@@ -25,7 +25,7 @@ Oh, and HR wanted me to tell you: "Hold Shift and Left-click to form fat stacks?
 << depart >>
 ===
 title: Manager_Day1_End
-portrait: random
+portrait: manager.png
 ---
 Alright! Time to call it a day.
 Let's reconcile your till. Here's your report.
