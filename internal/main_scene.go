@@ -378,7 +378,11 @@ func (m *MainScene) nextButton() {
 	s := Resources.GetSound(m.Game.ACtx, "Bell-1.ogg")
 	s.Rewind()
 	s.Play()
-	m.State = StateDismissing
+	if m.Customer.ImageKey == "manager.png" {
+		m.bubbles.SetLine("What?! You think you can dismiss me?!!? I wasn't through talking!") // TODO: randomize
+	} else {
+		m.State = StateDismissing
+	}
 }
 
 // cheatValue is some random value added to required withdrawal thresholds for the customer to walk away on their own.
@@ -600,7 +604,7 @@ func (m *MainScene) drawBg(screen *ebiten.Image) {
 	screen.DrawImage(Resources.GetImage("bg_fg.png"), opts)
 }
 
-var OptionsBounds = rect(300, 240, 280, 80)
+var OptionsBounds = rect(300, 240, 240, 80)
 
 func (m *MainScene) drawOptions(screen *ebiten.Image) {
 	m.bubbles.txt.SetTarget(screen)
@@ -854,49 +858,65 @@ func (m *MainScene) putCounter(args []string) error {
 		if arg == "" {
 			continue
 		}
-		switch arg {
-		case "empty_slip":
+		switch {
+		case arg == "empty_slip":
 			slip := m.randEmptySlip()
 			m.Runner.SetDepositSlip(slip)
 			m.put(slip)
-		case "deposit_slip":
+		case strings.HasPrefix(arg, "deposit_slip"):
 			slip := m.randDepositSlip()
+			if len(arg) > 13 {
+				v, err := strconv.Atoi(strings.TrimPrefix(arg, "deposit_slip_"))
+				if err != nil {
+					debug.Println("bad call to put_counter with deposit_slip value with value:", arg)
+				} else {
+					slip.Value = v
+				}
+			}
 			m.Runner.SetDepositSlip(slip)
 			m.put(slip)
 			m.putBills(slip.Value / 100)
-		case "withdrawal_slip":
+		case strings.HasPrefix(arg, "withdrawal_slip"):
 			slip := m.randWithdrawalSlip()
+			if len(arg) > 17 {
+				v, err := strconv.Atoi(strings.TrimPrefix(arg, "withdrawal_slip_"))
+				if err != nil {
+					debug.Println("bad call to put_counter with deposit_slip value with value:", arg)
+				} else {
+					slip.Value = v
+				}
+			}
 			m.Runner.SetDepositSlip(slip)
 			m.put(slip)
-		case "bill_1":
+		case arg == "bill_1":
 			m.putBill(1)
-		case "bill_5":
+		case arg == "bill_5":
 			m.putBill(5)
-		case "bill_10":
+		case arg == "bill_10":
 			m.putBill(10)
-		case "bill_20":
+		case arg == "bill_20":
 			m.putBill(20)
-		case "bill_100":
+		case arg == "bill_100":
 			m.putBill(100)
-		case "stack_1":
+		case arg == "stack_1":
 			m.putStack(1)
-		case "stack_5":
+		case arg == "stack_5":
 			m.putStack(5)
-		case "stack_10":
+		case arg == "stack_10":
 			m.putStack(10)
-		case "stack_20":
+		case arg == "stack_20":
 			m.putStack(20)
-		case "stack_100":
+		case arg == "stack_100":
 			m.putStack(100)
-		case "coin_1":
+		case arg == "coin_1":
 			m.Sprites = append(m.Sprites, newCoin(1, randCounterPos()))
-		case "coin_5":
+		case arg == "coin_5":
 			m.Sprites = append(m.Sprites, newCoin(5, randCounterPos()))
-		case "coin_10":
+		case arg == "coin_10":
 			m.Sprites = append(m.Sprites, newCoin(10, randCounterPos()))
-		case "coin_25":
+		case arg == "coin_25":
 			m.Sprites = append(m.Sprites, newCoin(25, randCounterPos()))
-		case "coin_50":
+		case arg == "coin_50":
 			m.Sprites = append(m.Sprites, newCoin(50, randCounterPos()))
 		default:
 			debug.Printf("unrecognized argument to put_counter: %v", arg)

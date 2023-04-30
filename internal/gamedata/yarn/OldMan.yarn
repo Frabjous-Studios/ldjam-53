@@ -1,0 +1,37 @@
+title: OldMan_Day1
+portrait: random
+---
+Good morning youngster! I hope you're having a good day.
+-> Good morning! How can I assist you?
+-> Morning.
+-> Yeah yeah, what do you want?
+    Back in my day people were more polite.
+I need to withdraw some money.
+My wife is in hospice, and I have to pay $75 every day to keep her there.
+-> I'm sorry to hear that. Do you do this every day?
+-> Wow, that's rough.
+-> Sucks to be her.
+    ... Yes, I suppose it does...
+Yes, but it isn’t a chore. It keeps me moving in my old age, gets the blood pumping.
+When you're retired the habit gives you something to look forward to.
+Plus, if I don’t help her, who will?
+-> You must really love her.
+    More than life itself.
+    -> Let's get you on your way. Do you have a withdrawal slip?
+        Yes I do.
+-> Right, right. Do you have your withdrawal slip?
+    It's right here. Signed and everything.
+
+<< put_counter withdrawal_slip_7500 >>
+
+Say, have you ever been married?
+-> Um, no.
+-> Once... long ago...
+-> None of your business.
+Well, let me tell you, marriage is a beautiful thing.
+Cherish it when you have it. You never know how long it will last.
+-> Thank you for your advice.
+-> I'll do that.
+-> Sure sure, whatever.
+
+Have a good day.
