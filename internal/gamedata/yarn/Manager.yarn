@@ -29,4 +29,11 @@ portrait: random
 ---
 Alright! Time to call it a day.
 Let's reconcile your till. Here's your report.
+
+<< show_reconciliation_report >> // end the day and show the reconciliation report.
+
+Try to do better tomorrow.
+-> Okay...
+-> Fine...
+<< next_day >>
 ===

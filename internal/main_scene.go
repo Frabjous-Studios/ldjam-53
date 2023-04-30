@@ -88,7 +88,7 @@ type Hologram struct {
 	StartTime time.Time
 }
 
-const DayLength = 10 * time.Minute
+const DayLength = time.Minute // TODO: 10 * time.Minute
 
 func (s *Hologram) DrawTo(screen *ebiten.Image) {
 	if s.Img == nil {
@@ -109,6 +109,7 @@ const (
 	StateApproaching SceneState = iota
 	StateConversing
 	StateDismissing
+	StateReporting
 )
 
 var startTime time.Time
@@ -142,13 +143,18 @@ type MainScene struct {
 	vars yarn.MapVariableStorage
 	mut  sync.Mutex
 
-	speaking  *sync.Cond
-	selectOpt *sync.Cond
-	selection int
+	speaking         *sync.Cond
+	selectOpt        *sync.Cond
+	reconcileDismiss *sync.Cond
+	selection        int
 
-	debouceTime time.Time
+	debouceTime  time.Time
+	dayStartTime time.Time
 
 	txt *etxt.Renderer
+
+	report          *ReconciliationReport
+	reportDismissed bool
 }
 
 const GameMusic = "FunkyJazz.ogg"
@@ -169,7 +175,8 @@ func NewMainScene(g *Game) *MainScene {
 			BaseSprite: &BaseSprite{X: 263, Y: 124, Img: Resources.images["call_button_holo"]},
 			StartTime:  time.Now(),
 		},
-		vars: make(yarn.MapVariableStorage),
+		dayStartTime: time.Now(),
+		vars:         make(yarn.MapVariableStorage),
 	}
 	// generate random bills; [5-20] each.
 	for idx, denom := range []int{1, 5, 10, 20, 100} {
@@ -194,6 +201,7 @@ func NewMainScene(g *Game) *MainScene {
 	result.bubbles = NewBubbles(result)
 	result.speaking = sync.NewCond(&result.mut)
 	result.selectOpt = sync.NewCond(&result.mut)
+	result.reconcileDismiss = sync.NewCond(&result.mut)
 
 	result.Runner, err = NewDialogueRunner(result.vars, result)
 
@@ -241,7 +249,7 @@ func (m *MainScene) Update() error {
 		m.Customer.MoveX(DismissalPxPerSecond / TPS)
 		if m.Customer.Pos().X > m.Game.Width/2 {
 			debug.Println("transition to approaching")
-			m.newCustomer()
+			m.clearCustomer()
 			m.State = StateApproaching
 		}
 	}
@@ -269,7 +277,7 @@ func (m *MainScene) Update() error {
 	return nil
 }
 
-func (m *MainScene) newCustomer() {
+func (m *MainScene) clearCustomer() {
 	m.Customer = nil
 	m.Runner.portrait = nil
 	m.Runner.portraitImg.Clear()
@@ -305,6 +313,22 @@ func (m *MainScene) updateInput() error {
 
 	newKeys = inpututil.AppendJustPressedKeys(newKeys[:0])
 	heldKeys = inpututil.AppendPressedKeys(heldKeys[:0])
+
+	if m.State == StateReporting {
+		m.bubbles.BeDone()
+		if inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonLeft) {
+			fmt.Println("report dismissed!")
+			m.reportDismissed = true
+			if m.reportDismissed {
+				fmt.Println("state transition back to conversing")
+				m.State = StateConversing
+			}
+			m.bubbles.TextBounds = DialogueBounds
+			m.bubbles.SetLine("")
+			m.reconcileDismiss.Broadcast()
+		}
+		return nil
+	}
 
 	if time.Now().Before(m.debouceTime) {
 		return nil
@@ -546,15 +570,20 @@ func (m *MainScene) Draw(screen *ebiten.Image) {
 		sprite.DrawTo(screen)
 	}
 
-	// draw dialogue bubbles.
-	if m.bubbles.DrawTo(screen) { // draw options only if the bubbles are already totally drawn
-		m.drawOptions(screen)
+	// draw reconciliation report
+	if m.State == StateReporting && !m.reportDismissed {
+		m.drawReconciliationReport(screen)
+	} else {
+		// draw dialogue bubbles.
+		if m.bubbles.DrawTo(screen) { // draw options only if the bubbles are already totally drawn
+			m.drawOptions(screen)
+		}
 	}
 
 	// draw cash indicator
 	m.drawCashIndicator(screen)
 
-	ebitenutil.DebugPrintAt(screen, fmt.Sprintf("%.0f", ebiten.ActualFPS()), 600, 0)
+	ebitenutil.DebugPrintAt(screen, fmt.Sprintf("%.0f", ebiten.ActualFPS()), 620, 0) // TODO: remove!
 }
 
 var IndicatorColor = h2c("00ff00")
@@ -628,8 +657,18 @@ func (m *MainScene) drawOptions(screen *ebiten.Image) {
 	}
 }
 
+var ReportBounds = rect(96*2, 20*2, 114*2, 178*2)
+
+func (m *MainScene) drawReconciliationReport(screen *ebiten.Image) {
+	m.bubbles.DrawTo(screen)
+}
+
+func (m *MainScene) dayLength() time.Duration {
+	return time.Now().Sub(m.dayStartTime)
+}
+
 func (m *MainScene) startRunner() {
-	if err := m.Runner.DoNode(m.Day.Next()); err != nil {
+	if err := m.Runner.DoNode(m.Day.Next(m.dayLength())); err != nil {
 		debug.Printf("error starting runner: %v", err)
 		return
 	}
@@ -743,9 +782,25 @@ func (m *MainScene) Command(command string) error {
 		return m.depart()
 	case "set_wrong":
 		return m.setWrong()
+	case "show_reconciliation_report":
+		return m.showReconciliationReport()
 	default:
 		return fmt.Errorf("unknown command %s", tokens[0])
 	}
+}
+
+func (m *MainScene) showReconciliationReport() error {
+	m.mut.Lock()
+	defer m.mut.Unlock()
+
+	m.report = m.till.Reconcile()
+	m.bubbles.TextBounds = ReportBounds
+	m.bubbles.SetLine(m.report.String())
+	m.State = StateReporting
+
+	m.reconcileDismiss.Wait()
+
+	return nil
 }
 
 func (m *MainScene) setWrong() error {

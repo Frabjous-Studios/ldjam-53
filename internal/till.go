@@ -56,12 +56,12 @@ type ReconciliationReport struct {
 
 	BillCount     map[string]int
 	CoinCount     map[string]int
-	ExpectedValue int
-	ActualValue   int
-	Imbalance     int
+	ExpectedValue string
+	ActualValue   string
+	Imbalance     string
 }
 
-func (t *Till) Reconcile() ReconciliationReport {
+func (t *Till) Reconcile() *ReconciliationReport {
 	report := ReconciliationReport{
 		BillCount: make(map[string]int),
 		CoinCount: make(map[string]int),
@@ -86,43 +86,36 @@ func (t *Till) Reconcile() ReconciliationReport {
 	}
 	for _, slots := range t.BillSlots {
 		for _, money := range slots {
-			report.BillCount[fmt.Sprintf("b%d", money.Value)]++
+			report.BillCount[fmt.Sprintf("b%d", money.Value/100)]++
 		}
 	}
-	report.ExpectedValue = expectedValue
-	report.ActualValue = t.Value()
-	report.Imbalance = t.Value() - expectedValue
+	report.ExpectedValue = fmt.Sprintf("%.02f", float32(expectedValue)/100)
+	report.ActualValue = fmt.Sprintf("%.02f", float32(t.Value())/100)
+	report.Imbalance = fmt.Sprintf("%.02f", float32(t.Value()-expectedValue)/100)
 
-	return report
+	return &report
 }
 
 var reportTemplate *template.Template
 
 func init() {
 	var err error
-	const T = `
---Scrip-- 
-  1: {{.BillCount.b1}}
-  5: {{.BillCount.b5}}
- 10: {{.BillCount.b10}}
- 20: {{.BillCount.b20}}
-100: {{.BillCount.b100}}
-
---Tokens--
-  1: {{.CoinCount.c1}}
-  5: {{.CoinCount.c5}}
- 10: {{.CoinCount.c10}}
- 25: {{.CoinCount.c25}}
- 50: {{.CoinCount.c50}}
+	const T = `     CURRENCY
+--Scrip--     --Tokens--
+  1: {{.BillCount.b1 | printf "%3d"}}       1: {{.CoinCount.c1 | printf "%3d"}}
+  5: {{.BillCount.b5 | printf "%3d"}}       5: {{.CoinCount.c5 | printf "%3d"}}
+ 10: {{.BillCount.b10 | printf "%3d"}}      10: {{.CoinCount.c10 | printf "%3d"}}               
+ 20: {{.BillCount.b20 | printf "%3d"}}       25: {{.CoinCount.c25 | printf "%3d"}}
+100: {{.BillCount.b100 | printf "%3d"}}      50: {{.CoinCount.c50 | printf "%3d"}}
 
 --Deposit Slips--
   Valid:  {{.ValidSlips}}
 Invalid:  {{.WTFSlips}}
 
-   -- RECONCILIATION REPORT --
-Expected  =  ${{.ExpectedValue}}
-Actual    =  ${{.ActualValue}}
-  BALANCE =  ${{.Imbalance}}
+-- RECONCILIATION --
+  EXPECTED = {{.ExpectedValue}}
+      TILL = {{.ExpectedValue}}
+ IMBALANCE = {{.Imbalance}}
 `
 	reportTemplate, err = template.New("").Parse(T)
 	if err != nil {
@@ -131,12 +124,13 @@ Actual    =  ${{.ActualValue}}
 
 }
 
-func (t *ReconciliationReport) String() {
+func (t *ReconciliationReport) String() string {
 	var w bytes.Buffer
 	err := reportTemplate.Execute(&w, t)
 	if err != nil {
 		debug.Printf("error executing template: %v", err)
 	}
+	return w.String()
 }
 
 func randPoint(dx, dy int) image.Point {

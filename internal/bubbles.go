@@ -34,7 +34,10 @@ type Bubbles struct {
 	charsShown   int
 	scene        *MainScene
 	completeTime time.Time
+	TextBounds   image.Rectangle
 }
+
+var DialogueBounds = rect(340, 72, 200, 100)
 
 func NewBubbles(m *MainScene) *Bubbles {
 	result := &Bubbles{
@@ -50,6 +53,7 @@ func NewBubbles(m *MainScene) *Bubbles {
 	txt.SetColor(fontColor)
 	txt.SetLineSpacing(lineSpacing)
 	result.txt = txt
+	result.TextBounds = DialogueBounds
 
 	result.bubblePatch = Resources.GetNineSlice("bubble")
 
@@ -90,18 +94,17 @@ func (b *Bubbles) IsDone() bool {
 	return b.stack[0].charsShown == len(b.stack[0].Text)
 }
 
-var TextBounds = rect(340, 56, 200, 100)
-
+// DrawTo draws with a transparent background.
 func (b *Bubbles) DrawTo(screen *ebiten.Image) bool {
 	if b.Empty() {
 		return true
 	}
 	const padding = 3
 	b.txt.SetTarget(b.offscrn)
-	feed := b.txt.NewFeed(fixed.P(TextBounds.Min.X, TextBounds.Min.Y))
+	feed := b.txt.NewFeed(fixed.P(b.TextBounds.Min.X, b.TextBounds.Min.Y))
 	// draw text once offscreen to capture rectangles
 	for _, l := range b.stack {
-		l.Rect = b.print(feed, l, TextBounds)
+		l.Rect = b.print(feed, l, b.TextBounds)
 	}
 
 	//pos := b.Pos()
@@ -111,10 +114,10 @@ func (b *Bubbles) DrawTo(screen *ebiten.Image) bool {
 		})
 	}
 	b.txt.SetTarget(screen)
-	feed = b.txt.NewFeed(fixed.P(TextBounds.Min.X, TextBounds.Min.Y))
+	feed = b.txt.NewFeed(fixed.P(b.TextBounds.Min.X, b.TextBounds.Min.Y))
 	for _, l := range b.stack {
 		b.txt.SetColor(fontColor)
-		l.Rect = b.print(feed, l, TextBounds)
+		l.Rect = b.print(feed, l, b.TextBounds)
 	}
 	return b.IsDone()
 }
@@ -123,11 +126,11 @@ func (b *Bubbles) Empty() bool {
 }
 
 func (b *Bubbles) Bounds() image.Rectangle {
-	return rect(340, 12, 200, 72)
+	return b.TextBounds
 }
 
 func (b *Bubbles) Pos() image.Point {
-	return image.Pt(340, 12)
+	return b.TextBounds.Min
 }
 
 func (b *Bubbles) SetPos(point image.Point) {

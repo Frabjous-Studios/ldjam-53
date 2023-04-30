@@ -3,11 +3,13 @@ package internal
 import (
 	"math/rand"
 	"strings"
+	"time"
 )
 
 // Days is the list of Yarnspinner nodes that happen each day... in this order.
 var Days = []Day{
 	0: { // more deposits than withdrawals
+		EndNode:  "Manager_Day1_End",
 		Sequence: []string{"Manager_Day1", "random", "random", "random", "drone", "random", "random", "OldMan"},
 		Random:   []string{"RandomDeposit_Polite", "RandomDeposit_Rude", "RandomDeposit_Polite", "RandomDeposit_Rude", "RandomWithdrawal_Polite", "RandomWithdrawal_Rude"},
 	},
@@ -17,7 +19,6 @@ type Account struct {
 	Owner    string
 	Number   int
 	Checking int
-	// Savings  int
 }
 
 type Day struct {
@@ -31,13 +32,19 @@ type Day struct {
 	// SlipsAccepted
 	Slips []*DepositSlip
 
+	EndNode string
+
 	Accounts map[int]*Account
 
 	curr int
 }
 
-// Next retrieves the next node on the given day.
-func (d *Day) Next() string {
+// Next retrieves the next node on the given day. Pass in the amount of time spent on this day to determine when to
+// trigger the manager for reconciliation.
+func (d *Day) Next(t time.Duration) string {
+	if t >= DayLength {
+		return d.EndNode // day over! Manager time!!!
+	}
 	defer func() { // increment d.curr no matter what
 		d.curr = d.curr + 1
 	}()
