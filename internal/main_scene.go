@@ -88,7 +88,7 @@ type Hologram struct {
 	StartTime time.Time
 }
 
-const DayLength = time.Minute // TODO: 10 * time.Minute
+const DayLength = 10 * time.Minute
 
 func (s *Hologram) DrawTo(screen *ebiten.Image) {
 	if s.Img == nil {
@@ -106,10 +106,12 @@ func (s *Hologram) DrawTo(screen *ebiten.Image) {
 type SceneState uint8
 
 const (
-	StateApproaching SceneState = iota
+	StateFadeIn SceneState = iota
+	StateApproaching
 	StateConversing
 	StateDismissing
 	StateReporting
+	StateFadingToNewDay
 )
 
 var startTime time.Time
@@ -118,6 +120,7 @@ type MainScene struct {
 	Game *Game
 
 	Day          Day // Customers is a list of Yarnspinner nodes happening on the current day
+	dayIdx       int
 	Customer     *Customer
 	CustomerName string
 
@@ -143,18 +146,21 @@ type MainScene struct {
 	vars yarn.MapVariableStorage
 	mut  sync.Mutex
 
-	speaking         *sync.Cond
-	selectOpt        *sync.Cond
-	reconcileDismiss *sync.Cond
-	selection        int
+	speaking     *sync.Cond
+	selectOpt    *sync.Cond
+	endOfDaySync *sync.Cond
+	selection    int
 
-	debouceTime  time.Time
-	dayStartTime time.Time
+	debouceTime      time.Time
+	dayStartTime     time.Time
+	dayFadeStartTime time.Time
 
 	txt *etxt.Renderer
 
 	report          *ReconciliationReport
 	reportDismissed bool
+
+	black *ebiten.Image
 }
 
 const GameMusic = "FunkyJazz.ogg"
@@ -166,7 +172,7 @@ func NewMainScene(g *Game) *MainScene {
 		Game:       g,
 		Sprites:    []Sprite{},
 		Day:        Days[0],
-		State:      StateApproaching,
+		State:      StateFadeIn,
 		till:       NewTill(),
 		counter:    &BaseSprite{X: 112, Y: 152, Img: Resources.images["counter"]},
 		terminal:   &BaseSprite{X: 0, Y: 72, Img: Resources.images["terminal"]},
@@ -177,6 +183,7 @@ func NewMainScene(g *Game) *MainScene {
 		},
 		dayStartTime: time.Now(),
 		vars:         make(yarn.MapVariableStorage),
+		black:        placeholder(colornames.Black, 1, 1),
 	}
 	// generate random bills; [5-20] each.
 	for idx, denom := range []int{1, 5, 10, 20, 100} {
@@ -201,7 +208,7 @@ func NewMainScene(g *Game) *MainScene {
 	result.bubbles = NewBubbles(result)
 	result.speaking = sync.NewCond(&result.mut)
 	result.selectOpt = sync.NewCond(&result.mut)
-	result.reconcileDismiss = sync.NewCond(&result.mut)
+	result.endOfDaySync = sync.NewCond(&result.mut)
 
 	result.Runner, err = NewDialogueRunner(result.vars, result)
 
@@ -219,7 +226,23 @@ func NewMainScene(g *Game) *MainScene {
 
 const DismissalPxPerSecond = 100
 
+const DayFadeTime = 1 * time.Second
+
 func (m *MainScene) Update() error {
+	if m.State == StateFadingToNewDay {
+		if time.Now().Sub(m.dayFadeStartTime) > DayFadeTime {
+			m.State = StateFadeIn
+			m.endOfDaySync.Broadcast()
+			m.dayFadeStartTime = time.Now()
+		}
+		return nil
+	} else if m.State == StateFadeIn {
+		if time.Now().Sub(m.dayFadeStartTime) > DayFadeTime {
+			m.State = StateApproaching
+			m.endOfDaySync.Broadcast()
+			m.dayFadeStartTime = time.Time{}
+		}
+	}
 	if err := m.updateInput(); err != nil {
 		debug.Printf("error from updateInput: %v", err)
 	}
@@ -325,7 +348,7 @@ func (m *MainScene) updateInput() error {
 			}
 			m.bubbles.TextBounds = DialogueBounds
 			m.bubbles.SetLine("")
-			m.reconcileDismiss.Broadcast()
+			m.endOfDaySync.Broadcast()
 		}
 		return nil
 	}
@@ -583,7 +606,23 @@ func (m *MainScene) Draw(screen *ebiten.Image) {
 	// draw cash indicator
 	m.drawCashIndicator(screen)
 
+	// do fade
+	if m.State == StateFadingToNewDay {
+		dt := float32(time.Now().Sub(m.dayFadeStartTime).Seconds()) / float32(DayFadeTime.Seconds())
+		m.DrawFade(screen, dt)
+	} else if m.State == StateFadeIn {
+		dt := float32(time.Now().Sub(m.dayFadeStartTime).Seconds()) / float32(DayFadeTime.Seconds())
+		m.DrawFade(screen, 1-dt)
+	}
+
 	ebitenutil.DebugPrintAt(screen, fmt.Sprintf("%.0f", ebiten.ActualFPS()), 620, 0) // TODO: remove!
+}
+func (m *MainScene) DrawFade(screen *ebiten.Image, dt float32) {
+	opts := &ebiten.DrawImageOptions{}
+	opts.Blend = ebiten.BlendSourceOver
+	opts.ColorScale.Scale(dt, dt, dt, dt)
+	opts.GeoM.Scale(float64(m.Game.Width), float64(m.Game.Height))
+	screen.DrawImage(m.black, opts)
 }
 
 var IndicatorColor = h2c("00ff00")
@@ -784,9 +823,29 @@ func (m *MainScene) Command(command string) error {
 		return m.setWrong()
 	case "show_reconciliation_report":
 		return m.showReconciliationReport()
+	case "next_day":
+		return m.nextDay()
 	default:
 		return fmt.Errorf("unknown command %s", tokens[0])
 	}
+}
+
+func (m *MainScene) nextDay() error {
+	m.mut.Lock()
+	defer m.mut.Unlock()
+	m.State = StateFadingToNewDay
+	m.dayFadeStartTime = time.Now()
+
+	m.endOfDaySync.Wait()
+
+	m.dayIdx++
+	if m.dayIdx < len(Days) {
+		m.Day = Days[m.dayIdx]
+	} else {
+		// TODO: thanks for playing! Credits
+		m.Game.ChangeScene(NewMainScene(m.Game))
+	}
+	return nil
 }
 
 func (m *MainScene) showReconciliationReport() error {
@@ -798,8 +857,7 @@ func (m *MainScene) showReconciliationReport() error {
 	m.bubbles.SetLine(m.report.String())
 	m.State = StateReporting
 
-	m.reconcileDismiss.Wait()
-
+	m.endOfDaySync.Wait()
 	return nil
 }
 

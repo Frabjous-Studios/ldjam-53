@@ -13,6 +13,11 @@ var Days = []Day{
 		Sequence: []string{"Manager_Day1", "random", "random", "random", "drone", "random", "random", "OldMan"},
 		Random:   []string{"RandomDeposit_Polite", "RandomDeposit_Rude", "RandomDeposit_Polite", "RandomDeposit_Rude", "RandomWithdrawal_Polite", "RandomWithdrawal_Rude"},
 	},
+	1: {
+		EndNode:  "Manager_Day2_End",
+		Sequence: []string{},
+		Random:   []string{"RandomDeposit_Polite", "RandomDeposit_Rude", "RandomDeposit_Polite", "RandomDeposit_Rude", "RandomWithdrawal_Polite", "RandomWithdrawal_Rude"},
+	},
 }
 
 type Account struct {
