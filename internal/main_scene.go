@@ -99,7 +99,7 @@ func (s *Hologram) DrawTo(screen *ebiten.Image) {
 	opt.Blend = ebiten.BlendSourceOver
 	opt.GeoM.Translate(float64(s.X), float64(s.Y))
 	opt.GeoM.Scale(ScaleFactor, ScaleFactor)
-	opt.ColorScale.Scale(1.0, 1.0, 1.0, 0.7) // TODO: animate this with dT using a curve
+	opt.ColorScale.Scale(1.0, 1.0, 1.0, 0.7) // TODO animate this with dT using a curve
 	screen.DrawImage(s.Img, opt)
 }
 
@@ -132,7 +132,7 @@ type MainScene struct {
 
 	till       *Till
 	counter    *BaseSprite
-	terminal   *BaseSprite
+	terminal   *Terminal
 	buttonBase *BaseSprite
 	buttonHolo *Hologram
 
@@ -175,7 +175,6 @@ func NewMainScene(g *Game) *MainScene {
 		State:      StateFadeIn,
 		till:       NewTill(),
 		counter:    &BaseSprite{X: 112, Y: 152, Img: Resources.images["counter"]},
-		terminal:   &BaseSprite{X: 0, Y: 72, Img: Resources.images["terminal"]},
 		buttonBase: &BaseSprite{X: 259, Y: 147, Img: Resources.images["call_button"]},
 		buttonHolo: &Hologram{
 			BaseSprite: &BaseSprite{X: 263, Y: 124, Img: Resources.images["call_button_holo"]},
@@ -185,6 +184,7 @@ func NewMainScene(g *Game) *MainScene {
 		vars:         make(yarn.MapVariableStorage),
 		black:        placeholder(colornames.Black, 1, 1),
 	}
+	result.terminal = NewTerminal(result.till)
 	// generate random bills; [5-20] each.
 	for idx, denom := range []int{1, 5, 10, 20, 100} {
 		count := rand.Intn(15) + 5
@@ -247,6 +247,7 @@ func (m *MainScene) Update() error {
 		debug.Printf("error from updateInput: %v", err)
 	}
 	m.bubbles.Update()
+	m.terminal.Update()
 
 	switch m.State {
 	case StateApproaching:
@@ -340,10 +341,8 @@ func (m *MainScene) updateInput() error {
 	if m.State == StateReporting {
 		m.bubbles.BeDone()
 		if inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonLeft) {
-			fmt.Println("report dismissed!")
 			m.reportDismissed = true
 			if m.reportDismissed {
-				fmt.Println("state transition back to conversing")
 				m.State = StateConversing
 			}
 			m.bubbles.TextBounds = DialogueBounds
