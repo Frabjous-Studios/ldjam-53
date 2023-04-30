@@ -24,7 +24,7 @@ type MainMenuScene struct {
 var newKeys []ebiten.Key
 var heldKeys []ebiten.Key
 
-const MainMenuMusic = "ElectronicDraft1.ogg"
+const MainMenuMusic = "Main_Menu.ogg"
 
 func NewMainMenuScene(game *Game) (*MainMenuScene, error) {
 	var (
