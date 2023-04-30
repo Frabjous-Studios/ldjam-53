@@ -846,7 +846,7 @@ func (m *MainScene) nextDay() error {
 	m.dayFadeStartTime = time.Now()
 
 	m.endOfDaySync.Wait()
-
+	m.till = NewTill() // a whooole new tiiiill!
 	m.dayIdx++
 	if m.dayIdx < len(m.Days) {
 		m.Day = m.Days[m.dayIdx]

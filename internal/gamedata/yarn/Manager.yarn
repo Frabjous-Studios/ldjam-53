@@ -63,3 +63,16 @@ Or the difference comes out of your wages!
 
 Don't worry, though, I have faith in you.
 ===
+title: Manager_Day2_End
+portrait: manager.png
+---
+Alright! That's enough for today.
+Let's reconcile your till. Here's your report.
+
+<< show_reconciliation_report >> // end the day and show the reconciliation report.
+
+Try to do better tomorrow.
+-> Okay...
+-> Fine...
+<< next_day >>
+===
