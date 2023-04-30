@@ -163,7 +163,7 @@ type MainScene struct {
 	black *ebiten.Image
 }
 
-const GameMusic = "FunkyJazz.ogg"
+const GameMusic = "Hip_Elevator.ogg"
 
 func NewMainScene(g *Game) *MainScene {
 	var err error
