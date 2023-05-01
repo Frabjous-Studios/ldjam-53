@@ -120,3 +120,106 @@ This could definitely improve. I think you're slipping.
 
 << next_day >>
 ===
+title: Manager_Day4
+portrait: manager.png
+---
+Good morning! Yesterday, we added check cashing to your duties, and today we're adding another one.
+You'll also be able to access the account tab on your terminal, where you can look up people's accounts and modify the information. 
+Remember, accuracy is key.
+
+<< depart >>
+===
+title: Manager_Day4_End
+portrait: manager.png
+---
+Well that was a fine mess. How about we call it for the day?
+You know the drill. Here's your report.
+
+<< show_reconciliation_report >>
+
+This could definitely improve. I think you're slipping.
+-> Uh oh?
+-> Got it...
+-> I spent all the money on beer and tobacco **stares
+
+<< next_day >>
+===
+title: Manager_Day5
+portrait: manager.png
+---
+Good morning! 
+Today, we're low on cash, but we're expecting an order from the main branch later in the day. 
+In the meantime, we need to be extra careful. 
+All signatures on checks and deposit/withdrawal slips must match the customer's photo ID. And remember, if a customer doesn't have a photo ID with a signature, and the correct details we can't accept it. 
+Also, you may have heard about a troublesome customer named Karen. If she comes in, under no circumstances should you call me over. 
+Just handle it like a pro in a polite and discreet way.
+<< depart >>
+===
+title: Manager_Day5_End
+portrait: manager.png
+---
+Well that was a fine mess. How about we call it for the day?
+You know the drill. Here's your report.
+
+<< show_reconciliation_report >>
+
+This could definitely improve. I think you're slipping.
+-> I am secretly a kitten meow
+-> Got it...
+
+<< next_day >>
+===
+title: Manager_Day6
+portrait: manager.png
+---
+Good morning! 
+We've had a bit of a setback. 
+Our money delivery drone has been robbed, and our till is empty. 
+This means that we won't be able to fulfill all withdrawal requests today. 
+I know this is tough, but we need to prioritize. 
+Focus on fulfilling requests from our most important customers first. And please, don't hesitate to dismiss customers without their money.
+We need to keep our bank safe.
+
+<< depart >>
+===
+title: Manager_Day6_End
+portrait: manager.png
+---
+Well that was a fine mess. How about we call it for the day?
+You know the drill. Here's your report.
+
+<< show_reconciliation_report >>
+
+This could definitely improve. I think you're slipping.
+-> The dark beckons me, for I am but a character in a video game
+-> Got it...
+
+<< next_day >>
+===
+title: Manager_Day7
+portrait: manager.png
+---
+Good morning! 
+Today is our last day, and it's going to be a tough one. We've hired a private security force to protect the building, and we're only allowing customers in one at a time. 
+Withdrawals are limited to $50 each, and anyone else needs to be turned away. 
+I know this is hard, but we need to stick to the rules to keep everyone safe. 
+And please, don't let the customers' pleas for more money sway you. 
+We've come this far, and we can't let our guard down now. Let's finish this week strong.
+
+
+<< depart >>
+===
+title: Manager_Day7_End
+portrait: manager.png
+---
+Well that was a fine mess. How about we call it for the day?
+You know the drill. Here's your report.
+
+<< show_reconciliation_report >>
+
+This could definitely improve. I think you're slipping.
+-> THERES A GIANT THREE MAN SIZED WATER FOWL!!!
+-> Got it...
+
+<< next_day >>
+===
