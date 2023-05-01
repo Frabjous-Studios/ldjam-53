@@ -1,7 +1,7 @@
 package internal
 
 import (
-	"github.com/Frabjous-Studios/ebitengine-game-template/internal/debug"
+	"github.com/Frabjous-Studios/bankwave/internal/debug"
 	uiimg "github.com/ebitenui/ebitenui/image"
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/tinne26/etxt"

@@ -2,7 +2,7 @@ package internal
 
 import (
 	"fmt"
-	"github.com/Frabjous-Studios/ebitengine-game-template/internal/debug"
+	"github.com/Frabjous-Studios/bankwave/internal/debug"
 	"github.com/ebitenui/ebitenui"
 	"github.com/ebitenui/ebitenui/image"
 	"github.com/ebitenui/ebitenui/utilities/colorutil"

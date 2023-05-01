@@ -1,7 +1,7 @@
 package internal
 
 import (
-	"github.com/Frabjous-Studios/ebitengine-game-template/internal/debug"
+	"github.com/Frabjous-Studios/bankwave/internal/debug"
 	"github.com/hajimehoshi/ebiten/v2"
 	"image"
 	"math/rand"

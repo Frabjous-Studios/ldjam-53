@@ -1,4 +1,4 @@
-module github.com/Frabjous-Studios/ebitengine-game-template
+module github.com/Frabjous-Studios/bankwave
 
 go 1.20
 

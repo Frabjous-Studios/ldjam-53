@@ -3,7 +3,7 @@ package internal
 import (
 	"bytes"
 	"fmt"
-	"github.com/Frabjous-Studios/ebitengine-game-template/internal/debug"
+	"github.com/Frabjous-Studios/bankwave/internal/debug"
 	"image"
 	"math/rand"
 	"text/template"

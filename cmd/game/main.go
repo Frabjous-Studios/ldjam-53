@@ -5,7 +5,7 @@
 package main
 
 import (
-	"github.com/Frabjous-Studios/ebitengine-game-template/internal"
+	"github.com/Frabjous-Studios/bankwave/internal"
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/audio"
 	"log"
@@ -15,7 +15,7 @@ func main() {
 	gameWidth, gameHeight := 640, 480
 
 	ebiten.SetWindowSize(gameWidth, gameHeight)
-	ebiten.SetWindowTitle("ebitengine-game-template")
+	ebiten.SetWindowTitle("BankWave: Neon Networth")
 
 	game := &internal.Game{
 		Width:  gameWidth,

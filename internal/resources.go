@@ -5,7 +5,7 @@ import (
 	"bytes"
 	"embed"
 	"fmt"
-	"github.com/Frabjous-Studios/ebitengine-game-template/internal/debug"
+	"github.com/Frabjous-Studios/bankwave/internal/debug"
 	"github.com/ebitenui/ebitenui/image"
 	"github.com/ebitenui/ebitenui/utilities/colorutil"
 	"github.com/golang/freetype/truetype"

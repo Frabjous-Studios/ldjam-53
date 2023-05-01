@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"github.com/DrJosh9000/yarn"
 	"github.com/DrJosh9000/yarn/bytecode"
-	"github.com/Frabjous-Studios/ebitengine-game-template/internal/debug"
+	"github.com/Frabjous-Studios/bankwave/internal/debug"
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/razor-1/localizer-cldr/resources/language"
 	"strings"

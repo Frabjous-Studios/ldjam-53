@@ -30,14 +30,14 @@ jobs:
           go-version: 1.19
       - name: Build Windows exe
         shell: bash
-        run: go build -v -o ebitengine-game-template.exe cmd/game/main.go
+        run: go build -v -o bankwave.exe cmd/game/main.go
       - name: Upload Windows exe
         uses: actions/upload-artifact@v3
         with:
-          name: ebitengine-game-template-win
+          name: bankwave-win
           path: |
             LICENSE
-            ebitengine-game-template.exe
+            bankwave.exe
 
   build-mac:
     name: Build MacOS binary
@@ -51,15 +51,15 @@ jobs:
           go-version: 1.19
       - name: Build Mac exe
         shell: bash
-        run: go build -v -o ebitengine-game-template cmd/game/main.go
+        run: go build -v -o bankwave cmd/game/main.go
       - name: Tar it up
         shell: bash
-        run: tar -zcvf ebitengine-game-template-mac.tar.gz ebitengine-game-template LICENSE
+        run: tar -zcvf bankwave-mac.tar.gz bankwave LICENSE
       - name: Upload Mac exe
         uses: actions/upload-artifact@v3
         with:
-          name: ebitengine-game-template-mac
-          path: ebitengine-game-template-mac.tar.gz
+          name: bankwave-mac
+          path: bankwave-mac.tar.gz
 
   build-lin:
     name: Build Linux binary
@@ -76,15 +76,15 @@ jobs:
         run: sudo apt-get update && sudo apt-get -y install libgl1-mesa-dev xorg-dev libasound2-dev
       - name: Build Linux exe
         shell: bash
-        run: go build -v -o ebitengine-game-template cmd/game/main.go
+        run: go build -v -o bankwave cmd/game/main.go
       - name: Tar it up
         shell: bash
-        run: tar -zcvf ebitengine-game-template-lin.tar.gz ebitengine-game-template LICENSE
+        run: tar -zcvf bankwave-lin.tar.gz bankwave LICENSE
       - name: Upload Linux exe
         uses: actions/upload-artifact@v3
         with:
-          name: ebitengine-game-template-lin
-          path: ebitengine-game-template-lin.tar.gz
+          name: bankwave-lin
+          path: bankwave-lin.tar.gz
 
   build-web:
     name: Build Web binary
@@ -98,14 +98,14 @@ jobs:
           go-version: 1.19
       - name: Build Web binary
         shell: bash
-        run: GOOS=js GOARCH=wasm go build -v -ldflags "-w -s" -o dist/web/ebitengine-game-template.wasm cmd/game/main.go
+        run: GOOS=js GOARCH=wasm go build -v -ldflags "-w -s" -o dist/web/bankwave.wasm cmd/game/main.go
       - name: Copy WASM exec script
         shell: bash
         run: cp $(go env GOROOT)/misc/wasm/wasm_exec.js dist/web/.
       - name: Upload Web build
         uses: actions/upload-artifact@v3
         with:
-          name: ebitengine-game-template-web
+          name: bankwave-web
           path: |
             dist/web/
             LICENSE
@@ -119,22 +119,22 @@ jobs:
       - name: Download Windows binary
         uses: actions/download-artifact@v3
         with:
-          name: ebitengine-game-template-win
+          name: bankwave-win
       - name: Download Linux binary
         uses: actions/download-artifact@v3
         with:
-          name: ebitengine-game-template-lin
+          name: bankwave-lin
       - name: Download Mac binary
         uses: actions/download-artifact@v3
         with:
-          name: ebitengine-game-template-mac
+          name: bankwave-mac
       - name: Upload beta testing bundle
         uses: actions/upload-artifact@v3
         with:
-          name: ebitengine-game-template-bundle
+          name: bankwave-bundle
           path: |
             README.md
             LICENSE
-            ebitengine-game-template-lin.tar.gz
-            ebitengine-game-template-mac.tar.gz
-            ebitengine-game-template.exe
+            bankwave-lin.tar.gz
+            bankwave-mac.tar.gz
+            bankwave.exe
