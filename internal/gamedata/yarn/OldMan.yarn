@@ -1,5 +1,5 @@
 title: OldMan_Day1
-portrait: random
+portrait: head_bulbous.png:body_jumpsuit.png
 ---
 Good morning youngster! I hope you're having a good day.
 -> Good morning! How can I assist you?
@@ -34,7 +34,7 @@ Cherish it when you have it. You never know how long it will last.
 Have a good day.
 ===
 title: OldMan_Day2
-portrait: random
+portrait: head_bulbous.png:body_jumpsuit.png
 ---
 Good morning again! How are you today?
 -> Good morning! I'm fine thanks.
