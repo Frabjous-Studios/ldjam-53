@@ -63,6 +63,27 @@ title: OldMan_Day3
 portrait: head_bulbous.png:body_jumpsuit.png
 ---
 Old Man: Good morning! It's nice to see you again.
+Player: Good morning! It's nice to see you too. How can I assist you today?
+Old Man: I need to cash a check today. 
+It's from my son. 
+He sent me some money to help pay for my wife's hospice care. 
+I’m retired so what I have is all I have, so every little bit helps.
+Player: I'm sorry to hear that. We can cash the check for you, but we'll need to validate it through the check system first.
+Old Man: That's fine. 
+Say, have you ever traveled anywhere interesting?
+Player: Actually, yes. 
+I recently went on a trip to Japan. 
+It was amazing.
+Old Man: Oh wow, I've always wanted to go to Japan. 
+What was your favorite part?
+Player: Definitely the food. 
+It was so delicious. 
+Don’t get me wrong, the entire trip was amazing and I’m saving up money to visit again in a couple of months.
+Old Man: That's great to hear. 
+Maybe I'll have to save up and go there myself someday when my wife is better. 
+Thanks for sharing.
+
+Player: No problem. Have a good day.
 -> Good morning! I'm fine thanks.
 -> Ugh, you know... work.
     That's too bad.
@@ -73,6 +94,24 @@ portrait: head_bulbous.png:body_jumpsuit.png
 ---
 Old Man: Good morning, my friend. 
 How are you doing today?
+Player: Good morning! 
+I'm doing well, thanks. 
+How can I help you today?
+Old Man: Same as always, I need to withdraw $75 for my wife's hospice care. 
+By the way, have you heard about the stock market? 
+Player: Yes, I have. 
+It's pretty concerning.
+Old Man: Indeed it is. 
+People are talking about it crashing or about to crash? My own son is a financial advisor and he's been telling me to move my money into gold or silver. 
+Do you think that's a good idea?
+Player: I'm not really qualified to give financial advice, but it might be worth considering. 
+It's always good to have a diversified portfolio… or so I hear.
+Old Man: Hmm, I'll have to think about that. 
+Thanks for your input. 
+Have a good day.
+
+Player: You're welcome. Take care.
+
 -> Good morning! I'm fine thanks.
 -> Ugh, you know... work.
     That's too bad.
@@ -83,6 +122,31 @@ portrait: head_bulbous.png:body_jumpsuit.png
 ---
 Old Man: "Hello there young man, how are you holding up? 
 You've been working hard here every day, I hope the customers have been treating you well."
+Teller: "Oh, hello sir. 
+Yes, it's been a bit hectic, but nothing we can't handle. 
+How can I assist you today?"
+Old Man: "Well, I have to say I'm a bit worried about you all. 
+With the bank running low on cash, I hope none of the customers have been giving you trouble."
+Teller: "Actually, sir, most of the customers have been quite understanding. 
+I admit that some are upset about the withdrawal limits, but they're trying to make the best of the situation."
+Old Man: "That's good to hear that they understand you can’t get blood from a stone. 
+It's important to stay positive in tough times. 
+Speaking of which, how are you holding up personally? 
+This must be stressful for you. 
+Are you eating well?"
+Teller: "I'm doing okay, sir. 
+It's just a job, you know. 
+I'm just happy to help out in any way I can."
+Old Man: "Well, I know for one that I appreciate your hard work. 
+I know I can always count on you to help me with my withdrawals. 
+I have to keep making these payments for my wife's care, you know."
+Teller: "Of course, sir. 
+We're here to assist you with that. 
+Let me know how much you need to withdraw today."
+Old Man: "Just the usual $75. 
+Thank you, young man. 
+I hope things get better for all of us soon."
+Teller: "You're welcome, sir. Hang in there, and take care."
 -> Good morning! I'm fine thanks.
 -> Ugh, you know... work.
     That's too bad.
@@ -91,8 +155,35 @@ You've been working hard here every day, I hope the customers have been treating
 title: OldMan_Day6
 portrait: head_bulbous.png:body_jumpsuit.png
 ---
-The Old man arrives at the bank looking more downtrodden than usual. 
-As he approaches the teller window, he speaks with a heavy heart.
+The Old man arrives at the bank looking more downtrodden than usual. As he approaches the teller window, he speaks with a heavy heart.
+Old Man: "Hello again. I'm sorry to trouble you, but I need to withdraw the $75 for my wife's hospice care. 
+She needs her medication and treatment."
+Teller: "I'm sorry, but there was a robbery today, and the money delivery drone was taken. 
+I'm afraid there isn't any money in the till to give you right now."
+Old Man: "Oh, no. That's terrible news. 
+What am I going to do? I don't know how I'm going to pay for my wife's care now."
+Teller: "I'm sorry, sir. 
+There's nothing I can do. 
+I wish I could help."
+Old Man: "Please, isn't there anything you can do? 
+My wife needs her care. 
+I can't let her suffer."
+Teller: "I'm sorry, sir. 
+The manager has instructed us not to give out any money until the bank is resupplied. 
+I'm afraid I can't help you."
+As the old man realizes he won't be able to withdraw any money today, his face falls with sadness.
+Old Man: "I understand. 
+Thank you for your time. 
+Please, take care of yourself."
+As he slowly walks away, the old man seems to be struggling to hold back tears.
+After the old man leaves the bank, the bank manager lets out a deep sigh and mutters under his breath, "Honestly, the nerve of some people. Always begging for money they can't repay."
+Teller: "But sir, that man's wife is in hospice. 
+He just wants to make sure she's taken care of."
+Bank Manager: "Hospice, shmospice. 
+I bet that old fool is just wasting the money on himself. 
+He's a lay-a-bout and we shouldn't be helping him. 
+That's how you deal with riff-raff like him, you don't give them any handouts."
+
 -> Good morning! I'm fine thanks.
 -> Ugh, you know... work.
     That's too bad.
@@ -103,6 +194,32 @@ portrait: head_bulbous.png:body_jumpsuit.png
 ---
 The old man enters the bank, looking more anxious and worried than ever before. 
 As he approaches the teller window, his hands tremble as he pulls out the withdrawal slip and a photo ID.
+Old Man: "Please, son. I need to withdraw $75 today. 
+It's for my wife's hospice. 
+They won't keep her there if I don't pay in full. 
+She's not healthy enough to be moved, not by any means. You must understand."
+Old Man: "I'm sorry to be a burden, son. 
+I know the bank is having troubles. 
+But please, please, can you help me?"
+Teller: "I'm sorry, sir, but I can only give you $50. 
+That's all the cash I have in the till per customer."
+Old Man: "What should I do? 
+My wife needs that money, she can't be kicked out of hospice."
+Teller: "I'm sorry, sir, but there's nothing I can do. 
+You'll have to come back another day when there's more cash available."
+
+Old Man: "But... but I can't! 
+You don't understand, my wife is very sick. 
+She isn’t healthy enough to… She needs the extra help she is receiving from hospice. 
+Please, we’re friends, right? 
+Isn't there anything you can do?"
+You notice Bank Manager walking toward you.
+Teller: "I'm sorry, sir, but there really isn't anything I can do.
+You'll have to come back another day."
+Old Man: "Please, I'm begging you. 
+There must be something you can do. 
+My wife needs that money, she can't be kicked out of hospice. 
+I don't know what I'll do if she is."
 
 -> Good morning! I'm fine thanks.
 -> Ugh, you know... work.
