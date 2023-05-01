@@ -90,6 +90,7 @@ func init() {
 	// anims
 	Resources.anims = make(map[string]*asebiten.Animation)
 	Resources.anims["shredder"] = Resources.GetAnim("scan_shreder.json")
+	Resources.anims["alarm_buttons"] = Resources.GetAnim("alarmbuttons.json")
 
 	// images
 	Resources.images = make(map[string]*ebiten.Image)

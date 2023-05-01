@@ -133,13 +133,14 @@ type MainScene struct {
 	State  SceneState
 	Runner *DialogueRunner
 
-	till       *Till
-	counter    *BaseSprite
-	terminal   *Terminal
-	buttonBase *BaseSprite
-	buttonHolo *Hologram
-	shredder   *Shredder
-	trashChute *TrashChute
+	till         *Till
+	counter      *BaseSprite
+	terminal     *Terminal
+	buttonBase   *BaseSprite
+	buttonHolo   *Hologram
+	shredder     *Shredder
+	trashChute   *TrashChute
+	alarmButtons *AlarmButtons
 
 	bubbles *Bubbles
 	options []*Line
@@ -190,6 +191,7 @@ func NewMainScene(g *Game) *MainScene {
 		black:        placeholder(colornames.Black, 1, 1),
 		shredder:     NewShredder(),
 		trashChute:   NewTrashChute(),
+		alarmButtons: NewAlarmButtons(),
 	}
 	result.Day = result.Days[0]
 	result.randomizeTill()
@@ -357,6 +359,11 @@ func (m *MainScene) updateInput() error {
 			}
 		}
 	}
+	if (!cPos.In(AlarmButtonRight) && !cPos.In(AlarmButtonLeft)) ||
+		!ebiten.IsMouseButtonPressed(ebiten.MouseButtonLeft) {
+		m.alarmButtons.Mode = AlarmModeUnpressed
+	}
+
 	overTill := cPos.In(m.till.Bounds())
 	overCounter := cPos.In(m.counter.Bounds())
 	if inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonLeft) {
@@ -396,6 +403,10 @@ func (m *MainScene) updateInput() error {
 				m.nextButton()
 			} else if cPos.In(ShredderButtonHotspot) {
 				m.shredder.toggle()
+			} else if cPos.In(AlarmButtonLeft) {
+				m.alarmButtons.Mode = AlarmModeLeft
+			} else if cPos.In(AlarmButtonRight) {
+				m.alarmButtons.Mode = AlarmModeRight
 			} else {
 				grabbed := m.spriteUnderCursor()
 				if grabbed != nil {
@@ -641,6 +652,8 @@ func (m *MainScene) Draw(screen *ebiten.Image) {
 	// draw next button
 	m.buttonBase.DrawTo(screen)
 	m.buttonHolo.DrawTo(screen)
+
+	m.alarmButtons.DrawTo(screen)
 
 	// draw trash chute
 	m.trashChute.DrawTo(screen)

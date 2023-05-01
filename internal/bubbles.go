@@ -38,7 +38,7 @@ type Bubbles struct {
 	TextBounds   image.Rectangle
 }
 
-var DialogueBounds = rect(340, 72, 200, 100)
+var DialogueBounds = rect(340, 52, 200, 100)
 
 func NewBubbles(m *MainScene) *Bubbles {
 	result := &Bubbles{
