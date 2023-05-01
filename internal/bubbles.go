@@ -4,6 +4,7 @@ import (
 	uiimg "github.com/ebitenui/ebitenui/image"
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/tinne26/etxt"
+	"github.com/tinne26/etxt/emask"
 	"golang.org/x/image/math/fixed"
 	"image"
 	"image/color"
@@ -46,6 +47,7 @@ func NewBubbles(m *MainScene) *Bubbles {
 	result.offscrn = ebiten.NewImage(200, 80)
 	result.offscrn.Fill(color.RGBA{R: 0, B: 0, G: 0, A: 0}) // TODO: use acutal ninepatch.
 	txt := etxt.NewStdRenderer()
+	txt.SetRasterizer(emask.NewStdEdgeMarkerRasterizer())
 	txt.SetTarget(result.offscrn)
 	txt.SetFont(Resources.GetFont(DialogFont))
 	txt.SetAlign(etxt.Bottom, etxt.XCenter)

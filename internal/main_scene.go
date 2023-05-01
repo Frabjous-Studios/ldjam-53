@@ -8,6 +8,7 @@ import (
 	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
 	"github.com/hajimehoshi/ebiten/v2/inpututil"
 	"github.com/tinne26/etxt"
+	"github.com/tinne26/etxt/emask"
 	"golang.org/x/image/colornames"
 	"golang.org/x/image/math/fixed"
 	"image"
@@ -188,7 +189,7 @@ func NewMainScene(g *Game) *MainScene {
 		black:        placeholder(colornames.Black, 1, 1),
 		shredder:     NewShredder(),
 	}
-	result.Day = result.Days[2] // TODO: Day 0
+	result.Day = result.Days[0]
 	// generate random bills; [5-20] each.
 	for idx, denom := range []int{1, 5, 10, 20, 100} {
 		count := rand.Intn(15) + 5
@@ -217,6 +218,7 @@ func NewMainScene(g *Game) *MainScene {
 	result.Runner, err = NewDialogueRunner(result.vars, result)
 
 	result.txt = etxt.NewStdRenderer()
+	result.txt.SetRasterizer(emask.NewStdEdgeMarkerRasterizer())
 	result.txt.SetFont(Resources.GetFont(IndicatorFont))
 	result.txt.SetAlign(etxt.Top, etxt.Left)
 	result.txt.SetSizePx(6)
@@ -389,9 +391,9 @@ func (m *MainScene) updateInput() error {
 				m.shredderDrop()
 			} else if contains(heldKeys, ebiten.KeyShift) {
 				// TODO: grab all the sprites under cursor?? if they match??
-				grabbed := m.spriteUnderCursor()
+				grabbed := m.spritesUnderCursor()
 				if grabbed != nil {
-					m.handleGrabbed(grabbed)
+					m.handleMultigrab(grabbed)
 				} else {
 					debug.Println("counter drop")
 					m.counterDrop()
@@ -413,7 +415,12 @@ func (m *MainScene) updateInput() error {
 			} else {
 				grabbed := m.spriteUnderCursor()
 				if grabbed != nil {
-					m.handleGrabbed(grabbed)
+					if contains(heldKeys, ebiten.KeyShift) {
+						all := m.spritesUnderCursor()
+						m.handleMultigrab(all)
+					} else {
+						m.handleGrabbed(grabbed)
+					}
 				} else {
 					debug.Println("grabbed nothing; dialog select?")
 					selected := false
