@@ -47,6 +47,26 @@ func Days() []*Day {
 			Random:   []string{"RandomDeposit_Polite", "RandomDeposit_Rude", "RandomCheck_Polite", "RandomCheck_Rude", "RandomWithdrawal_Polite", "RandomWithdrawal_Rude"},
 			EndNode:  "Manager_Day3_End",
 		},
+		3: {
+			Sequence: []string{"Manager_Day4", "random", "random", "Janitor_2", "random", "drone", "random", "random", "OldMan_Day4"},
+			Random:   []string{"RandomDeposit_Polite", "RandomDeposit_Rude", "RandomCheck_Polite", "RandomCheck_Rude", "RandomWithdrawal_Polite", "RandomWithdrawal_Rude"},
+			EndNode:  "Manager_Day4_End",
+		},
+		4: {
+			Sequence: []string{"Manager_Day5", "random", "random", "Janitor_2", "random", "drone", "random", "random", "OldMan_Day5"},
+			Random:   []string{"RandomDeposit_Polite", "RandomDeposit_Rude", "RandomCheck_Polite", "RandomCheck_Rude", "RandomWithdrawal_Polite", "RandomWithdrawal_Rude"},
+			EndNode:  "Manager_Day5_End",
+		},
+		5: {
+			Sequence: []string{"Manager_Day6", "random", "random", "Janitor_2", "random", "drone", "random", "random", "OldMan_Day6"},
+			Random:   []string{"RandomDeposit_Polite", "RandomDeposit_Rude", "RandomCheck_Polite", "RandomCheck_Rude", "RandomWithdrawal_Polite", "RandomWithdrawal_Rude"},
+			EndNode:  "Manager_Day6_End",
+		},
+		6: {
+			Sequence: []string{"Manager_Day7", "random", "random", "Janitor_2", "random", "drone", "random", "random", "OldMan_Day7"},
+			Random:   []string{"RandomDeposit_Polite", "RandomDeposit_Rude", "RandomCheck_Polite", "RandomCheck_Rude", "RandomWithdrawal_Polite", "RandomWithdrawal_Rude"},
+			EndNode:  "Manager_Day7_End",
+		},
 	}
 	for _, day := range result {
 		rand.Shuffle(len(day.Random), func(i, j int) {
