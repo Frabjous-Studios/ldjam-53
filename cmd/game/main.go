@@ -13,10 +13,6 @@ import (
 
 func main() {
 	var err error
-	//err = os.Setenv("EBITENGINE_GRAPHICS_LIBRARY", "opengl")
-	//if err != nil {
-	//	log.Println("unable to set graphics lib to opengl:", err)
-	//}
 	gameWidth, gameHeight := 640, 480
 
 	ebiten.SetWindowSize(gameWidth, gameHeight)
