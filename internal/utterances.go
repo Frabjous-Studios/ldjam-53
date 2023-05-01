@@ -1,4 +1,4 @@
-package main
+package internal
 
 var HandsTrash = []string{
 	"Oh, sorry. Could you throw that away for me?",
