@@ -1019,6 +1019,9 @@ func (m *MainScene) nextDay() error {
 	debug.Println("nextDay continuing")
 	m.randomizeTill() // a whooole new tiiiill!
 	m.dayIdx++
+	if m.dayIdx == 4 {
+		m.Game.PlayMusic("ElectronicDraft2.ogg")
+	}
 	if m.dayIdx < len(m.Days) {
 		m.Day = m.Days[m.dayIdx]
 	} else {
