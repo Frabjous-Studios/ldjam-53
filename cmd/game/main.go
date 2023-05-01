@@ -12,7 +12,6 @@ import (
 )
 
 func main() {
-	var err error
 	gameWidth, gameHeight := 640, 480
 
 	ebiten.SetWindowSize(gameWidth, gameHeight)
@@ -23,11 +22,8 @@ func main() {
 		Height: gameHeight,
 		ACtx:   audio.NewContext(internal.SampleRate),
 	}
-	game.CurrScene, err = internal.NewMainMenuScene(game)
-	if err != nil {
-		log.Fatal(err)
-	}
 
+	game.CurrScene = internal.NewLogoScene(game)
 	if err := ebiten.RunGame(game); err != nil {
 		log.Fatal(err)
 	}

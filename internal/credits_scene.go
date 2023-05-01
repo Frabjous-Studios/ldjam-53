@@ -1,7 +1,6 @@
 package internal
 
 import (
-	"github.com/Frabjous-Studios/ebitengine-game-template/internal/debug"
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/inpututil"
 )
@@ -22,12 +21,7 @@ func (s *CreditsScene) Update() error {
 	keys := inpututil.AppendPressedKeys(nil)
 
 	if len(keys) > 0 || inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonLeft) {
-		menu, err := NewMainMenuScene(s.Game)
-		if err != nil {
-			debug.Printf("error constructing main menu: %v", err)
-			return err
-		}
-		s.Game.ChangeScene(menu)
+		s.Game.ChangeScene(NewMainMenuScene(s.Game))
 	}
 	return nil
 }

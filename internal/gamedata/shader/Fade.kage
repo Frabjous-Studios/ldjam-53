@@ -1,0 +1,20 @@
+package main
+
+var ScreenPos vec2
+var Dt float
+
+const fadeTimeSeconds = 2.0
+
+func Fragment(position vec4, _ vec2, _ vec4) vec4 {
+	pos := position.xy - ScreenPos
+	t := clamp(Dt/fadeTimeSeconds, 0.0, 1.0)
+	return t * imageColorAtPixel(pos)
+}
+
+// Helper function to access an image's color at the given pixel coordinates.
+func imageColorAtPixel(pixelCoords vec2) vec4 {
+	sizeInPixels := imageSrcTextureSize()
+	offsetInTexels, _ := imageSrcRegionOnTexture()
+	adjustedTexelCoords := pixelCoords/sizeInPixels + offsetInTexels
+	return imageSrc0At(adjustedTexelCoords)
+}

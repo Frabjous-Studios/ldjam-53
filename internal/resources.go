@@ -120,6 +120,8 @@ func init() {
 	// load shaders
 	Resources.shaders = make(map[string]*ebiten.Shader)
 	Resources.shaders["day_night"] = loadShader("DayNight.kage")
+	Resources.shaders["LogoSplash.kage"] = loadShader("LogoSplash.kage")
+	Resources.shaders["Fade.kage"] = loadShader("Fade.kage")
 
 	// load font faces (again?)
 	Resources.faces = make(map[string]*truetype.Font)
@@ -129,6 +131,8 @@ func init() {
 	Resources.music = make(map[string]*audio.InfiniteLoop)
 
 	// load images
+	Resources.images["frabjous.png"] = Resources.GetImage("frabjous.png")
+	Resources.images["studios.png"] = Resources.GetImage("studios.png")
 	Resources.images["bill_1"] = Resources.GetImage("bill_1.png")
 	Resources.images["bill_5"] = Resources.GetImage("bill_5.png")
 	Resources.images["bill_10"] = Resources.GetImage("bill_10.png")

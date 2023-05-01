@@ -26,20 +26,14 @@ var heldKeys []ebiten.Key
 
 const MainMenuMusic = "Main_Menu.ogg"
 
-func NewMainMenuScene(game *Game) (*MainMenuScene, error) {
-	var (
-		err error
-	)
+func NewMainMenuScene(game *Game) *MainMenuScene {
 	result := &MainMenuScene{
 		Game:     game,
 		selected: -1,
 	}
-	result.ui, err = result.createMenuUI()
+	result.ui, _ = result.createMenuUI()
 	game.PlayMusic(MainMenuMusic)
-	if err != nil {
-		return nil, err
-	}
-	return result, err
+	return result
 }
 
 func (m *MainMenuScene) Update() error {

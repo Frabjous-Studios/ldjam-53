@@ -1,0 +1,46 @@
+package main
+
+var Dt float
+var ScreenPos vec2
+
+func Fragment(position vec4, _ vec2, _ vec4) vec4 {
+	pos := position.xy - ScreenPos
+
+	return wave(pos) * imageColorAtPixel(pos)
+}
+
+// wave models a turbulent sin wave crawling up the screen
+func wave(pos vec2) float {
+	const amp = 150
+	const freq = 0.01
+	const speed = 150
+	const startY = 200
+	x := pos.x
+
+	y := sin(x * freq)
+	t := 0.01 * (450 * Dt)
+	y += sin(x*freq*1.1 + t)
+	y += sin(x*freq*1.72 + t*1.121)
+	y += sin(x*freq*2.221 + t*0.437)
+	y += sin(x*freq*5.1122 + t*4.269)
+	y += sin(x*freq*1.1122+t*2.269) * 1.5
+	y *= amp * 0.06
+	y += startY - Dt*speed // TODO: easing?
+	if y < pos.y {
+		return 1.0
+	} else {
+		return 0.0
+	}
+}
+
+// Helper function to access an image's color at the given pixel coordinates.
+func imageColorAtPixel(pixelCoords vec2) vec4 {
+	sizeInPixels := imageSrcTextureSize()
+	offsetInTexels, _ := imageSrcRegionOnTexture()
+	adjustedTexelCoords := pixelCoords/sizeInPixels + offsetInTexels
+	return imageSrc0At(adjustedTexelCoords)
+}
+
+func easeInCube(x float) float {
+	return x * x * x * x * x
+}
