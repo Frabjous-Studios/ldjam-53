@@ -43,7 +43,7 @@ func Days() []*Day {
 			EndNode:  "Manager_Day2_End",
 		},
 		2: {
-			Sequence: []string{"Manager_Day3", "random", "random", "Janitor_2", "random", "drone", "random", "random", "OldMan_Day3"},
+			Sequence: []string{"Manager_Day3", "random", "random", "random", "drone", "random", "random", "OldMan_Day3"},
 			Random:   []string{"RandomDeposit_Polite", "RandomDeposit_Rude", "RandomCheck_Polite", "RandomCheck_Rude", "RandomWithdrawal_Polite", "RandomWithdrawal_Rude"},
 			EndNode:  "Manager_Day3_End",
 		},
@@ -53,17 +53,17 @@ func Days() []*Day {
 			EndNode:  "Manager_Day4_End",
 		},
 		4: {
-			Sequence: []string{"Manager_Day5", "random", "random", "Janitor_2", "random", "drone", "random", "random", "OldMan_Day5"},
+			Sequence: []string{"Manager_Day5", "random", "random", "random", "drone", "random", "random", "OldMan_Day5"},
 			Random:   []string{"RandomDeposit_Polite", "RandomDeposit_Rude", "RandomCheck_Polite", "RandomCheck_Rude", "RandomWithdrawal_Polite", "RandomWithdrawal_Rude"},
 			EndNode:  "Manager_Day5_End",
 		},
 		5: {
-			Sequence: []string{"Manager_Day6", "random", "random", "Janitor_2", "random", "drone", "random", "random", "OldMan_Day6"},
+			Sequence: []string{"Manager_Day6", "random", "random", "random", "drone", "random", "random", "OldMan_Day6"},
 			Random:   []string{"RandomDeposit_Polite", "RandomDeposit_Rude", "RandomCheck_Polite", "RandomCheck_Rude", "RandomWithdrawal_Polite", "RandomWithdrawal_Rude"},
 			EndNode:  "Manager_Day6_End",
 		},
 		6: {
-			Sequence: []string{"Manager_Day7", "random", "random", "Janitor_2", "random", "drone", "random", "random", "OldMan_Day7"},
+			Sequence: []string{"Manager_Day7", "random", "random", "random", "drone", "random", "random", "OldMan_Day7"},
 			Random:   []string{"RandomDeposit_Polite", "RandomDeposit_Rude", "RandomCheck_Polite", "RandomCheck_Rude", "RandomWithdrawal_Polite", "RandomWithdrawal_Rude"},
 			EndNode:  "Manager_Day7_End",
 		},
