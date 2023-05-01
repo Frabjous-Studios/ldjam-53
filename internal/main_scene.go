@@ -89,7 +89,7 @@ type Hologram struct {
 	StartTime time.Time
 }
 
-const DayLength = 10 * time.Minute
+const DayLength = 1 * time.Minute
 
 func (s *Hologram) DrawTo(screen *ebiten.Image) {
 	if s.Img == nil {
