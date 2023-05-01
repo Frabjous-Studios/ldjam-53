@@ -237,6 +237,8 @@ func (m *MainScene) Update() error {
 			m.endOfDaySync.Broadcast()
 			m.dayFadeStartTime = time.Time{}
 		}
+	} else {
+		m.endOfDaySync.Broadcast() // might as well
 	}
 	if err := m.updateInput(); err != nil {
 		debug.Printf("error from updateInput: %v", err)
@@ -312,6 +314,7 @@ var ShredderButtonHotspot = rect(116, 174, 8, 10)
 const debounceDuration = 300 * time.Millisecond
 
 func (m *MainScene) resetDialogue() {
+	debug.Println("resetting dialogue")
 	m.bubbles.SetLine("")
 	m.selectOpt.Broadcast()
 	m.speaking.Broadcast()
@@ -327,7 +330,6 @@ func (m *MainScene) updateInput() error {
 	heldKeys = inpututil.AppendPressedKeys(heldKeys[:0])
 
 	if m.State == StateReporting {
-		m.bubbles.BeDone()
 		if inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonLeft) {
 			m.reportDismissed = true
 			if m.reportDismissed {
@@ -424,6 +426,7 @@ func (m *MainScene) updateInput() error {
 					for idx, opt := range m.options {
 						if cPos.Mul(ScaleFactor).In(opt.Rect) {
 							m.selection = idx
+							debug.Println("player selected dialog option")
 							m.selectOpt.Broadcast()
 							m.options = nil
 							selected = true
@@ -629,7 +632,7 @@ func (m *MainScene) BringToFront(s Sprite) {
 }
 
 func (m *MainScene) AdvanceDialogue() {
-	m.bubbles.BeDone()
+	m.speaking.Broadcast()
 }
 
 func (m *MainScene) Draw(screen *ebiten.Image) {
@@ -867,10 +870,14 @@ func (m *MainScene) PrepareForLines(lineIDs []string) error {
 func (m *MainScene) Line(line yarn.Line) error {
 	m.mut.Lock()
 	defer m.mut.Unlock()
+	rendered := m.Runner.Render(line)
 	m.bubbles.SetLine(m.Runner.Render(line))
+	debug.Printf("line: %s", rendered)
 
-	for !m.bubbles.IsDone() && !m.Runner.IsLastLine(line) {
+	for !m.bubbles.IsDone() {
+		debug.Println("Line(): waiting for dialogue to scroll")
 		m.speaking.Wait()
+		debug.Println("Line(): dialogue done scrolling")
 	}
 	if m.State == StateDismissing {
 		return yarn.Stop
@@ -885,7 +892,9 @@ func (m *MainScene) Options(options []yarn.Option) (int, error) {
 	for _, opt := range options {
 		m.options = append(m.options, NewOption(m.Runner.Render(opt.Line)))
 	}
+	debug.Println("Options(): waiting for player to select an option")
 	m.selectOpt.Wait() // wait for the player to make a selection
+	debug.Println("Options() continuing, option selected:", m.selection)
 	if m.State == StateDismissing {
 		return 0, yarn.Stop
 	}
@@ -938,7 +947,9 @@ func (m *MainScene) nextDay() error {
 	m.State = StateFadingToNewDay
 	m.dayFadeStartTime = time.Now()
 
+	debug.Println("nextDay waiting for endOfDaySync")
 	m.endOfDaySync.Wait()
+	debug.Println("nextDay continuing")
 	m.randomizeTill() // a whooole new tiiiill!
 	m.dayIdx++
 	if m.dayIdx < len(m.Days) {
@@ -982,8 +993,9 @@ func (m *MainScene) showReconciliationReport() error {
 	m.bubbles.TextBounds = ReportBounds
 	m.bubbles.SetLine(m.report.String())
 	m.State = StateReporting
-
+	debug.Println("waiting for end of day to complete")
 	m.endOfDaySync.Wait()
+	debug.Println("day ended")
 	return nil
 }
 

@@ -118,8 +118,8 @@ intent: withdraw
     << put_counter withdrawal_slip >>
 << else >>
     << put_counter withdrawal_slip >>
-    << put_cash {dice(5)} >>  // lay down some extra cash and see if the player notices.
-<< endif>>
+    << put_cash {dice(20)} >>  // lay down some extra cash and see if the player notices.
+<< endif >>
 
 << jump SmallTalk_Polite >>
 ===

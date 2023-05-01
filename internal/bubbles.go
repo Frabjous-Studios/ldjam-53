@@ -1,6 +1,7 @@
 package internal
 
 import (
+	"github.com/Frabjous-Studios/ebitengine-game-template/internal/debug"
 	uiimg "github.com/ebitenui/ebitenui/image"
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/tinne26/etxt"
@@ -31,6 +32,7 @@ type Bubbles struct {
 
 	feed *etxt.Feed
 
+	shown        *Line
 	stack        []*Line
 	charsShown   int
 	scene        *MainScene
@@ -67,25 +69,20 @@ func (b *Bubbles) SetLine(str string) {
 	b.completeTime = time.Time{}
 }
 
+var lastLog = time.Time{}
+
 func (b *Bubbles) Update() {
 	if b.IsDone() {
 		if b.completeTime.IsZero() {
 			b.completeTime = time.Now()
 		}
 		if time.Now().Sub(b.completeTime) > bubbleDelay {
+			if lastLog != b.completeTime {
+				debug.Println("dialogue timed out; moving on")
+				lastLog = b.completeTime
+			}
 			b.scene.speaking.Broadcast()
 		}
-	}
-}
-
-func (b *Bubbles) BeDone() {
-	if len(b.stack) == 0 {
-		return
-	}
-	if !b.IsDone() {
-		b.stack[0].charsShown = len(b.stack[0].Text)
-	} else {
-		b.completeTime = time.Now().Add(-bubbleDelay)
 	}
 }
 
@@ -93,7 +90,7 @@ func (b *Bubbles) IsDone() bool {
 	if len(b.stack) == 0 {
 		return false
 	}
-	return b.stack[0].charsShown == len(b.stack[0].Text)
+	return b.stack[0].charsShown >= len(b.stack[0].Text)-10 // TODO: hack! sometimes charsShown != length of text :C
 }
 
 // DrawTo draws with a transparent background.
@@ -109,7 +106,6 @@ func (b *Bubbles) DrawTo(screen *ebiten.Image) bool {
 		l.Rect = b.print(feed, l, b.TextBounds)
 	}
 
-	//pos := b.Pos()
 	for _, line := range b.stack {
 		b.bubblePatch.Draw(screen, line.Rect.Dx()+4*padding, line.Rect.Dy()+4*padding, func(opts *ebiten.DrawImageOptions) {
 			opts.GeoM.Translate(float64(line.Rect.Min.X-padding), float64(line.Rect.Min.Y-padding))
@@ -213,6 +209,7 @@ func (b *Bubbles) print(feed *etxt.Feed, line *Line, bounds image.Rectangle) ima
 
 			// abort if we are going beyond the vertical working area
 			if feed.Position.Y.Floor() >= bounds.Max.Y {
+				line.charsShown = totalChars
 				return used
 			}
 			used.Max.X = max(used.Max.X, (feed.Position.X + width).Ceil())
