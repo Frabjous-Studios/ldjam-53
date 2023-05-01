@@ -169,7 +169,7 @@ type MainScene struct {
 	black *ebiten.Image
 }
 
-const GameMusic = "Hip_Elevator.ogg"
+const GameMusic = "Hip_Elevator.ogg" // TODO: cross-fade tracks
 
 func NewMainScene(g *Game) *MainScene {
 	var err error
@@ -191,7 +191,7 @@ func NewMainScene(g *Game) *MainScene {
 		black:        placeholder(colornames.Black, 1, 1),
 		shredder:     NewShredder(),
 		trashChute:   NewTrashChute(),
-		alarmButtons: NewAlarmButtons(),
+		alarmButtons: NewAlarmButtons(g.ACtx),
 	}
 	result.Day = result.Days[0]
 	result.randomizeTill()
@@ -404,9 +404,10 @@ func (m *MainScene) updateInput() error {
 			} else if cPos.In(ShredderButtonHotspot) {
 				m.shredder.toggle()
 			} else if cPos.In(AlarmButtonLeft) {
-				m.alarmButtons.Mode = AlarmModeLeft
+				m.alarmButtons.Press(AlarmModeLeft)
+
 			} else if cPos.In(AlarmButtonRight) {
-				m.alarmButtons.Mode = AlarmModeRight
+				m.alarmButtons.Press(AlarmModeRight)
 			} else {
 				grabbed := m.spriteUnderCursor()
 				if grabbed != nil {
