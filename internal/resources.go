@@ -43,7 +43,7 @@ var heads = []string{
 	"head_mohawkShades.png",
 	"head_pillBot.png",
 	"head_ponytails.png",
-	"head_psychoClown",
+	"head_psychoClown.png",
 	"head_smileScreen.png",
 }
 

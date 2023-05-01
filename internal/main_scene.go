@@ -566,21 +566,30 @@ func (m *MainScene) removeSprite(s Sprite) {
 	}
 }
 
+func (m *MainScene) handleMultigrab(grabbed []Sprite) {
+	for _, g := range grabbed {
+		m.handleGrabbed(g)
+	}
+}
+
 func (m *MainScene) handleGrabbed(grabbed Sprite) {
 	debug.Println("grabbed sprite", grabbed)
 	cPos := cursorPos()
-	m.BringToFront(grabbed)
+
 	if len(m.holding) == 0 {
 		m.addHolding(grabbed)
+		m.BringToFront(grabbed)
+
+		m.clickStart = cPos
+		m.clickOffset = grabbed.Pos().Sub(m.clickStart)
 	} else { // only pick up money in stacks of the same denomination.
 		c1, grabbedMoney := grabbed.(*Money)
 		c2, haveMoney := m.holding[0].(*Money)
 		if grabbedMoney && haveMoney && c1.IsCoin == c2.IsCoin && c1.Value == c2.Value {
 			m.addHolding(grabbed)
 		}
+		grabbed.SetPos(m.holding[0].Pos())
 	}
-	m.clickStart = cPos
-	m.clickOffset = grabbed.Pos().Sub(m.clickStart)
 	m.till.Remove(grabbed) // remove it from the Till (maybe)
 }
 
@@ -776,13 +785,30 @@ func (m *MainScene) soundDrop(s Sprite, surface string) {
 }
 
 func (m *MainScene) spriteUnderCursor() Sprite {
+	cPos := cursorPos()
 	for i := len(m.Sprites) - 1; i >= 0; i-- {
-		if cursorPos().In(m.Sprites[i].Bounds()) && !m.isHeld(m.Sprites[i]) {
+		if cPos.In(m.Sprites[i].Bounds()) && !m.isHeld(m.Sprites[i]) {
 			return m.Sprites[i]
 		}
 	}
 	return nil
 }
+
+func (m *MainScene) spritesUnderCursor() []Sprite {
+	top := m.spriteUnderCursor()
+	if top == nil {
+		return nil
+	}
+	cPos := cursorPos()
+	all := []Sprite{top}
+	for i := 0; i < len(m.Sprites); i++ {
+		if cPos.In(m.Sprites[i].Bounds()) && !m.isHeld(m.Sprites[i]) {
+			all = append(all, m.Sprites[i])
+		}
+	}
+	return all
+}
+
 func (m *MainScene) isHeld(sprite Sprite) bool {
 	for _, t := range m.holding {
 		if t == sprite {
