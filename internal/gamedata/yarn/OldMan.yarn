@@ -58,6 +58,8 @@ Say, have you ever read any good books lately?
 Anyway, thanks.
 -> You're welcome. Have a good day.
 -> Yeah, yeah... see you tomorrow!
+
+<< depart >>
 ===
 title: OldMan_Day3
 portrait: head_bulbous.png:body_jumpsuit.png
@@ -68,26 +70,18 @@ I need to cash a check today.
 It's from my son. 
 He sent me some money to help pay for my wife's hospice care. 
 I’m retired so what I have is all I have, so every little bit helps.
--> I'm sorry to hear that. We can cash the check for you, but we'll need to validate it through the check system first.
+-> I'm sorry to hear that. We can cash the check for you.
     That's fine. 
--> I got chu bro
+-> Sure. Give it here.
     This matters a lot to me, thanks!
-Say, have you ever traveled anywhere interesting?
--> Actually, yes. 
-I recently went on a trip to Japan. 
-It was amazing.
-Oh wow, I've always wanted to go to Japan. 
-What was your favorite part?
--> Definitely the food. 
-    It was so delicious. 
--> The cherry blossoms
-Don’t get me wrong, the entire trip was amazing and I’m saving up money to visit again in a couple of months.
-That's great to hear. 
-Maybe I'll have to save up and go there myself someday when my wife is better.
-Thanks for sharing.
+
+<< put_counter withdrawal_slip_7500 >>
+<< put_counter check >>
+Thanks for being so kind.
 -> No problem. Have a good day.
 -> You're welcome, 
-    always up for a good chat with my fellow proletariat
+
+<< depart >>
 ===
 title: OldMan_Day4
 portrait: head_bulbous.png:body_jumpsuit.png
@@ -97,7 +91,8 @@ How are you doing today?
 -> Good morning! 
     I'm doing well, thanks. 
     How can I help you today?
-Same as always, I need to withdraw $75 for my wife's hospice care. 
+Same as always, I need to withdraw $75 for my wife's hospice care.
+<< put_counter withdrawal_slip_7500 >>
 By the way, have you heard about the stock market? 
 -> Yes, I have. It's pretty concerning.
 Indeed it is. 
@@ -105,15 +100,14 @@ People are talking about it crashing or about to crash?
 My own son is a financial advisor and he's been telling me to move my money into gold or silver. 
 Do you think that's a good idea?
 -> I'm not really qualified to give financial advice, but it might be worth considering. 
-    It's always good to have a diversified portfolio… or so I hear.
+    It's always good to have a diversified portfolio, so I hear.
 -> Do it.
 Hmm, I'll have to think about that. 
 Thanks for your input. 
 Have a good day.
-
 -> You're welcome. Take care.
--> Buy Gamestop stock!
--> I feel as if we need to bring back Fava Beans
+
+<< depart >>
 ===
 title: OldMan_Day5
 portrait: head_bulbous.png:body_jumpsuit.png
@@ -122,117 +116,82 @@ Hello there young man, how are you holding up?
 You've been working hard here every day, I hope the customers have been treating you well.
 -> Oh, hello sir.
 -> Welcome to the grand bank of the future!
-Yes, it's been a bit hectic, but nothing we can't handle. 
-How can I assist you today?"
 Well, I have to say I'm a bit worried about you all. 
 With the bank running low on cash, I hope none of the customers have been giving you trouble.
--> Actually, sir, most of the customers have been quite understanding. 
-I admit that some are upset about the withdrawal limits, but they're trying to make the best of the situation.
-That's good to hear that they understand you can’t get blood from a stone. 
+-> Actually, sir, most of the customers have been quite understanding.
+That's good to hear that they understand you can’t get blood from a stone.
 It's important to stay positive in tough times. 
 Speaking of which, how are you holding up personally? 
 This must be stressful for you. 
-Are you eating well?"
+Are you eating well?
 -> I'm doing okay, sir. 
--> me spouse and children are starving
-    We've resorted to eating bread and mixing it with sawdust
-It's just a job, you know. 
-I'm just happy to help out in any way I can.
+-> My spouse and children are starving
 Well, I know for one that I appreciate your hard work. 
 I know I can always count on you to help me with my withdrawals. 
 I have to keep making these payments for my wife's care, you know.
 -> Of course, sir. 
 We're here to assist you with that. 
-Let me know how much you need to withdraw today."
-Just the usual $75. 
+Let me know how much you need to withdraw today.
+Just the usual $75.
+<< put_counter withdrawal_slip_7500 >>
 Thank you, young man. 
 I hope things get better for all of us soon."
 -> You're welcome, sir. Hang in there, and take care.
 -> Yeah I know right. Have a good day!
--> I am slowly becoming a Neoliberalist, would you like a pamphlet?
 ===
 title: OldMan_Day6
 portrait: head_bulbous.png:body_jumpsuit.png
 ---
-The Old man arrives at the bank looking more downtrodden than usual. 
-As he approaches the teller window, he speaks with a heavy heart.
-Hello again. I'm sorry to trouble you, but I need to withdraw the $75 for my wife's hospice care. 
+Hello again. I'm sorry to trouble you, but I need to withdraw the $75 for my wife's hospice care.
 She needs her medication and treatment.
+<< put_counter withdrawal_slip_7500 >>
 -> I'm sorry, but there was a robbery today, and the money delivery drone was taken. 
-I'm afraid there isn't any money in the till to give you right now.
-Oh, no. That's terrible news. 
+-> I'm afraid there isn't any money in the till to give you right now.
+Oh, no. That's terrible news.
 What am I going to do? I don't know how I'm going to pay for my wife's care now.
 -> I'm sorry, sir. 
-There's nothing I can do. 
-I wish I could help.
+-> There's nothing I can do.
+-> I wish I could help.
 Please, isn't there anything you can do? 
 My wife needs her care. 
 I can't let her suffer.
 -> I'm sorry, sir. 
-The manager has instructed us not to give out any money until the bank is resupplied. 
-I'm afraid I can't help you.
+-> The manager has instructed us not to give out any money until the bank is resupplied.
+-> I'm afraid I can't help you.
 As the old man realizes he won't be able to withdraw any money today, his face falls with sadness.
 I understand. 
 Thank you for your time. 
 Please, take care of yourself.
-As he slowly walks away, the old man seems to be struggling to hold back tears.
-After the old man leaves the bank, the bank manager lets out a deep sigh and mutters under his breath, "Honestly, the nerve of some people. Always begging for money they can't repay."
--> But sir, that man's wife is in hospice. 
--> I mean is it that crazy? Its just 75 dollars
-He just wants to make sure she's taken care of.
-Hospice, shmospice. 
-I bet that old fool is just wasting the money on himself. 
-He's a lay-a-bout and we shouldn't be helping him. 
-That's how you deal with riff-raff like him, you don't give them any handouts.
--> uh ok
--> I want a raise, this is too stressful
--> Twas the year of our lord two thousand and twenty two
+<< depart >>
 ===
 title: OldMan_Day7
 portrait: head_bulbous.png:body_jumpsuit.png
 ---
-The old man enters the bank, looking more anxious and worried than ever before. 
-As he approaches the teller window, his hands tremble as he pulls out the withdrawal slip and a photo ID.
-Please, son. I need to withdraw $75 today. 
+Please, son. I need to withdraw $75 today.
+<< put_counter withdrawal_slip_7500 >>
 It's for my wife's hospice. 
 They won't keep her there if I don't pay in full. 
 She's not healthy enough to be moved, not by any means. You must understand.
-I'm sorry to be a burden, son. 
+I'm sorry to be a burden.
 I know the bank is having troubles. 
 But please, please, can you help me?
 -> I'm sorry, sir, but I can only give you $50. 
     That's all the cash I have in the till per customer.
--> For the glory of mankind, you must stand fast!
-    *hands over 50$
-    This is the last of the cash in the till.
 What should I do? 
 My wife needs that money, she can't be kicked out of hospice.
 -> I'm sorry, sir, but there's nothing I can do. 
     You'll have to come back another day when there's more cash available.
--> If I could do more I would
-    Maybe you'll have better luck tommorow.  
-    Come back tommorow.
+-> If I could do more I would. Come back tommorow.
 But... but I can't! 
 You don't understand, my wife is very sick. 
-She isn’t healthy enough to… 
+She isn’t healthy enough to...
 She needs the extra help she is receiving from hospice. 
 Please, we’re friends, right? 
 Isn't there anything you can do?
-You notice Bank Manager walking toward you.
 -> I'm sorry, sir, but there really isn't anything I can do.
-You'll have to come back another day.
+-> You'll have to come back another day.
 Please, I'm begging you. 
 There must be something you can do. 
-My wife needs that money, she can't be kicked out of hospice. 
-I don't know what I'll do if she is.
 
--> ** Steal the Manager's wallet
-    ** You steal the Manager's wallet and secretly hand the old man 100 dollars, you yell out.
-    You dirty old man, get out of here before I call the cops!
-    ** The old man, with a mixture of happiness and confusion wails out
-    Oh you HEARTLESS monsters!
-    ** In the distraction you replace the Manager's wallet
--> ** Stand there silently
-The manager says, "You did a good job today, go ahead and punch out early"
-
+<< depart >>
 ===
