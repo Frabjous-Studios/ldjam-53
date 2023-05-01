@@ -6,7 +6,7 @@ require (
 	github.com/DrJosh9000/yarn v0.5.0
 	github.com/ebitenui/ebitenui v0.5.1
 	github.com/golang/freetype v0.0.0-20170609003504-e2365dfdc4a0
-	github.com/hajimehoshi/ebiten/v2 v2.5.3
+	github.com/hajimehoshi/ebiten/v2 v2.6.0-alpha.2.0.20230501101708-d16b591a352b
 	github.com/kalexmills/asebiten v0.4.3
 	github.com/razor-1/localizer-cldr v0.2.0
 	github.com/stretchr/testify v1.8.2
@@ -22,9 +22,9 @@ require (
 require (
 	github.com/alecthomas/participle/v2 v2.0.0 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
-	github.com/ebitengine/purego v0.3.2 // indirect
+	github.com/ebitengine/purego v0.4.0-alpha.4 // indirect
 	github.com/go-gl/glfw/v3.3/glfw v0.0.0-20221017161538-93cebf72946b // indirect
-	github.com/hajimehoshi/oto/v2 v2.4.0 // indirect
+	github.com/hajimehoshi/oto/v2 v2.5.0-alpha.0.20230315035531-31c83ff4311d // indirect
 	github.com/jezek/xgb v1.1.0 // indirect
 	github.com/jfreymuth/oggvorbis v1.0.5 // indirect
 	github.com/jfreymuth/vorbis v1.0.2 // indirect
