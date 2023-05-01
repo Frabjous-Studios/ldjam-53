@@ -2,6 +2,7 @@ package internal
 
 import (
 	"github.com/hajimehoshi/ebiten/v2"
+	"github.com/hajimehoshi/ebiten/v2/audio"
 	"github.com/kalexmills/asebiten"
 	"image"
 )
@@ -21,6 +22,8 @@ type Shredder struct {
 
 	Operational bool
 	Mode        ShredderMode
+
+	sound *audio.InfiniteLoop
 }
 
 func NewShredder() *Shredder {

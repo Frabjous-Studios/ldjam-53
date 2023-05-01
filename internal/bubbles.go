@@ -8,7 +8,6 @@ import (
 	"github.com/tinne26/etxt/emask"
 	"golang.org/x/image/math/fixed"
 	"image"
-	"image/color"
 	"time"
 	"unicode/utf8"
 )
@@ -47,7 +46,6 @@ func NewBubbles(m *MainScene) *Bubbles {
 		scene: m,
 	}
 	result.offscrn = ebiten.NewImage(200, 80)
-	result.offscrn.Fill(color.RGBA{R: 0, B: 0, G: 0, A: 0}) // TODO: use acutal ninepatch.
 	txt := etxt.NewStdRenderer()
 	txt.SetRasterizer(emask.NewStdEdgeMarkerRasterizer())
 	txt.SetTarget(result.offscrn)
@@ -90,7 +88,7 @@ func (b *Bubbles) IsDone() bool {
 	if len(b.stack) == 0 {
 		return false
 	}
-	return b.stack[0].charsShown >= len(b.stack[0].Text)-10 // TODO: hack! sometimes charsShown != length of text :C
+	return b.stack[0].charsShown >= len(b.stack[0].Text)-5 // TODO: hack! sometimes charsShown != length of text :C
 }
 
 // DrawTo draws with a transparent background.

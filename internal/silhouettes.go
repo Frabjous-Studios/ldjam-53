@@ -1,7 +1,6 @@
 package internal
 
 import (
-	"fmt"
 	"github.com/Frabjous-Studios/ebitengine-game-template/internal/debug"
 	"github.com/hajimehoshi/ebiten/v2"
 	"image"
@@ -109,7 +108,6 @@ func (s *Silhouettes) Update() {
 	}
 	if activeCount < MinDensity {
 		activateCount := MinDensity - activeCount
-		fmt.Println("activating!")
 		for i := 0; i < activateCount; i++ {
 			for _, p := range s.particles {
 				if !p.Active {

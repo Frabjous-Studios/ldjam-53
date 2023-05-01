@@ -27,7 +27,6 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	game.CurrScene = internal.NewMainScene(game) // TODO: remove
 
 	if err := ebiten.RunGame(game); err != nil {
 		log.Fatal(err)

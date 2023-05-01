@@ -171,7 +171,7 @@ func (r *DialogueRunner) Portrait() (p *Customer) {
 	}()
 	if r.customer != nil {
 		debug.Println("still using the same customer as before!")
-		return r.customer // TODO: this caching is making the drone be re-used??
+		return r.customer
 	}
 	debug.Println("generating a new customer for node", r.CurrNodeName)
 	node, ok := r.vm.Program.Nodes[r.CurrNodeName]

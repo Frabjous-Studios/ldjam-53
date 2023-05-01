@@ -177,13 +177,14 @@ func NewMainScene(g *Game) *MainScene {
 	var err error
 	startTime = time.Now()
 	result := &MainScene{
-		Game:       g,
-		Sprites:    []Sprite{},
-		Days:       Days(),
-		State:      StateFadeIn,
-		till:       NewTill(),
-		counter:    &BaseSprite{X: 112, Y: 152, Img: Resources.images["counter"]},
-		buttonBase: &BaseSprite{X: 259, Y: 147, Img: Resources.images["call_button"]},
+		Game:             g,
+		Sprites:          []Sprite{},
+		Days:             Days(),
+		State:            StateFadeIn,
+		dayFadeStartTime: time.Now(),
+		till:             NewTill(),
+		counter:          &BaseSprite{X: 112, Y: 152, Img: Resources.images["counter"]},
+		buttonBase:       &BaseSprite{X: 259, Y: 147, Img: Resources.images["call_button"]},
 		buttonHolo: &Hologram{
 			BaseSprite: &BaseSprite{X: 263, Y: 124, Img: Resources.images["call_button_holo"]},
 			StartTime:  time.Now(),
@@ -295,7 +296,6 @@ func (m *MainScene) Update() error {
 }
 
 func (m *MainScene) clearCustomer() {
-	fmt.Println("clearing customer")
 	m.Runner.mut.Lock()
 	defer m.Runner.mut.Unlock()
 	m.Customer = nil
@@ -352,7 +352,7 @@ func (m *MainScene) updateInput() error {
 		return nil
 	}
 
-	if len(newKeys) > 0 {
+	if len(newKeys) > 0 && m.State == StateConversing {
 		m.AdvanceDialogue()
 		m.debouceTime = time.Now().Add(debounceDuration)
 	}
@@ -550,11 +550,18 @@ func (m *MainScene) shredderDrop() {
 	case ModeShred:
 		m.removeSprite(m.holding[0]) // goodbye whatever you were!
 		m.holding = m.holding[1:]
+
 	case ModeScan:
 		if check, ok := m.holding[0].(*Check); ok {
 			m.terminal.ValidateCheck(check)
 		}
 	}
+}
+
+func (m *MainScene) shredSound() {
+	snd := Resources.GetSound(m.Game.ACtx, "Shredder_Short1.ogg")
+	snd.Rewind()
+	snd.Play()
 }
 
 func (m *MainScene) tillDrop() {
@@ -564,6 +571,7 @@ func (m *MainScene) tillDrop() {
 		}
 		if _, ok := m.holding[0].(*Stack); ok {
 			m.removeSprite(m.holding[0])
+			m.playCashFlip()
 		}
 		if _, ok := m.holding[0].(*Check); ok {
 			m.removeSprite(m.holding[0])
@@ -572,6 +580,13 @@ func (m *MainScene) tillDrop() {
 	} else {
 		debug.Println("unable to drop on till")
 	}
+}
+
+func (m *MainScene) playCashFlip() {
+	files := []string{"Cashflip1.ogg", "Cashflip2.ogg", "Cashflip3.ogg", "Cashflip4.ogg"}
+	snd := Resources.GetSound(m.Game.ACtx, randSlice(files))
+	snd.Rewind()
+	snd.Play()
 }
 
 func (m *MainScene) counterDrop() {
@@ -1136,13 +1151,6 @@ func (m *MainScene) putCash(args []string) error {
 const TrashChance = 0.1
 
 func (m *MainScene) putCounter(args []string) error {
-	/* TODO:
-	id - the character's randomly generated photo id.
-	check - a randomly generated check which
-	cash_check - a randomly generated check made out to "cash" for cash withdrawal.
-	deposit_slip - a randomly generated deposit slip and cash to match.
-	withdrawal_slip - a randomly generated withdrawal slip
-	*/
 	for _, arg := range args {
 		arg = strings.TrimSpace(arg)
 		if arg == "" {
