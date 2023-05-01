@@ -261,6 +261,7 @@ func (m *MainScene) Update() error {
 			m.State = StateConversing
 		} else if !m.Runner.running {
 			go m.startRunner()
+			m.Runner.running = true
 		}
 	case StateDismissing:
 		m.resetDialogue()
@@ -353,6 +354,7 @@ func (m *MainScene) updateInput() error {
 	}
 
 	if len(newKeys) > 0 && m.State == StateConversing {
+		debug.Println("advancing dialogue; keys")
 		m.AdvanceDialogue()
 		m.debouceTime = time.Now().Add(debounceDuration)
 	}
@@ -467,6 +469,10 @@ func (m *MainScene) nextButton() {
 	}
 }
 
+func paperPlaceSound() {
+
+}
+
 // cheatValue is some random value added to required withdrawal thresholds for the customer to walk away on their own.
 // This keeps the player from letting the customer do their own counting.
 func cheatValue() int {
@@ -568,6 +574,7 @@ func (m *MainScene) tillDrop() {
 	if m.till.DropAll(m.holding) {
 		if _, ok := m.holding[0].(*DepositSlip); ok {
 			m.removeSprite(m.holding[0])
+			m.playPaperPlace()
 		}
 		if _, ok := m.holding[0].(*Stack); ok {
 			m.removeSprite(m.holding[0])
@@ -575,6 +582,7 @@ func (m *MainScene) tillDrop() {
 		}
 		if _, ok := m.holding[0].(*Check); ok {
 			m.removeSprite(m.holding[0])
+			m.playPaperPlace()
 		}
 		m.holding = nil
 	} else {
@@ -584,6 +592,13 @@ func (m *MainScene) tillDrop() {
 
 func (m *MainScene) playCashFlip() {
 	files := []string{"Cashflip1.ogg", "Cashflip2.ogg", "Cashflip3.ogg", "Cashflip4.ogg"}
+	snd := Resources.GetSound(m.Game.ACtx, randSlice(files))
+	snd.Rewind()
+	snd.Play()
+}
+
+func (m *MainScene) playPaperPlace() {
+	files := []string{"paper-place1.ogg", "paper-place2.ogg", "paper-place3.ogg"}
 	snd := Resources.GetSound(m.Game.ACtx, randSlice(files))
 	snd.Rewind()
 	snd.Play()
@@ -854,6 +869,7 @@ func (m *MainScene) soundDrop(s Sprite, surface string) {
 	switch s := s.(type) {
 	case *Money:
 		if !s.IsCoin {
+			m.playPaperPlace()
 			return
 		}
 		switch surface {
@@ -862,6 +878,10 @@ func (m *MainScene) soundDrop(s Sprite, surface string) {
 			p.Rewind()
 			p.Play()
 		}
+	case *Check:
+		m.playPaperPlace()
+	case *DepositSlip:
+		m.playPaperPlace()
 	}
 }
 
