@@ -90,7 +90,7 @@ func (m *MainMenuScene) updateButtons() {
 
 func (m *MainMenuScene) Draw(screen *ebiten.Image) {
 	opts := &ebiten.DrawImageOptions{}
-	opts.GeoM.Scale(4.0/3, 4.0/3)
+	opts.GeoM.Scale(ScaleFactor, ScaleFactor)
 	screen.DrawImage(m.bg, opts)
 
 	m.ui.Draw(screen)
@@ -153,13 +153,14 @@ func exitGame(_ *Game) {
 	os.Exit(0)
 }
 
-var hover = color.RGBA{60, 60, 60, 70}
+var hover = color.RGBA{150, 150, 150, 70}
 var transparent = color.RGBA{0, 0, 0, 0}
 
 func (m *MainMenuScene) button(text string, onClick func(g *Game)) *widget.Button {
 	c := widget.ButtonTextColor{
-		Idle:     color.RGBA{141, 216, 148, 255},
-		Disabled: color.RGBA{141, 216, 148, 255},
+		//50 49 59
+		Idle:     color.RGBA{50, 49, 59, 255},
+		Disabled: color.RGBA{50, 49, 59, 255},
 	}
 	return widget.NewButton(
 		widget.ButtonOpts.Text(text, Resources.GetFace(FontName, 32), &c),
