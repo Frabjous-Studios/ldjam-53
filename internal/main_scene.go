@@ -247,14 +247,6 @@ func (m *MainScene) Update() error {
 			m.Runner.running = true
 		}
 		// TODO: animate the customer approaching
-		runnerP := m.Runner.Portrait()
-		if runnerP == nil {
-			m.Customer = nil
-		} else if m.Customer == nil {
-			// TODO: animate the customer into position
-			m.Customer = runnerP
-			m.Customer.SetPos(image.Pt(170, 53))
-		}
 		if m.Customer != nil {
 			debug.Println("transition to conversing")
 			m.State = StateConversing
@@ -294,7 +286,7 @@ func (m *MainScene) Update() error {
 
 func (m *MainScene) clearCustomer() {
 	m.Customer = nil
-	m.Runner.portrait = nil
+	m.Runner.customer = nil
 	m.Runner.portraitImg.Clear()
 }
 
@@ -502,7 +494,7 @@ func (m *MainScene) customerDrop() {
 		} else if _, ok := m.holding[0].(*Stack); ok {
 			if m.Customer.ImageKey == "drone.png" {
 				// put it back; TODO: play an error sound?
-				m.holding[0].SetPos(randCounterPos())
+				m.holding[0].SetPos(randRudeCounterPos())
 			} else {
 				// you're giving away a stack of money?!!?! Yes please!
 				m.bubbles.SetLine("Oh! Thank you!") // TODO: randomize
@@ -582,8 +574,8 @@ func (m *MainScene) handleGrabbed(grabbed Sprite) {
 		c2, haveMoney := m.holding[0].(*Money)
 		if grabbedMoney && haveMoney && c1.IsCoin == c2.IsCoin && c1.Value == c2.Value {
 			m.addHolding(grabbed)
+			grabbed.SetPos(m.holding[0].Pos())
 		}
-		grabbed.SetPos(m.holding[0].Pos())
 	}
 	m.till.Remove(grabbed) // remove it from the Till (maybe)
 }
@@ -616,6 +608,15 @@ func (m *MainScene) Draw(screen *ebiten.Image) {
 
 	if m.Customer != nil {
 		m.Customer.DrawTo(screen)
+	} else {
+		runnerP := m.Runner.Portrait()
+		if runnerP == nil {
+			m.Customer = nil
+		} else if m.Customer == nil {
+			// TODO: animate the customer into position
+			m.Customer = runnerP
+			m.Customer.SetPos(image.Pt(170, 53))
+		}
 	}
 
 	m.counter.DrawTo(screen)
@@ -1123,15 +1124,15 @@ func (m *MainScene) putCounter(args []string) error {
 		case arg == "stack_100":
 			m.putStack(100)
 		case arg == "coin_1":
-			m.Sprites = append(m.Sprites, newCoin(1, randCounterPos()))
+			m.Sprites = append(m.Sprites, newCoin(1, m.randomCounterPos()))
 		case arg == "coin_5":
-			m.Sprites = append(m.Sprites, newCoin(5, randCounterPos()))
+			m.Sprites = append(m.Sprites, newCoin(5, m.randomCounterPos()))
 		case arg == "coin_10":
-			m.Sprites = append(m.Sprites, newCoin(10, randCounterPos()))
+			m.Sprites = append(m.Sprites, newCoin(10, m.randomCounterPos()))
 		case arg == "coin_25":
-			m.Sprites = append(m.Sprites, newCoin(25, randCounterPos()))
+			m.Sprites = append(m.Sprites, newCoin(25, m.randomCounterPos()))
 		case arg == "coin_50":
-			m.Sprites = append(m.Sprites, newCoin(50, randCounterPos()))
+			m.Sprites = append(m.Sprites, newCoin(50, m.randomCounterPos()))
 		default:
 			debug.Printf("unrecognized argument to put_counter: %v", arg)
 		}
@@ -1182,7 +1183,15 @@ func (m *MainScene) putCoins(amt int) {
 }
 
 func (m *MainScene) putStack(denom int) {
-	m.Sprites = append(m.Sprites, newStack(denom, randCounterPos()))
+	m.Sprites = append(m.Sprites, newStack(denom, m.randomCounterPos()))
+}
+
+func (m *MainScene) randomCounterPos() image.Point {
+	if m.Customer.IsRude {
+		return randRudeCounterPos()
+	} else {
+		return randNiceCounterPos()
+	}
 }
 
 func (m *MainScene) putBills(amt int) {
@@ -1254,7 +1263,7 @@ func (m *MainScene) randSlip(path string) *DepositSlip {
 	img := ebiten.NewImage(43, 32)
 	img.DrawImage(Resources.GetImage(path), nil)
 
-	pos := randCounterPos()
+	pos := m.randomCounterPos()
 	slip := &DepositSlip{
 		AcctNum:    randomAcctNumber(),
 		Value:      randomTransactionValue(),
@@ -1296,7 +1305,7 @@ func (m *MainScene) randCheck() *Check {
 	front.DrawImage(Resources.GetImage("check_front"), opts)
 	back.DrawImage(Resources.GetImage("check_back"), opts)
 
-	pos := randCounterPos()
+	pos := m.randomCounterPos()
 	check := &Check{
 		BaseSprite: &BaseSprite{Img: front, X: pos.X, Y: pos.Y},
 		reverse:    back,
@@ -1386,14 +1395,14 @@ func (m *MainScene) putBill(denom int) {
 	if m.Customer != nil {
 		m.Customer.CashOnCounter += denom * 100
 	}
-	m.Sprites = append(m.Sprites, newBill(denom, randCounterPos()))
+	m.Sprites = append(m.Sprites, newBill(denom, m.randomCounterPos()))
 }
 
 func (m *MainScene) putCoin(denom int) {
 	if m.Customer != nil {
 		m.Customer.CashOnCounter += denom
 	}
-	m.Sprites = append(m.Sprites, newCoin(denom, randCounterPos()))
+	m.Sprites = append(m.Sprites, newCoin(denom, m.randomCounterPos()))
 }
 
 func (m *MainScene) Reconcile() {
@@ -1418,6 +1427,7 @@ type Customer struct {
 	CustomerIntent Intent
 	CustomerName   string
 	DepositSlip    *DepositSlip // DepositSlip may be nil for some customers.
+	IsRude         bool
 }
 
 // clampToCounter clamps the provided point to the counter range (hardcoded)

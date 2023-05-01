@@ -41,7 +41,7 @@ type DialogueRunner struct {
 	mut *sync.RWMutex
 
 	portraitImg *ebiten.Image
-	portrait    *Customer
+	customer    *Customer
 
 	running bool
 }
@@ -80,7 +80,7 @@ func (r *DialogueRunner) DoNode(name string) error {
 		r.runState = RunnerStopped
 	}()
 	r.CurrNodeName = name
-	r.portrait = nil
+	r.customer = nil
 	r.runState = RunnerRunning
 
 	return r.vm.Run(name)
@@ -112,8 +112,8 @@ func (r *DialogueRunner) LastName() string {
 func (r *DialogueRunner) SetDepositSlip(slip *DepositSlip) {
 	r.SetDepositAmt(slip.Value)
 	r.SetAccountNumber(slip.AcctNum)
-	if r.portrait != nil {
-		r.portrait.DepositSlip = slip
+	if r.customer != nil {
+		r.customer.DepositSlip = slip
 	}
 }
 
@@ -157,8 +157,8 @@ func (r *DialogueRunner) Portrait() (p *Customer) {
 			p.CustomerName = r.RandomName()
 		}
 	}()
-	if r.portrait != nil {
-		return r.portrait // TODO: this caching is making the drone be re-used.
+	if r.customer != nil {
+		return r.customer // TODO: this caching is making the drone be re-used.
 	}
 	node, ok := r.vm.Program.Nodes[r.CurrNodeName]
 	if !ok {
@@ -168,22 +168,23 @@ func (r *DialogueRunner) Portrait() (p *Customer) {
 	r.portraitImg.Clear()
 	portraitID := portrait(node)
 	if portraitID == "random" {
-		r.portrait = newRandPortrait(r.portraitImg)
-		return r.portrait
+		r.customer = newRandPortrait(r.portraitImg)
+		return r.customer
 	}
 	toks := strings.Split(portraitID, ":")
 	if len(toks) == 1 {
-		r.portrait = newSimplePortrait(r.portraitImg, toks[0])
-		return r.portrait
+		r.customer = newSimplePortrait(r.portraitImg, toks[0])
+		return r.customer
 	}
 	if len(toks) != 2 {
-		debug.Printf("malformed portrait! using random: %v", portraitID)
-		r.portrait = newRandPortrait(r.portraitImg)
-		return r.portrait
+		debug.Printf("malformed customer! using random: %v", portraitID)
+		r.customer = newRandPortrait(r.portraitImg)
+		return r.customer
 	}
 	head, body := toks[0], toks[1]
-	r.portrait = newPortrait(r.portraitImg, body, head)
-	return r.portrait
+	r.customer = newPortrait(r.portraitImg, body, head)
+	r.customer.IsRude = strings.Contains(strings.ToLower(r.CurrNodeName), "rude")
+	return r.customer
 }
 
 func (r *DialogueRunner) GameState() *GameState {

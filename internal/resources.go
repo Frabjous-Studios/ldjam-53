@@ -245,6 +245,9 @@ func (r *resources) RandomScriptFont() *etxt.Font {
 var art embed.FS
 
 func (r *resources) GetImage(path string) *ebiten.Image {
+	if len(path) == 0 {
+		panic("eep!")
+	}
 	if r.images == nil {
 		r.images = make(map[string]*ebiten.Image)
 	}
@@ -370,6 +373,7 @@ func newRandPortrait(target *ebiten.Image) *Customer {
 
 func newSimplePortrait(target *ebiten.Image, head string) *Customer {
 	h := Resources.GetImage(head)
+	fmt.Println(h)
 	target.DrawImage(h, nil)
 	return &Customer{
 		ImageKey: head,

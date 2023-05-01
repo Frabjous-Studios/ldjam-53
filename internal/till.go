@@ -315,9 +315,16 @@ func newStack(denom int, pt image.Point) Sprite {
 	}
 }
 
-func randCounterPos() image.Point {
+func randRudeCounterPos() image.Point {
 	pt := image.Pt(rand.Intn(184), rand.Intn(88))
 	pt.X = clamp(pt.X+136, 136, 320-30)
 	pt.Y = clamp(pt.Y+152, 152, 240-30)
+	return pt
+}
+
+func randNiceCounterPos() image.Point {
+	pt := image.Pt(rand.Intn(30), rand.Intn(30))
+	pt.X = clamp(pt.X+166, 136, 320-30)
+	pt.Y = clamp(pt.Y+157, 152, 240-30)
 	return pt
 }
