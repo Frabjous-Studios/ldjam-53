@@ -33,17 +33,17 @@ type Day struct {
 func Days() []*Day {
 	result := []*Day{
 		0: { // more deposits than withdrawals
-			Sequence: []string{"OldMan_Day1"}, //"Manager_Day1", "random", "random", "random", "drone", "random", "random", "OldMan_Day1"},
+			Sequence: []string{"Manager_Day1", "random", "random", "random", "drone", "random", "random", "OldMan_Day1"},
 			Random:   []string{"RandomDeposit_Polite", "RandomDeposit_Rude", "RandomDeposit_Polite", "RandomDeposit_Rude", "RandomWithdrawal_Polite", "RandomWithdrawal_Rude"},
 			EndNode:  "Manager_Day1_End",
 		},
 		1: {
-			Sequence: []string{"OldMan_Day2"}, //"Manager_Day2", "random", "random", "drone", "random", "random", "OldMan_Day2"},
+			Sequence: []string{"Manager_Day2", "random", "random", "drone", "random", "random", "OldMan_Day2"},
 			Random:   []string{"RandomDeposit_Polite", "RandomDeposit_Rude", "RandomDeposit_Polite", "RandomDeposit_Rude", "RandomWithdrawal_Polite", "RandomWithdrawal_Rude"},
 			EndNode:  "Manager_Day2_End",
 		},
 		2: {
-			Sequence: []string{"OldMan_Day3"}, //"Manager_Day3", "random", "RandomCheck_Polite", "random", "drone", "random", "random", "OldMan_Day3"},
+			Sequence: []string{"Manager_Day3", "random", "RandomCheck_Polite", "random", "drone", "random", "random", "OldMan_Day3"},
 			Random:   []string{"RandomDeposit_Polite", "RandomDeposit_Rude", "RandomCheck_Polite", "RandomCheck_Rude", "RandomWithdrawal_Polite", "RandomWithdrawal_Rude"},
 			EndNode:  "Manager_Day3_End",
 		},
