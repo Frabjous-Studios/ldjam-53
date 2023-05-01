@@ -139,6 +139,7 @@ type MainScene struct {
 	buttonBase *BaseSprite
 	buttonHolo *Hologram
 	shredder   *Shredder
+	trashChute *TrashChute
 
 	bubbles *Bubbles
 	options []*Line
@@ -188,6 +189,7 @@ func NewMainScene(g *Game) *MainScene {
 		vars:         make(yarn.MapVariableStorage),
 		black:        placeholder(colornames.Black, 1, 1),
 		shredder:     NewShredder(),
+		trashChute:   NewTrashChute(),
 	}
 	result.Day = result.Days[0]
 	result.randomizeTill()
@@ -365,6 +367,8 @@ func (m *MainScene) updateInput() error {
 				m.customerDrop()
 			} else if cPos.In(m.shredder.Bounds()) {
 				m.shredderDrop()
+			} else if cPos.In(m.trashChute.Bounds()) {
+				m.trashDrop(m.holding)
 			} else if contains(heldKeys, ebiten.KeyShift) {
 				// TODO: grab all the sprites under cursor?? if they match??
 				grabbed := m.spritesUnderCursor()
@@ -502,8 +506,18 @@ func (m *MainScene) customerDrop() {
 				m.holding = nil
 				m.depart() // TODO: this probably breaks the line
 			}
+		} else if _, ok := m.holding[0].(*Trash); ok {
+			m.bubbles.SetLine("Oh, sorry. Could you throw that away for me?") // TODO: randomize
 		}
 	}
+}
+
+func (m *MainScene) trashDrop(sprites []Sprite) {
+	m.trashChute.Contents = append(m.trashChute.Contents, sprites...)
+	for _, sprite := range sprites {
+		m.removeSprite(sprite)
+	}
+	m.holding = nil
 }
 
 func (m *MainScene) shredderDrop() {
@@ -627,6 +641,9 @@ func (m *MainScene) Draw(screen *ebiten.Image) {
 	// draw next button
 	m.buttonBase.DrawTo(screen)
 	m.buttonHolo.DrawTo(screen)
+
+	// draw trash chute
+	m.trashChute.DrawTo(screen)
 
 	// draw all the sprites in their draw order.
 	for _, sprite := range m.Sprites {
@@ -1054,6 +1071,8 @@ func (m *MainScene) putCash(args []string) error {
 	return nil
 }
 
+const TrashChance = 0.1
+
 func (m *MainScene) putCounter(args []string) error {
 	/* TODO:
 	id - the character's randomly generated photo id.
@@ -1090,6 +1109,9 @@ func (m *MainScene) putCounter(args []string) error {
 			m.setupAccount(slip) // just in time!
 			m.put(slip)
 			m.putBills(slip.Value / 100)
+			if rand.Float64() < TrashChance {
+				m.put(randomTrash(m.randomCounterPos()))
+			}
 		case strings.HasPrefix(arg, "withdrawal_slip"):
 			slip := m.randWithdrawalSlip()
 			if len(arg) > 17 {
@@ -1463,4 +1485,19 @@ func contains[T comparable](arr []T, val T) bool {
 		}
 	}
 	return false
+}
+
+type Trash struct {
+	*BaseSprite
+}
+
+func randomTrash(pt image.Point) *Trash {
+	dice := rand.Intn(10) + 1
+	return &Trash{
+		BaseSprite: &BaseSprite{
+			Img: Resources.GetImage(fmt.Sprintf("junk_%d.png", dice)),
+			X:   pt.X,
+			Y:   pt.Y,
+		},
+	}
 }

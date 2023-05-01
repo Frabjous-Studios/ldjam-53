@@ -145,10 +145,22 @@ func init() {
 	Resources.images["call_button"] = Resources.GetImage("call_button.png")
 	Resources.images["counter"] = Resources.GetImage("countertop.png")
 	Resources.images["terminal"] = Resources.GetImage("terminal_bg.png")
+	Resources.images["trash_chute"] = Resources.GetImage("trashchute.png")
 	Resources.images["Till"] = Resources.GetImage("placeholer_till.png")
 
 	Resources.images["bg_bg.png"] = Resources.GetImage("bg_bg.png")
 	Resources.images["bg_fg.png"] = Resources.GetImage("bg_fg.png")
+
+	Resources.images["junk_1.png"] = Resources.GetImage("junk_1.png")
+	Resources.images["junk_2.png"] = Resources.GetImage("junk_2.png")
+	Resources.images["junk_3.png"] = Resources.GetImage("junk_3.png")
+	Resources.images["junk_4.png"] = Resources.GetImage("junk_4.png")
+	Resources.images["junk_5.png"] = Resources.GetImage("junk_5.png")
+	Resources.images["junk_6.png"] = Resources.GetImage("junk_6.png")
+	Resources.images["junk_7.png"] = Resources.GetImage("junk_7.png")
+	Resources.images["junk_8.png"] = Resources.GetImage("junk_8.png")
+	Resources.images["junk_9.png"] = Resources.GetImage("junk_9.png")
+	Resources.images["junk_10.png"] = Resources.GetImage("junk_10.png")
 }
 
 const SampleRate = 44100
