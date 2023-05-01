@@ -190,25 +190,7 @@ func NewMainScene(g *Game) *MainScene {
 		shredder:     NewShredder(),
 	}
 	result.Day = result.Days[0]
-	// generate random bills; [5-20] each.
-	for idx, denom := range []int{1, 5, 10, 20, 100} {
-		count := rand.Intn(15) + 5
-		for i := 0; i < count; i++ {
-			bill := newBill(denom, result.till.DropTargets[BillTargets][idx].Min.Add(result.till.Pos().Add(randPoint(2, 2))))
-			result.till.BillSlots[idx] = append(result.till.BillSlots[idx], bill)
-			result.Sprites = append(result.Sprites, bill)
-		}
-	}
-	// generate random coins; [10-50] each.
-	for idx, denom := range []int{1, 5, 10, 25, 50} {
-		count := rand.Intn(40) + 10
-		for i := 0; i < count; i++ {
-			coin := newCoin(denom, result.till.DropTargets[CoinTargets][idx].Min.Add(result.till.Pos().Add(randPoint(3, 3))))
-			result.till.CoinSlots[idx] = append(result.till.CoinSlots[idx], coin)
-			result.Sprites = append(result.Sprites, coin)
-		}
-	}
-	result.till.StartValue = result.till.Value()
+	result.randomizeTill()
 
 	result.bubbles = NewBubbles(result)
 	result.speaking = sync.NewCond(&result.mut)
@@ -381,6 +363,8 @@ func (m *MainScene) updateInput() error {
 			}
 		}
 	}
+	overTill := cPos.In(m.till.Bounds())
+	overCounter := cPos.In(m.counter.Bounds())
 	if inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonLeft) {
 		debug.Println("left mouse press", m.holding)
 		if len(m.holding) > 0 {
@@ -393,13 +377,17 @@ func (m *MainScene) updateInput() error {
 				// TODO: grab all the sprites under cursor?? if they match??
 				grabbed := m.spritesUnderCursor()
 				if grabbed != nil {
-					m.handleMultigrab(grabbed)
+					if overCounter {
+						m.handleMultigrab(grabbed) // grab everything on the counter
+					} else {
+						m.handleGrabbed(grabbed[0]) // only grab one thing from the till.
+					}
 				} else {
 					debug.Println("counter drop")
 					m.counterDrop()
 				}
 			} else {
-				if cPos.In(m.till.Bounds()) { // if over Till; drop on Till
+				if overTill { // if over Till; drop on Till
 					debug.Println("over till")
 					m.tillDrop()
 				} else {
@@ -415,7 +403,7 @@ func (m *MainScene) updateInput() error {
 			} else {
 				grabbed := m.spriteUnderCursor()
 				if grabbed != nil {
-					if contains(heldKeys, ebiten.KeyShift) {
+					if contains(heldKeys, ebiten.KeyShift) && overCounter {
 						all := m.spritesUnderCursor()
 						m.handleMultigrab(all)
 					} else {
@@ -915,7 +903,7 @@ func (m *MainScene) nextDay() error {
 	m.dayFadeStartTime = time.Now()
 
 	m.endOfDaySync.Wait()
-	m.till = NewTill() // a whooole new tiiiill!
+	m.randomizeTill() // a whooole new tiiiill!
 	m.dayIdx++
 	if m.dayIdx < len(m.Days) {
 		m.Day = m.Days[m.dayIdx]
@@ -925,6 +913,29 @@ func (m *MainScene) nextDay() error {
 		m.Game.ChangeScene(mainMenu)
 	}
 	return nil
+}
+
+func (m *MainScene) randomizeTill() {
+	m.till = NewTill()
+	// generate random bills; [5-20] each.
+	for idx, denom := range []int{1, 5, 10, 20, 100} {
+		count := rand.Intn(15) + 5
+		for i := 0; i < count; i++ {
+			bill := newBill(denom, m.till.DropTargets[BillTargets][idx].Min.Add(m.till.Pos().Add(randPoint(2, 2))))
+			m.till.BillSlots[idx] = append(m.till.BillSlots[idx], bill)
+			m.Sprites = append(m.Sprites, bill)
+		}
+	}
+	// generate random coins; [10-50] each.
+	for idx, denom := range []int{1, 5, 10, 25, 50} {
+		count := rand.Intn(40) + 10
+		for i := 0; i < count; i++ {
+			coin := newCoin(denom, m.till.DropTargets[CoinTargets][idx].Min.Add(m.till.Pos()).Add(randPoint(7, 4)))
+			m.till.CoinSlots[idx] = append(m.till.CoinSlots[idx], coin)
+			m.Sprites = append(m.Sprites, coin)
+		}
+	}
+	m.till.StartValue = m.till.Value()
 }
 
 func (m *MainScene) showReconciliationReport() error {
