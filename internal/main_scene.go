@@ -452,7 +452,7 @@ func (m *MainScene) nextButton() {
 	s.Rewind()
 	s.Play()
 	if m.Customer != nil && m.Customer.ImageKey == "manager.png" {
-		m.bubbles.SetLine("What?! You think you can dismiss me?!!? I wasn't through talking!") // TODO: randomize
+		m.bubbles.SetLine(randSlice(BossDismissal))
 	} else {
 		m.State = StateDismissing
 	}
@@ -485,14 +485,14 @@ func (m *MainScene) customerDrop() {
 			if m.Customer.CustomerIntent == IntentDeposit {
 				m.Customer.CashOnCounter -= totalValue
 				if m.Customer.DepositSlip != nil && m.Customer.DepositSlip.Value > m.Customer.CashOnCounter { // put cash back to even out deposit
-					m.bubbles.SetLine("I'd like to deposit that, actually.") // TODO: randomize
+					m.bubbles.SetLine(randSlice(CashBackDeposit))
 					diff := m.Customer.DepositSlip.Value - m.Customer.CashOnCounter
 					m.putCashAndCoinsf(float32(diff) / 100) // make other money out of thin air; I'm trying to deposit; dammit. I won't leave until I do!
 				}
 			} else if m.Customer.CustomerIntent == IntentWithdraw {
 				m.Customer.CashInHand += totalValue
 				if m.Customer.DepositSlip != nil && m.Customer.CashInHand+cheatValue() >= m.Customer.DepositSlip.Value {
-					m.bubbles.SetLine("Thank you!") // TODO: randomize
+					m.bubbles.SetLine("Thank you!")
 					m.depart()
 				}
 			} // TODO: other intents
@@ -502,25 +502,29 @@ func (m *MainScene) customerDrop() {
 			}
 			m.holding = nil
 		} else if slip, ok := m.holding[0].(*DepositSlip); ok {
-			m.bubbles.SetLine("What? You mean I have to get back in line?!")
+			m.bubbles.SetLine(randSlice(WrongSlip))
 			m.removeSprite(m.holding[0])
 			m.ReturnedSlips = append(m.ReturnedSlips, slip) // we'll check these at the end of the day.
 			m.holding = nil
 			// giving back their deposit slip.
 		} else if _, ok := m.holding[0].(*Stack); ok {
 			if m.Customer.ImageKey == "drone.png" {
-				// put it back; TODO: play an error sound?
+				// put it back
+				snd := Resources.GetSound(m.Game.ACtx, "Computer_Beep_Long-2.ogg")
+				snd.Rewind()
+				snd.Play()
 				m.holding[0].SetPos(randRudeCounterPos())
 			} else {
 				// you're giving away a stack of money?!!?! Yes please!
-				m.bubbles.SetLine("Oh! Thank you!") // TODO: randomize
+				m.bubbles.SetLine(randSlice(FreeMoney))
 				m.removeSprite(m.holding[0])
 				m.holding = nil
-				m.depart() // TODO: this probably breaks the line
+				m.depart()
 			}
 		} else if _, ok := m.holding[0].(*Trash); ok {
-			m.bubbles.SetLine("Oh, sorry. Could you throw that away for me?") // TODO: randomize
+			m.bubbles.SetLine(randSlice(HandsTrash))
 		}
+
 	}
 }
 
