@@ -38,12 +38,12 @@ func Days() []*Day {
 			EndNode:  "Manager_Day1_End",
 		},
 		1: {
-			Sequence: []string{"Manager_Day2", "random", "random", "drone", "random", "random", "OldMan_Day2"},
+			Sequence: []string{"Manager_Day2", "random", "random", "drone", "random", "Janitor_1", "random", "OldMan_Day2"},
 			Random:   []string{"RandomDeposit_Polite", "RandomDeposit_Rude", "RandomDeposit_Polite", "RandomDeposit_Rude", "RandomWithdrawal_Polite", "RandomWithdrawal_Rude"},
 			EndNode:  "Manager_Day2_End",
 		},
 		2: {
-			Sequence: []string{"Manager_Day3", "random", "RandomCheck_Polite", "random", "drone", "random", "random", "OldMan_Day3"},
+			Sequence: []string{"Manager_Day3", "random", "random", "Janitor_2", "random", "drone", "random", "random", "OldMan_Day3"},
 			Random:   []string{"RandomDeposit_Polite", "RandomDeposit_Rude", "RandomCheck_Polite", "RandomCheck_Rude", "RandomWithdrawal_Polite", "RandomWithdrawal_Rude"},
 			EndNode:  "Manager_Day3_End",
 		},

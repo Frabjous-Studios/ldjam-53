@@ -1,0 +1,40 @@
+title: Janitor_1
+portrait: unique_janitor.png
+---
+...
+<< play_sound Computer_Beep_Long-1.ogg >>
+-> Oh, hello.
+-> Uh... hi? Aren't you the janitor?
+...
+<< play_sound Computer_Beep_Long-2.ogg >>
+<< put_counter trash trash trash trash >>
+-> Oh! Look.... it's trash...
+...
+<< play_sound Computer_Beep_Long-2.ogg >>
+-> Thanks... I guess?
+-> You... want me to keep this?
+...
+<< play_sound Computer_Beep_Long-2.ogg >>
+-> Okay, goodbye... I guess.
+-> Wait, what am I supposed to do with this?!
+
+<< depart >>
+===
+title: Janitor_2
+portrait: unique_janitor.png
+---
+...
+<< play_sound Computer_Beep_Long-1.ogg >>
+-> Not you again...
+-> Oh... it's you.
+...
+<< play_sound Computer_Beep_Long-2.ogg >>
+<< put_counter trash trash trash trash trash trash trash >>
+-> More trash... thanks.
+...
+<< play_sound Computer_Beep_Long-2.ogg >>
+-> See you next time!
+-> ... we've really got to get you fixed...
+<< depart >>
+===
+

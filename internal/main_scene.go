@@ -1155,6 +1155,8 @@ func (m *MainScene) putCounter(args []string) error {
 			m.Runner.SetDepositSlip(slip)
 			m.setupAccount(slip)
 			m.put(slip)
+		case arg == "trash":
+			m.put(randomTrash(m.randomCounterPos()))
 		case arg == "bill_1":
 			m.putBill(1)
 		case arg == "bill_5":
