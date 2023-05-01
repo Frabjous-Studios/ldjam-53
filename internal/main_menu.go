@@ -18,6 +18,8 @@ type MainMenuScene struct {
 	ui      *ebitenui.UI
 	buttons []*widget.Button
 
+	bg *ebiten.Image
+
 	selected int
 }
 
@@ -30,6 +32,7 @@ func NewMainMenuScene(game *Game) *MainMenuScene {
 	result := &MainMenuScene{
 		Game:     game,
 		selected: -1,
+		bg:       Resources.GetImage("menu_bg"),
 	}
 	result.ui, _ = result.createMenuUI()
 	game.PlayMusic(MainMenuMusic)
@@ -86,6 +89,10 @@ func (m *MainMenuScene) updateButtons() {
 }
 
 func (m *MainMenuScene) Draw(screen *ebiten.Image) {
+	opts := &ebiten.DrawImageOptions{}
+	opts.GeoM.Scale(4.0/3, 4.0/3)
+	screen.DrawImage(m.bg, opts)
+
 	m.ui.Draw(screen)
 }
 
@@ -146,19 +153,22 @@ func exitGame(_ *Game) {
 	os.Exit(0)
 }
 
+var hover = color.RGBA{60, 60, 60, 70}
+var transparent = color.RGBA{0, 0, 0, 0}
+
 func (m *MainMenuScene) button(text string, onClick func(g *Game)) *widget.Button {
 	c := widget.ButtonTextColor{
-		Idle:     hexColor("ffd4a3"),
-		Disabled: hexColor("555555"),
+		Idle:     color.RGBA{141, 216, 148, 255},
+		Disabled: color.RGBA{141, 216, 148, 255},
 	}
 	return widget.NewButton(
 		widget.ButtonOpts.Text(text, Resources.GetFace(FontName, 32), &c),
 		widget.ButtonOpts.Image(&widget.ButtonImage{
-			Idle:         image.NewNineSliceColor(hexColor("ff0000")),
-			Hover:        image.NewNineSliceColor(hexColor("00ff00")),
-			Pressed:      image.NewNineSliceColor(hexColor("ff0000")),
-			PressedHover: image.NewNineSliceColor(hexColor("ff0000")),
-			Disabled:     image.NewNineSliceColor(hexColor("ff0000")),
+			Idle:         image.NewNineSliceColor(transparent),
+			Hover:        image.NewNineSliceColor(hover),
+			Pressed:      image.NewNineSliceColor(transparent),
+			PressedHover: image.NewNineSliceColor(transparent),
+			Disabled:     image.NewNineSliceColor(transparent),
 		}),
 		widget.ButtonOpts.PressedHandler(func(args *widget.ButtonPressedEventArgs) {
 			onClick(m.Game)

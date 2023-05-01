@@ -131,8 +131,6 @@ func init() {
 	Resources.music = make(map[string]*audio.InfiniteLoop)
 
 	// load images
-	Resources.images["frabjous.png"] = Resources.GetImage("frabjous.png")
-	Resources.images["studios.png"] = Resources.GetImage("studios.png")
 	Resources.images["bill_1"] = Resources.GetImage("bill_1.png")
 	Resources.images["bill_5"] = Resources.GetImage("bill_5.png")
 	Resources.images["bill_10"] = Resources.GetImage("bill_10.png")
@@ -182,6 +180,10 @@ func init() {
 	Resources.images["junk_8.png"] = Resources.GetImage("junk_8.png")
 	Resources.images["junk_9.png"] = Resources.GetImage("junk_9.png")
 	Resources.images["junk_10.png"] = Resources.GetImage("junk_10.png")
+	Resources.images["frabjous.png"] = Resources.GetImage("frabjous.png")
+	Resources.images["studios.png"] = Resources.GetImage("studios.png")
+
+	Resources.images["menu_bg"] = Resources.GetImage("menuattempt.png")
 }
 
 const SampleRate = 44100
