@@ -248,7 +248,6 @@ func (m *MainScene) Update() error {
 			m.State = StateConversing
 		} else if !m.Runner.running {
 			go m.startRunner()
-			m.Runner.running = true
 		}
 	case StateDismissing:
 		m.resetDialogue()
@@ -610,6 +609,7 @@ func (m *MainScene) Draw(screen *ebiten.Image) {
 	if m.Customer != nil {
 		m.Customer.DrawTo(screen)
 	} else if m.Runner.running {
+		debug.Println("")
 		// TODO: animate the customer into position
 		m.Customer = m.Runner.Portrait()
 		if m.Customer != nil {

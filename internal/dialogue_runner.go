@@ -84,7 +84,9 @@ func (r *DialogueRunner) DoNode(name string) error {
 		r.mut.Lock()
 		defer r.mut.Unlock()
 		r.CurrNodeName = name
+		r.running = true
 		r.customer = nil
+		r.portraitImg.Clear()
 		r.runState = RunnerRunning
 	}()
 
@@ -168,8 +170,10 @@ func (r *DialogueRunner) Portrait() (p *Customer) {
 		}
 	}()
 	if r.customer != nil {
+		debug.Println("still using the same customer as before!")
 		return r.customer // TODO: this caching is making the drone be re-used??
 	}
+	debug.Println("generating a new customer for node", r.CurrNodeName)
 	node, ok := r.vm.Program.Nodes[r.CurrNodeName]
 	if !ok {
 		debug.Printf("could not find node %v", r.CurrNodeName)
