@@ -53,6 +53,7 @@ func (g *Game) PlayMusic(file string) {
 	g.incomingVolume = resound.NewVolume(nil).SetStrength(0.0)
 	ch.Add("volume", g.incomingVolume)
 	g.incomingPlayer = ch.CreatePlayer(loop)
+	g.incomingPlayer.Rewind()
 	g.incomingPlayer.Play()
 }
 
@@ -62,6 +63,8 @@ func (g *Game) Layout(outsideWidth int, outsideHeight int) (screenWidth int, scr
 }
 
 const crossFadeTime = 5 * time.Second
+
+const maxVolume = 0.75
 
 // Update calculates game logic
 func (g *Game) Update() error {
@@ -87,7 +90,7 @@ func (g *Game) Update() error {
 	if g.incomingPlayer != nil && g.playingPlayer != nil {
 		dt := float64(time.Now().Sub(g.fadeStart)) / float64(crossFadeTime)
 		if dt >= 1.0 {
-			g.incomingVolume.SetStrength(1.0)
+			g.incomingVolume.SetStrength(maxVolume)
 			g.playingVolume.SetStrength(0.0)
 			g.playingPlayer.Pause()
 			g.playingVolume = g.incomingVolume
@@ -95,12 +98,12 @@ func (g *Game) Update() error {
 			g.incomingVolume = nil
 			g.incomingPlayer = nil
 		} else {
-			g.incomingVolume.SetStrength(dt)
-			g.playingVolume.SetStrength(1.0 - dt)
+			g.incomingVolume.SetStrength(dt * maxVolume)
+			g.playingVolume.SetStrength((1.0 - dt) * maxVolume)
 		}
 	} else if g.incomingPlayer != nil {
 		debug.Println("starting new song!")
-		g.incomingVolume.SetStrength(1.0)
+		g.incomingVolume.SetStrength(maxVolume)
 		g.playingPlayer = g.incomingPlayer
 		g.playingVolume = g.incomingVolume
 		g.incomingVolume = nil
