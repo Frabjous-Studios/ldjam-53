@@ -703,13 +703,6 @@ func (m *MainScene) Draw(screen *ebiten.Image) {
 	ebitenutil.DebugPrintAt(screen, fmt.Sprintf("%.0f", ebiten.ActualFPS()), 620, 0) // TODO: remove!
 }
 
-func eoc(x float64) float64 {
-	return math.Sqrt(1 - math.Pow(x-1, 2))
-}
-func eic(x float64) float64 {
-	return 1 - math.Sqrt(1-math.Pow(x, 2))
-}
-
 var unif map[string]any
 
 func (m *MainScene) drawOffscreen(screen *ebiten.Image) {
@@ -721,8 +714,7 @@ func (m *MainScene) drawOffscreen(screen *ebiten.Image) {
 	opts := ebiten.DrawRectShaderOptions{}
 	opts.Images[0] = m.offscreen
 	opts.Uniforms = unif
-	opts.Uniforms["Dt"] = 0
-	fmt.Println("dt vals:", dt, eoc(dt/0.1), eic((1-dt)/0.1))
+	opts.Uniforms["Dt"] = dt
 
 	screen.DrawRectShader(
 		m.offscreen.Bounds().Dx(),
