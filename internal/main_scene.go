@@ -89,7 +89,7 @@ type Hologram struct {
 	StartTime time.Time
 }
 
-const DayLength = 10 * time.Minute
+const DayLength = 1 * time.Minute
 
 func (s *Hologram) DrawTo(screen *ebiten.Image) {
 	if s.Img == nil {
@@ -142,6 +142,8 @@ type MainScene struct {
 	trashChute   *TrashChute
 	alarmButtons *AlarmButtons
 
+	offscreen *ebiten.Image
+
 	bubbles *Bubbles
 	options []*Line
 
@@ -186,6 +188,7 @@ func NewMainScene(g *Game) *MainScene {
 			BaseSprite: &BaseSprite{X: 263, Y: 124, Img: Resources.images["call_button_holo"]},
 			StartTime:  time.Now(),
 		},
+		offscreen:    ebiten.NewImage(g.Width*ScaleFactor, g.Height*ScaleFactor),
 		dayStartTime: time.Now(),
 		vars:         make(yarn.MapVariableStorage),
 		black:        placeholder(colornames.Black, 1, 1),
@@ -636,40 +639,44 @@ func (m *MainScene) AdvanceDialogue() {
 }
 
 func (m *MainScene) Draw(screen *ebiten.Image) {
-	m.drawBg(screen)
-	m.till.DrawTo(screen)
+	m.offscreen.Clear()
+	m.drawBg(m.offscreen)
+	m.till.DrawTo(m.offscreen)
 
 	if m.Customer != nil {
-		m.Customer.DrawTo(screen)
+		m.Customer.DrawTo(m.offscreen)
 	} else if m.Runner.running {
 		debug.Println("")
 		// TODO: animate the customer into position
 		m.Customer = m.Runner.Portrait()
 		if m.Customer != nil {
 			m.Customer.SetPos(image.Pt(170, 53))
-			m.Customer.DrawTo(screen)
+			m.Customer.DrawTo(m.offscreen)
 		}
 	}
 
-	m.counter.DrawTo(screen)
-	m.shredder.DrawTo(screen)
+	m.counter.DrawTo(m.offscreen)
+	m.shredder.DrawTo(m.offscreen)
 
 	// draw terminal
-	m.terminal.DrawTo(screen)
+	m.terminal.DrawTo(m.offscreen)
 
 	// draw next button
-	m.buttonBase.DrawTo(screen)
-	m.buttonHolo.DrawTo(screen)
+	m.buttonBase.DrawTo(m.offscreen)
+	m.buttonHolo.DrawTo(m.offscreen)
 
-	m.alarmButtons.DrawTo(screen)
+	m.alarmButtons.DrawTo(m.offscreen)
 
 	// draw trash chute
-	m.trashChute.DrawTo(screen)
+	m.trashChute.DrawTo(m.offscreen)
 
 	// draw all the sprites in their draw order.
 	for _, sprite := range m.Sprites {
-		sprite.DrawTo(screen)
+		sprite.DrawTo(m.offscreen)
 	}
+
+	// draw shader!
+	m.drawOffscreen(screen)
 
 	// draw reconciliation report
 	if m.State == StateReporting && !m.reportDismissed {
@@ -695,6 +702,35 @@ func (m *MainScene) Draw(screen *ebiten.Image) {
 
 	ebitenutil.DebugPrintAt(screen, fmt.Sprintf("%.0f", ebiten.ActualFPS()), 620, 0) // TODO: remove!
 }
+
+func eoc(x float64) float64 {
+	return math.Sqrt(1 - math.Pow(x-1, 2))
+}
+func eic(x float64) float64 {
+	return 1 - math.Sqrt(1-math.Pow(x, 2))
+}
+
+var unif map[string]any
+
+func (m *MainScene) drawOffscreen(screen *ebiten.Image) {
+	if unif == nil {
+		unif = make(map[string]any)
+	}
+	dt := float64(m.dayLength().Seconds()) / float64(DayLength.Seconds())
+
+	opts := ebiten.DrawRectShaderOptions{}
+	opts.Images[0] = m.offscreen
+	opts.Uniforms = unif
+	opts.Uniforms["Dt"] = 0
+	fmt.Println("dt vals:", dt, eoc(dt/0.1), eic((1-dt)/0.1))
+
+	screen.DrawRectShader(
+		m.offscreen.Bounds().Dx(),
+		m.offscreen.Bounds().Dy(),
+		Resources.GetShader("day_night"),
+		&opts)
+}
+
 func (m *MainScene) DrawFade(screen *ebiten.Image, dt float32) {
 	opts := &ebiten.DrawImageOptions{}
 	opts.Blend = ebiten.BlendSourceOver

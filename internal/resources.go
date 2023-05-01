@@ -119,6 +119,7 @@ func init() {
 
 	// load shaders
 	Resources.shaders = make(map[string]*ebiten.Shader)
+	Resources.shaders["day_night"] = loadShader("DayNight.kage")
 
 	// load font faces (again?)
 	Resources.faces = make(map[string]*truetype.Font)
@@ -348,7 +349,7 @@ func loadFont(filename string) (*truetype.Font, error) {
 	return ttfFont, nil
 }
 
-// TODO: enable //go:embed gamedata/shader
+//go:embed gamedata/shader
 var shader embed.FS
 
 // loadShader loads and compiles the provided shader.

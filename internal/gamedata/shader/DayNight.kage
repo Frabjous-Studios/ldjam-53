@@ -1,0 +1,186 @@
+package main
+
+var Dt float // Dt Controls the animation
+
+func Fragment(position vec4, _ vec2, _ vec4) vec4 {
+	c0 := [3]vec3{vec3(float(133)/255, float(235)/255, float(218)/255), vec3(float(195)/255, float(244)/255, float(236)/255), vec3(float(130)/255, float(255)/255, float(255)/255)}
+	c1 := [3]vec3{vec3(float(95)/255, float(231)/255, float(201)/255), vec3(float(156)/255, float(238)/255, float(224)/255), vec3(float(65)/255, float(255)/255, float(240)/255)}
+	c2 := [3]vec3{vec3(float(95)/255, float(231)/255, float(161)/255), vec3(float(120)/255, float(199)/255, float(199)/255), vec3(float(65)/255, float(255)/255, float(136)/255)}
+	c3 := [3]vec3{vec3(float(95)/255, float(231)/255, float(110)/255), vec3(float(167)/255, float(255)/255, float(172)/255), vec3(float(65)/255, float(255)/255, float(96)/255)}
+	c4 := [3]vec3{vec3(float(76)/255, float(170)/255, float(96)/255), vec3(float(123)/255, float(214)/255, float(130)/255), vec3(float(26)/255, float(137)/255, float(67)/255)}
+	c5 := [3]vec3{vec3(float(68)/255, float(116)/255, float(71)/255), vec3(float(84)/255, float(113)/255, float(81)/255), vec3(float(10)/255, float(108)/255, float(16)/255)}
+	c6 := [3]vec3{vec3(float(50)/255, float(59)/255, float(49)/255), vec3(float(0)/255, float(0)/255, float(0)/255), vec3(float(0)/255, float(0)/255, float(0)/255)}
+	c7 := [3]vec3{vec3(float(70)/255, float(94)/255, float(60)/255), vec3(float(121)/255, float(97)/255, float(73)/255), vec3(float(14)/255, float(63)/255, float(0)/255)}
+	c8 := [3]vec3{vec3(float(93)/255, float(118)/255, float(71)/255), vec3(float(104)/255, float(173)/255, float(104)/255), vec3(float(61)/255, float(112)/255, float(16)/255)}
+	c9 := [3]vec3{vec3(float(133)/255, float(149)/255, float(83)/255), vec3(float(168)/255, float(172)/255, float(112)/255), vec3(float(130)/255, float(133)/255, float(40)/255)}
+	c10 := [3]vec3{vec3(float(171)/255, float(168)/255, float(88)/255), vec3(float(204)/255, float(191)/255, float(128)/255), vec3(float(138)/255, float(137)/255, float(51)/255)}
+	c11 := [3]vec3{vec3(float(202)/255, float(174)/255, float(96)/255), vec3(float(238)/255, float(224)/255, float(156)/255), vec3(float(245)/255, float(138)/255, float(67)/255)}
+	c12 := [3]vec3{vec3(float(243)/255, float(135)/255, float(167)/255), vec3(float(237)/255, float(197)/255, float(245)/255), vec3(float(255)/255, float(130)/255, float(137)/255)}
+	c13 := [3]vec3{vec3(float(245)/255, float(167)/255, float(218)/255), vec3(float(214)/255, float(233)/255, float(249)/255), vec3(float(255)/255, float(137)/255, float(255)/255)}
+	c14 := [3]vec3{vec3(float(141)/255, float(148)/255, float(216)/255), vec3(float(203)/255, float(226)/255, float(246)/255), vec3(float(132)/255, float(133)/255, float(255)/255)}
+	c15 := [3]vec3{vec3(float(93)/255, float(144)/255, float(193)/255), vec3(float(153)/255, float(230)/255, float(237)/255), vec3(float(61)/255, float(132)/255, float(202)/255)}
+	c16 := [3]vec3{vec3(float(74)/255, float(163)/255, float(185)/255), vec3(float(134)/255, float(234)/255, float(217)/255), vec3(float(22)/255, float(136)/255, float(163)/255)}
+	c17 := [3]vec3{vec3(float(69)/255, float(165)/255, float(147)/255), vec3(float(127)/255, float(232)/255, float(199)/255), vec3(float(12)/255, float(136)/255, float(133)/255)}
+	c18 := [3]vec3{vec3(float(94)/255, float(247)/255, float(253)/255), vec3(float(154)/255, float(237)/255, float(223)/255), vec3(float(63)/255, float(255)/255, float(255)/255)}
+	c19 := [3]vec3{vec3(float(255)/255, float(204)/255, float(93)/255), vec3(float(221)/255, float(208)/255, float(143)/255), vec3(float(255)/255, float(255)/255, float(61)/255)}
+	c20 := [3]vec3{vec3(float(253)/255, float(137)/255, float(254)/255), vec3(float(238)/255, float(200)/255, float(245)/255), vec3(float(255)/255, float(131)/255, float(255)/255)}
+
+	origC := imageColorAtPixel(position.xy)
+	c := origC.rgb
+
+	t := 1.0
+
+	if Dt <= 0.1 { // sunrise
+		t = eoc(Dt / 0.1) // ease-out
+	} else if Dt >= 0.9 { // sunset
+		t = (1 - Dt) / 0.1
+		t = eic(t) // ease-in
+	}
+
+	if c == c0[0] {
+		if Dt < 0.5 {
+			c = mix(c0[0], c0[1], t)
+		} else {
+			c = mix(c0[0], c0[2], t)
+		}
+	} else if c == c1[0] {
+		if Dt < 0.5 {
+			c = mix(c1[0], c1[1], t)
+		} else {
+			c = mix(c1[0], c1[2], t)
+		}
+	} else if c == c2[0] {
+		if Dt < 0.5 {
+			c = mix(c2[0], c2[1], t)
+		} else {
+			c = mix(c2[0], c2[2], t)
+		}
+	} else if c == c3[0] {
+		if Dt < 0.5 {
+			c = mix(c3[0], c3[1], t)
+		} else {
+			c = mix(c3[0], c3[2], t)
+		}
+	} else if c == c4[0] {
+		if Dt < 0.5 {
+			c = mix(c4[0], c4[1], t)
+		} else {
+			c = mix(c4[0], c4[2], t)
+		}
+	} else if c == c5[0] {
+		if Dt < 0.5 {
+			c = mix(c5[0], c5[1], t)
+		} else {
+			c = mix(c5[0], c5[2], t)
+		}
+	} else if c == c6[0] {
+		if Dt < 0.5 {
+			c = mix(c6[0], c6[1], t)
+		} else {
+			c = mix(c6[0], c6[2], t)
+		}
+	} else if c == c7[0] {
+		if Dt < 0.5 {
+			c = mix(c7[0], c7[1], t)
+		} else {
+			c = mix(c7[0], c7[2], t)
+		}
+	} else if c == c8[0] {
+		if Dt < 0.5 {
+			c = mix(c8[0], c8[1], t)
+		} else {
+			c = mix(c8[0], c8[2], t)
+		}
+	} else if c == c9[0] {
+		if Dt < 0.5 {
+			c = mix(c9[0], c9[1], t)
+		} else {
+			c = mix(c9[0], c9[2], t)
+		}
+	} else if c == c10[0] {
+		if Dt < 0.5 {
+			c = mix(c10[0], c10[1], t)
+		} else {
+			c = mix(c10[0], c10[2], t)
+		}
+	} else if c == c11[0] {
+		if Dt < 0.5 {
+			c = mix(c11[0], c11[1], t)
+		} else {
+			c = mix(c11[0], c11[2], t)
+		}
+	} else if c == c12[0] {
+		if Dt < 0.5 {
+			c = mix(c12[0], c12[1], t)
+		} else {
+			c = mix(c12[0], c12[2], t)
+		}
+	} else if c == c13[0] {
+		if Dt < 0.5 {
+			c = mix(c13[0], c13[1], t)
+		} else {
+			c = mix(c13[0], c13[2], t)
+		}
+	} else if c == c14[0] {
+		if Dt < 0.5 {
+			c = mix(c14[0], c14[1], t)
+		} else {
+			c = mix(c14[0], c14[2], t)
+		}
+	} else if c == c15[0] {
+		if Dt < 0.5 {
+			c = mix(c15[0], c15[1], t)
+		} else {
+			c = mix(c15[0], c15[2], t)
+		}
+	} else if c == c16[0] {
+		if Dt < 0.5 {
+			c = mix(c16[0], c16[1], t)
+		} else {
+			c = mix(c16[0], c16[2], t)
+		}
+	} else if c == c17[0] {
+		if Dt < 0.5 {
+			c = mix(c17[0], c17[1], t)
+		} else {
+			c = mix(c17[0], c17[2], t)
+		}
+	} else if c == c18[0] {
+		if Dt < 0.5 {
+			c = mix(c18[0], c18[1], t)
+		} else {
+			c = mix(c18[0], c18[2], t)
+		}
+	} else if c == c19[0] {
+		if Dt < 0.5 {
+			c = mix(c19[0], c19[1], t)
+		} else {
+			c = mix(c19[0], c19[2], t)
+		}
+	} else if c == c20[0] {
+		if Dt < 0.5 {
+			c = mix(c20[0], c20[1], t)
+		} else {
+			c = mix(c20[0], c20[2], t)
+		}
+	}
+
+	return vec4(c.r, c.g, c.b, origC.a)
+}
+
+// Helper function to access an image's color at the given pixel coordinates.
+func imageColorAtPixel(pixelCoords vec2) vec4 {
+	sizeInPixels := imageSrcTextureSize()
+	offsetInTexels, _ := imageSrcRegionOnTexture()
+	adjustedTexelCoords := pixelCoords/sizeInPixels + offsetInTexels
+	return imageSrc0At(adjustedTexelCoords)
+}
+
+// ease out circ
+func eoc(x float) float {
+	return sqrt(1 - pow(x-1, 2))
+}
+
+func eic(x float) float {
+	return 1 - sqrt(1-pow(x, 2))
+}
