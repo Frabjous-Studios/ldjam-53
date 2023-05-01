@@ -43,7 +43,7 @@ func Days() []*Day {
 			EndNode:  "Manager_Day2_End",
 		},
 		2: {
-			Sequence: []string{"Manager_Day3", "RandomCheck_Polite", "random", "random", "drone", "random", "random", "OldMan_Day3"},
+			Sequence: []string{"Manager_Day3", "random", "RandomCheck_Polite", "random", "drone", "random", "random", "OldMan_Day3"},
 			Random:   []string{"RandomDeposit_Polite", "RandomDeposit_Rude", "RandomCheck_Polite", "RandomCheck_Rude", "RandomWithdrawal_Polite", "RandomWithdrawal_Rude"},
 			EndNode:  "Manager_Day3_End",
 		},

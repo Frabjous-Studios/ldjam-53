@@ -43,7 +43,7 @@ var heads = []string{
 	"head_mohawkShades.png",
 	"head_pillBot.png",
 	"head_ponytails.png",
-	"head_psychoClown",
+	"head_psychoClown.png",
 	"head_smileScreen.png",
 }
 
@@ -245,6 +245,9 @@ func (r *resources) RandomScriptFont() *etxt.Font {
 var art embed.FS
 
 func (r *resources) GetImage(path string) *ebiten.Image {
+	if len(path) == 0 {
+		panic("eep!")
+	}
 	if r.images == nil {
 		r.images = make(map[string]*ebiten.Image)
 	}
