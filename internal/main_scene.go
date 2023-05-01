@@ -113,7 +113,6 @@ const (
 	StateDismissing
 	StateReporting
 	StateFadingToNewDay
-	StateOpeningCheckShredder
 )
 
 var startTime time.Time
@@ -141,6 +140,7 @@ type MainScene struct {
 	shredder     *Shredder
 	trashChute   *TrashChute
 	alarmButtons *AlarmButtons
+	silhouettes  *Silhouettes
 
 	offscreen *ebiten.Image
 
@@ -193,6 +193,7 @@ func NewMainScene(g *Game) *MainScene {
 		vars:         make(yarn.MapVariableStorage),
 		black:        placeholder(colornames.Black, 1, 1),
 		shredder:     NewShredder(),
+		silhouettes:  NewSilhouettes(),
 		trashChute:   NewTrashChute(),
 		alarmButtons: NewAlarmButtons(g.ACtx),
 	}
@@ -227,6 +228,8 @@ const DismissalPxPerSecond = 100
 const DayFadeTime = 1 * time.Second
 
 func (m *MainScene) Update() error {
+	m.silhouettes.Update()
+
 	if m.State == StateFadingToNewDay {
 		if time.Now().Sub(m.dayFadeStartTime) > DayFadeTime {
 			m.State = StateFadeIn
@@ -777,7 +780,8 @@ func (m *MainScene) drawBg(screen *ebiten.Image) {
 	opts.GeoM.Scale(ScaleFactor, ScaleFactor)
 	screen.DrawImage(Resources.GetImage("bg_bg.png"), opts)
 
-	// TODO: draw commuters
+	m.silhouettes.DrawTo(screen)
+
 	opts.GeoM.Reset()
 	opts.GeoM.Scale(ScaleFactor, ScaleFactor)
 	screen.DrawImage(Resources.GetImage("bg_fg.png"), opts)
