@@ -1026,7 +1026,7 @@ func (m *MainScene) nextDay() error {
 		m.Day = m.Days[m.dayIdx]
 	} else {
 		// TODO: thanks for playing! Credits
-		mainMenu, _ := NewMainMenuScene(m.Game)
+		mainMenu, _ := NewCreditsScene(m.Game)
 		m.Game.ChangeScene(mainMenu)
 	}
 	return nil

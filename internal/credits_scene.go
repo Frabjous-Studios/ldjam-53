@@ -12,6 +12,7 @@ type CreditsScene struct {
 }
 
 func NewCreditsScene(game *Game) (*CreditsScene, error) {
+	game.PlayMusic("No_Surprises_Parody.ogg")
 	return &CreditsScene{
 		Game: game,
 	}, nil
