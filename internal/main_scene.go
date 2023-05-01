@@ -242,14 +242,13 @@ func (m *MainScene) Update() error {
 
 	switch m.State {
 	case StateApproaching:
-		if !m.Runner.running {
-			go m.startRunner()
-			m.Runner.running = true
-		}
 		// TODO: animate the customer approaching
 		if m.Customer != nil {
 			debug.Println("transition to conversing")
 			m.State = StateConversing
+		} else if !m.Runner.running {
+			go m.startRunner()
+			m.Runner.running = true
 		}
 	case StateDismissing:
 		m.resetDialogue()
@@ -285,9 +284,11 @@ func (m *MainScene) Update() error {
 }
 
 func (m *MainScene) clearCustomer() {
+	fmt.Println("clearing customer")
+	m.Runner.mut.Lock()
+	defer m.Runner.mut.Unlock()
 	m.Customer = nil
 	m.Runner.customer = nil
-	m.Runner.portraitImg.Clear()
 }
 
 const HoverHeight = 0.2
@@ -608,14 +609,12 @@ func (m *MainScene) Draw(screen *ebiten.Image) {
 
 	if m.Customer != nil {
 		m.Customer.DrawTo(screen)
-	} else {
-		runnerP := m.Runner.Portrait()
-		if runnerP == nil {
-			m.Customer = nil
-		} else if m.Customer == nil {
-			// TODO: animate the customer into position
-			m.Customer = runnerP
+	} else if m.Runner.running {
+		// TODO: animate the customer into position
+		m.Customer = m.Runner.Portrait()
+		if m.Customer != nil {
 			m.Customer.SetPos(image.Pt(170, 53))
+			m.Customer.DrawTo(screen)
 		}
 	}
 
@@ -748,6 +747,7 @@ func (m *MainScene) dayLength() time.Duration {
 }
 
 func (m *MainScene) startRunner() {
+	debug.Println("starting runner!")
 	if err := m.Runner.DoNode(m.Day.Next(m.dayLength())); err != nil {
 		debug.Printf("error starting runner: %v", err)
 		return

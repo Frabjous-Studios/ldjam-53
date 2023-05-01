@@ -373,7 +373,6 @@ func newRandPortrait(target *ebiten.Image) *Customer {
 
 func newSimplePortrait(target *ebiten.Image, head string) *Customer {
 	h := Resources.GetImage(head)
-	fmt.Println(h)
 	target.DrawImage(h, nil)
 	return &Customer{
 		ImageKey: head,

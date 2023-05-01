@@ -79,9 +79,14 @@ func (r *DialogueRunner) DoNode(name string) error {
 	defer func() {
 		r.runState = RunnerStopped
 	}()
-	r.CurrNodeName = name
-	r.customer = nil
-	r.runState = RunnerRunning
+	debug.Println("doing node; clearing DialogueRunner customer")
+	func() {
+		r.mut.Lock()
+		defer r.mut.Unlock()
+		r.CurrNodeName = name
+		r.customer = nil
+		r.runState = RunnerRunning
+	}()
 
 	return r.vm.Run(name)
 }
@@ -151,14 +156,19 @@ func (r *DialogueRunner) CustomerIntent() Intent {
 }
 
 func (r *DialogueRunner) Portrait() (p *Customer) {
+	r.mut.Lock()
+	defer r.mut.Unlock()
 	defer func() {
+		// TODO: ths defer makes this func a bit weird.
 		if p != nil {
+			r.customer = p
 			p.CustomerIntent = r.CustomerIntent()
 			p.CustomerName = r.RandomName()
+			p.IsRude = strings.Contains(strings.ToLower(r.CurrNodeName), "rude")
 		}
 	}()
 	if r.customer != nil {
-		return r.customer // TODO: this caching is making the drone be re-used.
+		return r.customer // TODO: this caching is making the drone be re-used??
 	}
 	node, ok := r.vm.Program.Nodes[r.CurrNodeName]
 	if !ok {
@@ -167,24 +177,23 @@ func (r *DialogueRunner) Portrait() (p *Customer) {
 	}
 	r.portraitImg.Clear()
 	portraitID := portrait(node)
+	if portraitID == "" {
+		debug.Println("missing portraitID in node", r.CurrNodeName)
+		portraitID = "random"
+	}
 	if portraitID == "random" {
-		r.customer = newRandPortrait(r.portraitImg)
-		return r.customer
+		return newRandPortrait(r.portraitImg)
 	}
 	toks := strings.Split(portraitID, ":")
 	if len(toks) == 1 {
-		r.customer = newSimplePortrait(r.portraitImg, toks[0])
-		return r.customer
+		return newSimplePortrait(r.portraitImg, toks[0])
 	}
 	if len(toks) != 2 {
-		debug.Printf("malformed customer! using random: %v", portraitID)
-		r.customer = newRandPortrait(r.portraitImg)
-		return r.customer
+		debug.Printf("malformed customer portraitID! using random: %v", portraitID)
+		return newRandPortrait(r.portraitImg)
 	}
 	head, body := toks[0], toks[1]
-	r.customer = newPortrait(r.portraitImg, body, head)
-	r.customer.IsRude = strings.Contains(strings.ToLower(r.CurrNodeName), "rude")
-	return r.customer
+	return newPortrait(r.portraitImg, body, head)
 }
 
 func (r *DialogueRunner) GameState() *GameState {
