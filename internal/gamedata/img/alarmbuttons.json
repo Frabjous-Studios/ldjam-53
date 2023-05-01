@@ -1,0 +1,45 @@
+{ "frames": [
+   {
+    "filename": "alarmbuttons 0.aseprite",
+    "frame": { "x": 0, "y": 0, "w": 84, "h": 14 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 84, "h": 14 },
+    "sourceSize": { "w": 84, "h": 14 },
+    "duration": 100
+   },
+   {
+    "filename": "alarmbuttons 1.aseprite",
+    "frame": { "x": 84, "y": 0, "w": 84, "h": 14 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 84, "h": 14 },
+    "sourceSize": { "w": 84, "h": 14 },
+    "duration": 100
+   },
+   {
+    "filename": "alarmbuttons 2.aseprite",
+    "frame": { "x": 168, "y": 0, "w": 84, "h": 14 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 84, "h": 14 },
+    "sourceSize": { "w": 84, "h": 14 },
+    "duration": 100
+   }
+ ],
+ "meta": {
+  "app": "https://www.aseprite.org/",
+  "version": "1.3-rc2-x64",
+  "image": "alarmbuttons.png",
+  "format": "RGBA8888",
+  "size": { "w": 252, "h": 14 },
+  "scale": "1",
+  "frameTags": [
+  ],
+  "layers": [
+   { "name": "Layer", "opacity": 255, "blendMode": "normal" }
+  ],
+  "slices": [
+  ]
+ }
+}
