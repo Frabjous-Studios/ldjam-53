@@ -1,7 +1,6 @@
-# BANKWAVE: Neon Networth
-Welcome to your exciting new job at Bankwave! As a Bankwave employee you'll exercise the highest standards of service for our loyal customers.
-
 ![BANKWAVE: Neon Networth](https://user-images.githubusercontent.com/22620342/235563857-0d008980-649e-4770-b8c0-65e8c4d1643d.png)
+
+Welcome to your exciting new job at Bankwave! As a Bankwave employee you'll exercise the highest standards of service for our loyal customers.
 
 We know you'll fit right in with the Bankwave family.
 
