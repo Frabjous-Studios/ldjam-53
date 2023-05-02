@@ -1,44 +1,26 @@
-# bankwave
+# BANKWAVE: Neon Networth
+Welcome to your exciting new job at Bankwave! As a Bankwave employee you'll exercise the highest standards of service for our loyal customers.
 
-A basic skeleton for a 2D game using the [Ebitengine](https://ebitengine.org/) library.
+We know you'll fit right in with the Bankwave family.
 
-Extended from [the original](sinisterstuf/bankwave) with:
-1) A credits screen
-2) A main menu
-3) YarnSpinner integration
-4) Probably some other things too, but most importantly _no actual game logic_.
+## Description
 
------✂️-----
+BANKWAVE is an immersive synthwave capitalism simulator. Completed in less than 72-hours by a team for Ludum Dare 53.
 
-> ⚠️ After cloning this repository:
+## The Team
 
-> Write your OWN name name in the LICENSE file and find-and-replace `bankwave` with your own game's name, for example, by running this command (tested on Linux and Mac):
+**Alex Mills** is a naturally caffeinated math and computer science nerd who started leading his first videogame project at the tender age of seventeen. Since then, he’s acquired almost twelve years of software developer experience. A proud corporate dropout since founding Frabjous Studios, he is perpetually five years behind on pop culture. He loved the ending to HBO’s Game of Thrones.
 
-```bash
-grep -Rl bankwave | xargs sed -i '' -e "s/bankwave/${PWD##*/}/g"
-```
+Manifesting to this Earth-dimension through a slippage in the primordial Nexus, **Jaye Cline** returns to us as a hopefully non-toxic, sentient oil with a fondness for pixels and sub-catarrachtactenated-filobian culture.
 
-> it assumes that the game name is the name of the current folder because that is what `go build` will call it.
+**Gregg Rossetti** is a composer, producer, and teacher who specializes in creating both classical and commercial music, as well as occasionally performing. His musical accomplishments include performances across the U.S. and Canada, several commercially-released albums, and hours of music for video games, web-comics, and films.
 
-> Then delete this section from the README, and start editing `main.go` to make your own game!
+**Leot Goose** was a traveling acrobatic juggling magician trained by a French mime. When he isn’t working in marketing for Fortune 4 companies, he moonlights as a creative game developer. He is an experienced game consultant, and has assisted with the development of several indie games, books, and published TTRPG modules. Call him Mr. Goose.
 
------✂️-----
+**David Colditz** is a budding musician and synth nerd who enjoys whichever esoteric genre of music you’ve never heard of. He is also an avid appreciator of bread and considers himself an internet connoisseur.
 
-## For game testers
+**Carlos Lazo** is a freelance artist from Peru who is constantly drawing something – yes, even as you read this. He loves pizza in any shape and every species of rodent.
 
-<!-- TODO: add a link to the latest downloads page -->
+**PinkVirus** is a young independent artist and developer 🎨👩‍💻. They love exploring and experimenting with different forms of art, from illustration to animation. 🧐 They enjoy the freedom their work provides and are always looking for new ways to improve their skills and express their creativity. 🚀
 
-Game controls:
-- F: toggle full-screen
-- Q: quit the game
-- Space: move up
-
-## For programmers
-
-Make sure you have [Go 1.20 or later](https://go.dev/) to contribute to the game
-
-To build the game yourself, run: `go build .` it will produce an bankwave file and on Windows bankwave.exe.
-
-To run the tests, run: `go test ./...` but there are no tests yet.
-
-The project has a very simple, flat structure, the first place to start looking is the main.go file.
+**CaptianSkilly** is a young creative working in all of the fields involving music, visual art, and writing. He is trying to make his focus in life the mental health and well being of others, to help to change the world into a more loving and accepting place. He also really really likes taco bell, even after he swore to go organic.
