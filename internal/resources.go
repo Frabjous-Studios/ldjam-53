@@ -39,6 +39,7 @@ var bodies = []string{
 }
 
 var heads = []string{
+	"head_pinkvirus.png",
 	"head_3eyeShades.png",
 	"head_antlerClops.png",
 	"head_apeMojo.png",
