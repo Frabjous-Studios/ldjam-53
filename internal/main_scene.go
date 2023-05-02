@@ -5,7 +5,6 @@ import (
 	"github.com/DrJosh9000/yarn"
 	"github.com/Frabjous-Studios/bankwave/internal/debug"
 	"github.com/hajimehoshi/ebiten/v2"
-	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
 	"github.com/hajimehoshi/ebiten/v2/inpututil"
 	"github.com/tinne26/etxt"
 	"github.com/tinne26/etxt/emask"
@@ -731,8 +730,6 @@ func (m *MainScene) Draw(screen *ebiten.Image) {
 		dt := float32(time.Now().Sub(m.dayFadeStartTime).Seconds()) / float32(DayFadeTime.Seconds())
 		m.DrawFade(screen, 1-dt)
 	}
-
-	ebitenutil.DebugPrintAt(screen, fmt.Sprintf("%.0f", ebiten.ActualFPS()), 620, 0) // TODO: remove!
 }
 
 var unif map[string]any
