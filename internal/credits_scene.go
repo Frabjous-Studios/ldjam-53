@@ -14,13 +14,14 @@ func NewCreditsScene(game *Game) (*CreditsScene, error) {
 	game.PlayMusic("No_Surprises_Parody.ogg")
 	return &CreditsScene{
 		Game: game,
+		bg:   Resources.GetImage("credits.png"),
 	}, nil
 }
 
 func (s *CreditsScene) Update() error {
 	keys := inpututil.AppendPressedKeys(nil)
 
-	if len(keys) > 0 || inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonLeft) {
+	if contains(keys, ebiten.KeyEscape) || inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonLeft) {
 		s.Game.ChangeScene(NewMainMenuScene(s.Game))
 	}
 	return nil

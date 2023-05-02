@@ -93,6 +93,7 @@ func (g *Game) Update() error {
 			g.incomingVolume.SetStrength(maxVolume)
 			g.playingVolume.SetStrength(0.0)
 			g.playingPlayer.Pause()
+			g.playingPlayer.Rewind()
 			g.playingVolume = g.incomingVolume
 			g.playingPlayer = g.incomingPlayer
 			g.incomingVolume = nil
