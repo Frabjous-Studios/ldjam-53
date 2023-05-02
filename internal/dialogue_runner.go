@@ -86,7 +86,6 @@ func (r *DialogueRunner) DoNode(name string) error {
 		r.CurrNodeName = name
 		r.running = true
 		r.customer = nil
-		r.portraitImg.Clear()
 		r.runState = RunnerRunning
 	}()
 
