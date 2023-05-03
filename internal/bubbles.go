@@ -79,7 +79,6 @@ func (b *Bubbles) Update() {
 				debug.Println("dialogue timed out; moving on")
 				lastLog = b.completeTime
 			}
-			b.scene.speaking.Broadcast()
 		}
 	}
 }

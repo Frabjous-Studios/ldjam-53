@@ -43,6 +43,9 @@ type DialogueRunner struct {
 	portraitImg *ebiten.Image
 	customer    *Customer
 
+	dialogueLines   chan string
+	dialogueOptions chan int
+
 	running bool
 }
 

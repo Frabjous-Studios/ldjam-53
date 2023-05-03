@@ -153,8 +153,6 @@ type MainScene struct {
 	vars yarn.MapVariableStorage
 	mut  sync.Mutex
 
-	speaking     *sync.Cond
-	selectOpt    *sync.Cond
 	endOfDaySync *sync.Cond
 	selection    int
 
@@ -168,6 +166,9 @@ type MainScene struct {
 	reportDismissed bool
 
 	black *ebiten.Image
+
+	dialogueLines   chan string
+	dialogueOptions chan int
 }
 
 const GameMusic = "Hip_Elevator.ogg" // TODO: cross-fade tracks
@@ -188,21 +189,21 @@ func NewMainScene(g *Game) *MainScene {
 			BaseSprite: &BaseSprite{X: 263, Y: 124, Img: Resources.images["call_button_holo"]},
 			StartTime:  time.Now(),
 		},
-		offscreen:    ebiten.NewImage(g.Width*ScaleFactor, g.Height*ScaleFactor),
-		dayStartTime: time.Now(),
-		vars:         make(yarn.MapVariableStorage),
-		black:        placeholder(colornames.Black, 1, 1),
-		shredder:     NewShredder(),
-		silhouettes:  NewSilhouettes(),
-		trashChute:   NewTrashChute(),
-		alarmButtons: NewAlarmButtons(g.ACtx),
+		offscreen:       ebiten.NewImage(g.Width*ScaleFactor, g.Height*ScaleFactor),
+		dayStartTime:    time.Now(),
+		vars:            make(yarn.MapVariableStorage),
+		black:           placeholder(colornames.Black, 1, 1),
+		shredder:        NewShredder(),
+		silhouettes:     NewSilhouettes(),
+		trashChute:      NewTrashChute(),
+		alarmButtons:    NewAlarmButtons(g.ACtx),
+		dialogueLines:   make(chan string),
+		dialogueOptions: make(chan int),
 	}
 	result.Day = result.Days[0]
 	result.randomizeTill()
 
 	result.bubbles = NewBubbles(result)
-	result.speaking = sync.NewCond(&result.mut)
-	result.selectOpt = sync.NewCond(&result.mut)
 	result.endOfDaySync = sync.NewCond(&result.mut)
 
 	result.Runner, err = NewDialogueRunner(result.vars, result)
@@ -215,6 +216,8 @@ func NewMainScene(g *Game) *MainScene {
 
 	result.terminal = NewTerminal(result.txt, result)
 
+	result.startDialogueReceivers()
+
 	g.PlayMusic(GameMusic)
 	if err != nil {
 		panic(err)
@@ -226,6 +229,15 @@ func NewMainScene(g *Game) *MainScene {
 const DismissalPxPerSecond = 100
 
 const DayFadeTime = 1 * time.Second
+
+func (m *MainScene) startDialogueReceivers() {
+	go func() {
+		for line := range m.dialogueLines {
+			debug.Printf("received dialogue line: %v\n", line)
+			m.bubbles.SetLine(line)
+		} // TODO: shut down
+	}()
+}
 
 func (m *MainScene) Update() error {
 	m.silhouettes.Update()
@@ -322,8 +334,6 @@ const debounceDuration = 300 * time.Millisecond
 func (m *MainScene) resetDialogue() {
 	debug.Println("resetting dialogue")
 	m.bubbles.SetLine("")
-	m.selectOpt.Broadcast()
-	m.speaking.Broadcast()
 	m.options = nil
 }
 
@@ -350,12 +360,6 @@ func (m *MainScene) updateInput() error {
 
 	if time.Now().Before(m.debouceTime) {
 		return nil
-	}
-
-	if len(newKeys) > 0 && m.State == StateConversing {
-		debug.Println("advancing dialogue; keys")
-		m.AdvanceDialogue()
-		m.debouceTime = time.Now().Add(debounceDuration)
 	}
 
 	cPos := cursorPos()
@@ -432,9 +436,10 @@ func (m *MainScene) updateInput() error {
 					// check for dialogue option
 					for idx, opt := range m.options {
 						if cPos.Mul(ScaleFactor).In(opt.Rect) {
-							m.selection = idx
-							debug.Println("player selected dialog option")
-							m.selectOpt.Broadcast()
+							debug.Println("player selected dialog option; sending")
+							m.dialogueOptions <- idx
+							debug.Println("player dialogue option was sent")
+
 							m.options = nil
 							selected = true
 							break
@@ -442,7 +447,6 @@ func (m *MainScene) updateInput() error {
 					}
 					if !selected { // advance the dialogue if nothing was selected.
 						debug.Println("no dialogue selected; player is impatient.")
-						m.AdvanceDialogue()
 					}
 				}
 			}
@@ -664,10 +668,6 @@ func (m *MainScene) BringToFront(s Sprite) {
 			return
 		}
 	}
-}
-
-func (m *MainScene) AdvanceDialogue() {
-	m.speaking.Broadcast()
 }
 
 func (m *MainScene) Draw(screen *ebiten.Image) {
@@ -931,17 +931,11 @@ func (m *MainScene) PrepareForLines(lineIDs []string) error {
 }
 
 func (m *MainScene) Line(line yarn.Line) error {
-	m.mut.Lock()
-	defer m.mut.Unlock()
 	rendered := m.Runner.Render(line)
-	m.bubbles.SetLine(m.Runner.Render(line))
-	debug.Printf("line: %s", rendered)
+	debug.Println("Line(): waiting to send a rendered dialogue line")
+	m.dialogueLines <- rendered
+	debug.Println("Line(): dialogue line sent")
 
-	for !m.bubbles.IsDone() {
-		debug.Println("Line(): waiting for dialogue to scroll")
-		m.speaking.Wait()
-		debug.Println("Line(): dialogue done scrolling")
-	}
 	if m.State == StateDismissing {
 		return yarn.Stop
 	}
@@ -956,12 +950,12 @@ func (m *MainScene) Options(options []yarn.Option) (int, error) {
 		m.options = append(m.options, NewOption(m.Runner.Render(opt.Line)))
 	}
 	debug.Println("Options(): waiting for player to select an option")
-	m.selectOpt.Wait() // wait for the player to make a selection
+	opt := <-m.dialogueOptions
 	debug.Println("Options() continuing, option selected:", m.selection)
 	if m.State == StateDismissing {
 		return 0, yarn.Stop
 	}
-	return m.selection, nil
+	return opt, nil
 }
 
 func (m *MainScene) Command(command string) error {
