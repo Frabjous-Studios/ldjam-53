@@ -70,7 +70,6 @@ var lastLog = time.Time{}
 
 func (b *Bubbles) Update() {
 	if b.IsDone() {
-		b.scene.doneSyncer.Broadcast()
 		if b.completeTime.IsZero() {
 			b.completeTime = time.Now()
 		}

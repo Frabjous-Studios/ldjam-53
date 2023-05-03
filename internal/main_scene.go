@@ -94,7 +94,6 @@ type MainScene struct {
 	mut  sync.Mutex
 
 	endOfDaySync *sync.Cond // TODO: remove
-	doneSyncer   *sync.Cond // TODO: remove
 	portraitID   string
 	portraitImg  *ebiten.Image
 
@@ -147,7 +146,6 @@ func NewMainScene(g *Game) *MainScene {
 	result.randomizeTill()
 
 	result.bubbles = NewBubbles(result)
-	result.doneSyncer = sync.NewCond(&result.mut)
 	result.endOfDaySync = sync.NewCond(&result.mut)
 
 	result.Runner, err = NewDialogueRunner(result.vars, result)
@@ -411,11 +409,6 @@ func (m *MainScene) updateInput() error {
 }
 
 func (m *MainScene) depart() error {
-	m.mut.Lock()
-	defer m.mut.Unlock()
-	for !m.bubbles.IsDone() {
-		m.doneSyncer.Wait()
-	}
 	m.State = StateDismissing // without playing a sound
 	m.resetDialogue()
 	return nil
