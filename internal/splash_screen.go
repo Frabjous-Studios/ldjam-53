@@ -48,31 +48,29 @@ func (m *LogoScene) Update() error {
 var uniforms = make(map[string]interface{})
 
 func (m *LogoScene) Draw(screen *ebiten.Image) {
-	x, y := float64(m.Game.Width-m.Logo.Bounds().Dx())/2, float64(m.Game.Height-m.Logo.Bounds().Dy())/2-40
+	x, y := float64(m.Game.Width-m.Logo.Bounds().Dx())/2.0, float64(m.Game.Height-2*m.Logo.Bounds().Dy())/2.0-40
 
 	dt := time.Now().Sub(m.startTime)
 	shopts := ebiten.DrawRectShaderOptions{}
 	shopts.Images[0] = m.Logo
 	shopts.Uniforms = uniforms
 	shopts.Uniforms["Dt"] = dt.Seconds()
-	shopts.Uniforms["ScreenPos"] = [2]float32{float32(x), float32(y)}
+	shopts.Uniforms["ScreenPos"] = [2]float32{float32(2 * x), float32(2 * y)}
 	shopts.GeoM.Translate(x, y)
 
 	m.buff.DrawRectShader(m.Logo.Bounds().Dx(), m.Logo.Bounds().Dy(), m.LogoShader, &shopts)
 
-	x, y = float64(m.Game.Width-m.Studios.Bounds().Dx())/2, float64(m.Game.Height-m.Studios.Bounds().Dy())/2
-	y += float64(m.Logo.Bounds().Dy()/2 - 10)
+	x, y = float64(m.Game.Width-m.Studios.Bounds().Dx())/2.0, float64(m.Game.Height-2*m.Studios.Bounds().Dy())/2.0+10
+	shopts = ebiten.DrawRectShaderOptions{}
 	shopts.Images[0] = m.Studios
-	shopts.Blend = ebiten.BlendSourceOver
+	shopts.Uniforms = uniforms
 	shopts.Uniforms["Dt"] = float32((dt - studiosDelay).Seconds())
-	shopts.Uniforms["ScreenPos"] = [2]float32{float32(x), float32(y)}
-	shopts.GeoM.Reset()
+	shopts.Uniforms["ScreenPos"] = [2]float32{248, 281}
 	shopts.GeoM.Translate(x, y)
 
 	m.buff.DrawRectShader(m.Studios.Bounds().Dx(), m.Studios.Bounds().Dy(), m.StudiosShader, &shopts)
 
 	opts := ebiten.DrawImageOptions{}
-	opts.Blend = ebiten.BlendSourceOver
 	if dt >= outDelay {
 		t := 1.0 - float32((dt-outDelay).Seconds())/outTime
 		opts.ColorScale.Scale(t, t, t, t)

@@ -1,7 +1,7 @@
 package main
 
-var ScreenPos vec2
 var Dt float
+var ScreenPos vec2
 
 const fadeTimeSeconds = 2.0
 
