@@ -34,11 +34,11 @@ type DialogueRunner struct {
 	stringTable *yarn.StringTable
 
 	gameState    *GameState
-	runState     RunnerState          // runState is manipulated by handler
-	CurrNodeName string               // CurrNodeName is the name of the currently running node.
-	vm           *yarn.VirtualMachine // vm is the Yarn virtual machine.
+	runState     RunnerState // runState is manipulated by handler
+	CurrNodeName string      // CurrNodeName is the name of the currently running node.
 
 	mut *sync.RWMutex
+	vm  *yarn.VirtualMachine // vm is the Yarn virtual machine.
 
 	portraitImg *ebiten.Image
 	customer    *Customer
@@ -82,14 +82,10 @@ func (r *DialogueRunner) DoNode(name string) error {
 		r.runState = RunnerStopped
 	}()
 	debug.Println("doing node; clearing DialogueRunner customer")
-	func() {
-		r.mut.Lock()
-		defer r.mut.Unlock()
-		r.CurrNodeName = name
-		r.running = true
-		r.customer = nil
-		r.runState = RunnerRunning
-	}()
+	r.CurrNodeName = name
+	r.running = true
+	r.customer = nil
+	r.runState = RunnerRunning
 
 	return r.vm.Run(name)
 }
@@ -97,6 +93,8 @@ func (r *DialogueRunner) DoNode(name string) error {
 func (r *DialogueRunner) RandomName() string {
 	f, l := drawRandom(Resources.GetList("first_names.txt")), drawRandom(Resources.GetList("last_names.txt"))
 
+	r.mut.Lock()
+	defer r.mut.Unlock()
 	fullName := fmt.Sprintf("%s %s", f, l)
 	r.vm.Vars.SetValue(VarFirstName, f)
 	r.vm.Vars.SetValue(VarLastName, f)
@@ -126,9 +124,14 @@ func (r *DialogueRunner) SetDepositSlip(slip *DepositSlip) {
 }
 
 func (r *DialogueRunner) SetDepositAmt(val int) {
+	r.mut.Lock()
+	defer r.mut.Unlock()
 	r.vm.Vars.SetValue(VarSlipAmt, fmt.Sprintf("%d.%02d", val/100, val%100))
 }
 func (r *DialogueRunner) SetAccountNumber(val int) {
+	r.mut.Lock()
+	defer r.mut.Unlock()
+
 	r.vm.Vars.SetValue(VarAccountNumber, val)
 }
 
@@ -196,10 +199,6 @@ func (r *DialogueRunner) DrawPortrait(img *ebiten.Image, nodeID string) (p *Cust
 	return newPortrait(img, body, head)
 }
 
-func (r *DialogueRunner) GameState() *GameState {
-	r.gameState.Vars = r.vm.Vars.(yarn.MapVariableStorage)
-	return r.gameState
-}
 func (r *DialogueRunner) IsLastLine(line yarn.Line) bool {
 	if _, ok := r.stringTable.Table[line.ID]; !ok {
 		return false
@@ -234,6 +233,9 @@ func portrait(node *bytecode.Node) string {
 }
 
 func (r *DialogueRunner) getString(varName string) string {
+	r.mut.RLock()
+	defer r.mut.RUnlock()
+
 	v, ok := r.vm.Vars.GetValue(VarFullName)
 	if !ok {
 		return ""
