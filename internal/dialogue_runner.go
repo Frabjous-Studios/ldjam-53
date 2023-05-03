@@ -46,6 +46,8 @@ type DialogueRunner struct {
 	dialogueLines   chan string
 	dialogueOptions chan int
 
+	fullName, firstName, lastName string
+
 	running bool
 }
 
@@ -97,28 +99,31 @@ func (r *DialogueRunner) RandomName() string {
 	r.mut.Lock()
 	defer r.mut.Unlock()
 	fullName := fmt.Sprintf("%s %s", f, l)
-	r.vm.Vars.SetValue(VarFirstName, f)
-	r.vm.Vars.SetValue(VarLastName, f)
-	r.vm.Vars.SetValue(VarFullName, fullName)
+	r.fullName = f
+	r.lastName = l
+	r.fullName = fullName
+	//r.vm.Vars.SetValue(VarFirstName, f) TODO: use once we can edit content again
+	//r.vm.Vars.SetValue(VarLastName, f)
+	//r.vm.Vars.SetValue(VarFullName, fullName)
 	return fullName
 }
 
 func (r *DialogueRunner) FullName() string {
-	return r.getString(VarFullName)
+	return r.fullName // TODO: r.getString(VarFullName)
 }
 
 func (r *DialogueRunner) FirstName() string {
-	return r.getString(VarFirstName)
+	return r.firstName // TODO: r.getString(VarFirstName)
 }
 
 func (r *DialogueRunner) LastName() string {
-	return r.getString(VarLastName)
+	return r.lastName // TODO: r.getString(VarLastName)
 }
 
 // SetDepositSlip sets variables associated with the generated deposit slip.
 func (r *DialogueRunner) SetDepositSlip(slip *DepositSlip) {
-	r.SetDepositAmt(slip.Value)
-	r.SetAccountNumber(slip.AcctNum)
+	//r.SetDepositAmt(slip.Value)  TODO: use after jam, when we can update content again
+	//r.SetAccountNumber(slip.AcctNum)
 	if r.customer != nil {
 		r.customer.DepositSlip = slip
 	}
