@@ -628,6 +628,7 @@ func (m *MainScene) Draw(screen *ebiten.Image) {
 	if m.Customer != nil {
 		m.Customer.DrawTo(m.offscreen)
 	} else if len(m.CurrNode) > 0 {
+		debug.Println("redrawing cusomer portrait")
 		// TODO: animate the customer into position as well
 		m.portraitImg.Clear()
 		m.Customer = m.Runner.DrawPortrait(m.portraitImg, m.CurrNode)

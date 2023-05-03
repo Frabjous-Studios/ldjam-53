@@ -42,6 +42,12 @@ func (g *Game) PlayMusic(file string) {
 	if g.playingFilename == file {
 		return
 	}
+	if g.incomingPlayer != nil {
+		g.incomingPlayer.Pause()
+		g.incomingPlayer.Rewind()
+		g.incomingPlayer = nil
+	}
+
 	g.playingFilename = file
 	g.fadeStart = time.Now()
 	loop := Resources.GetMusic(g.ACtx, file)
