@@ -31,7 +31,6 @@ type Bubbles struct {
 
 	feed *etxt.Feed
 
-	shown        *Line
 	stack        []*Line
 	charsShown   int
 	scene        *MainScene
@@ -71,6 +70,7 @@ var lastLog = time.Time{}
 
 func (b *Bubbles) Update() {
 	if b.IsDone() {
+		b.scene.doneSyncer.Broadcast()
 		if b.completeTime.IsZero() {
 			b.completeTime = time.Now()
 		}
@@ -85,9 +85,10 @@ func (b *Bubbles) Update() {
 
 func (b *Bubbles) IsDone() bool {
 	if len(b.stack) == 0 {
-		return false
+		debug.Println("was done with empty stack")
+		return true
 	}
-	return b.stack[0].charsShown >= len(b.stack[0].Text)-5 // TODO: hack! sometimes charsShown != length of text :C
+	return b.stack[0].charsShown >= len(b.stack[0].Text)-10 // TODO: hack! sometimes charsShown != length of text :C
 }
 
 // DrawTo draws with a transparent background.

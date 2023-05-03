@@ -94,6 +94,7 @@ type MainScene struct {
 	mut  sync.Mutex
 
 	endOfDaySync *sync.Cond // TODO: remove
+	doneSyncer   *sync.Cond // TODO: remove
 	portraitID   string
 	portraitImg  *ebiten.Image
 
@@ -146,6 +147,7 @@ func NewMainScene(g *Game) *MainScene {
 	result.randomizeTill()
 
 	result.bubbles = NewBubbles(result)
+	result.doneSyncer = sync.NewCond(&result.mut)
 	result.endOfDaySync = sync.NewCond(&result.mut)
 
 	result.Runner, err = NewDialogueRunner(result.vars, result)
@@ -409,6 +411,11 @@ func (m *MainScene) updateInput() error {
 }
 
 func (m *MainScene) depart() error {
+	m.mut.Lock()
+	defer m.mut.Unlock()
+	for !m.bubbles.IsDone() {
+		m.doneSyncer.Wait()
+	}
 	m.State = StateDismissing // without playing a sound
 	m.resetDialogue()
 	return nil
@@ -1162,7 +1169,7 @@ func (m *MainScene) putCounter(args []string) error {
 			}
 		case strings.HasPrefix(arg, "withdrawal_slip"):
 			slip := m.randWithdrawalSlip()
-			if len(arg) > 17 {
+			if len(arg) > 16 {
 				v, err := strconv.Atoi(strings.TrimPrefix(arg, "withdrawal_slip_"))
 				if err != nil {
 					debug.Println("bad call to put_counter with deposit_slip value with value:", arg)
