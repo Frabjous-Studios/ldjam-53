@@ -27,7 +27,7 @@ type Hologram struct {
 	StartTime time.Time
 }
 
-const DayLength = 6 * time.Minute
+const DayLength = 4 * time.Minute
 
 func (s *Hologram) DrawTo(screen *ebiten.Image) {
 	if s.Img == nil {
@@ -110,6 +110,7 @@ type MainScene struct {
 
 	dialogueLines   chan string
 	dialogueOptions chan int
+	lineShown       chan struct{}
 }
 
 const GameMusic = "Hip_Elevator.ogg" // TODO: cross-fade tracks
@@ -141,6 +142,7 @@ func NewMainScene(g *Game) *MainScene {
 		alarmButtons:    NewAlarmButtons(g.ACtx),
 		dialogueLines:   make(chan string),
 		dialogueOptions: make(chan int),
+		lineShown:       make(chan struct{}),
 	}
 	result.Day = result.Days[0]
 	result.randomizeTill()
@@ -177,6 +179,8 @@ func (m *MainScene) startDialogueReceivers() {
 		for line := range m.dialogueLines {
 			debug.Printf("received dialogue line: %v\n", line)
 			m.bubbles.SetLine(line)
+			// don't receive another line until this one has been totally shown.
+			<-m.lineShown
 		} // TODO: shut down
 	}()
 }
@@ -371,7 +375,6 @@ func (m *MainScene) updateInput() error {
 				m.shredder.toggle()
 			} else if cPos.In(AlarmButtonLeft) {
 				m.alarmButtons.Press(AlarmModeLeft)
-
 			} else if cPos.In(AlarmButtonRight) {
 				m.alarmButtons.Press(AlarmModeRight)
 			} else {
@@ -400,6 +403,7 @@ func (m *MainScene) updateInput() error {
 					if !selected { // advance the dialogue if nothing was selected.
 						debug.Println("no dialogue selected; player is impatient.")
 					}
+					m.bubbles.AdvanceDialogue()
 				}
 			}
 		}
@@ -994,6 +998,7 @@ func (m *MainScene) nextDay() error {
 	if m.dayIdx == 4 {
 		m.Game.PlayMusic("ElectronicDraft2.ogg")
 	}
+	m.dayStartTime = time.Now()
 	if m.dayIdx < len(m.Days) {
 		m.Day = m.Days[m.dayIdx]
 	} else {
@@ -1144,15 +1149,16 @@ func (m *MainScene) putCounter(args []string) error {
 			m.setupAccount(slip)
 			m.put(slip)
 		case strings.HasPrefix(arg, "deposit_slip"):
-			slip := m.randDepositSlip()
+			val := -1
 			if len(arg) > 13 {
 				v, err := strconv.Atoi(strings.TrimPrefix(arg, "deposit_slip_"))
 				if err != nil {
 					debug.Println("bad call to put_counter with deposit_slip value with value:", arg)
 				} else {
-					slip.Value = v
+					val = v
 				}
 			}
+			slip := m.randDepositSlip(val)
 			m.Runner.SetDepositSlip(slip)
 			m.setupAccount(slip) // just in time!
 			m.put(slip)
@@ -1161,15 +1167,16 @@ func (m *MainScene) putCounter(args []string) error {
 				m.put(randomTrash(m.randomCounterPos()))
 			}
 		case strings.HasPrefix(arg, "withdrawal_slip"):
-			slip := m.randWithdrawalSlip()
+			val := -1
 			if len(arg) > 16 {
 				v, err := strconv.Atoi(strings.TrimPrefix(arg, "withdrawal_slip_"))
 				if err != nil {
 					debug.Println("bad call to put_counter with deposit_slip value with value:", arg)
 				} else {
-					slip.Value = v
+					val = v
 				}
 			}
+			slip := m.randWithdrawalSlip(val)
 			m.Runner.SetDepositSlip(slip)
 			m.setupAccount(slip)
 			m.put(slip)
@@ -1314,24 +1321,24 @@ func (m *MainScene) put(sprite Sprite) {
 }
 
 func (m *MainScene) randEmptySlip() *DepositSlip {
-	return m.randSlip("deposit_slip.png")
+	return m.randSlip("deposit_slip.png", -1)
 }
 
-func (m *MainScene) randDepositSlip() *DepositSlip {
-	result := m.randSlip("deposit_slip_deposit.png")
+func (m *MainScene) randDepositSlip(val int) *DepositSlip {
+	result := m.randSlip("deposit_slip_deposit.png", val)
 	result.ForDeposit = true
 	return result
 }
 
-func (m *MainScene) randWithdrawalSlip() *DepositSlip {
-	result := m.randSlip("deposit_slip_withdrawal.png")
+func (m *MainScene) randWithdrawalSlip(val int) *DepositSlip {
+	result := m.randSlip("deposit_slip_withdrawal.png", val)
 	result.ForWithdrawal = true
 	return result
 }
 
 var MaxTransactionValue = 1000 // TODO: make this go _DOWN_ as the days go on.
 
-func (m *MainScene) randSlip(path string) *DepositSlip {
+func (m *MainScene) randSlip(path string, val int) *DepositSlip {
 	img := ebiten.NewImage(43, 32)
 	img.DrawImage(Resources.GetImage(path), nil)
 
@@ -1340,6 +1347,9 @@ func (m *MainScene) randSlip(path string) *DepositSlip {
 		AcctNum:    randomAcctNumber(),
 		Value:      randomTransactionValue(),
 		BaseSprite: &BaseSprite{Img: img, X: pos.X, Y: pos.Y},
+	}
+	if val > 0 {
+		slip.Value = val
 	}
 
 	m.txt.SetColor(depositSlipColor)

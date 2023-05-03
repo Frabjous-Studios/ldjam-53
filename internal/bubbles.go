@@ -34,8 +34,10 @@ type Bubbles struct {
 	stack        []*Line
 	charsShown   int
 	scene        *MainScene
+	startTime    time.Time
 	completeTime time.Time
 	TextBounds   image.Rectangle
+	advanced     bool
 }
 
 var DialogueBounds = rect(340, 52, 200, 100)
@@ -63,29 +65,34 @@ func NewBubbles(m *MainScene) *Bubbles {
 
 func (b *Bubbles) SetLine(str string) {
 	b.stack = []*Line{NewLine(str)}
-	b.completeTime = time.Time{}
+	b.startTime = time.Now()
+	b.advanced = false
 }
 
 var lastLog = time.Time{}
 
 func (b *Bubbles) Update() {
-	if b.IsDone() {
-		if b.completeTime.IsZero() {
-			b.completeTime = time.Now()
+	if !b.startTime.IsZero() && (b.IsDone() || time.Now().Sub(b.startTime) > bubbleDelay) {
+		if time.Now().Sub(b.startTime) > bubbleDelay && lastLog != b.startTime {
+			debug.Println("dialogue timed out; moving on")
+			lastLog = b.startTime
 		}
-		if time.Now().Sub(b.completeTime) > bubbleDelay {
-			if lastLog != b.completeTime {
-				debug.Println("dialogue timed out; moving on")
-				lastLog = b.completeTime
-			}
-		}
+		b.scene.lineShown <- struct{}{}
+		b.startTime = time.Time{}
 	}
 }
 
+func (b *Bubbles) AdvanceDialogue() {
+	b.advanced = true
+}
+
 func (b *Bubbles) IsDone() bool {
+	return b.advanced || time.Now().Sub(b.startTime) > bubbleDelay
+}
+
+func (b *Bubbles) IsDrawn() bool {
 	if len(b.stack) == 0 {
-		debug.Println("was done with empty stack")
-		return true
+		return false
 	}
 	return b.stack[0].charsShown >= len(b.stack[0].Text)-10 // TODO: hack! sometimes charsShown != length of text :C
 }
@@ -114,7 +121,7 @@ func (b *Bubbles) DrawTo(screen *ebiten.Image) bool {
 		b.txt.SetColor(fontColor)
 		l.Rect = b.print(feed, l, b.TextBounds)
 	}
-	return b.IsDone()
+	return b.IsDrawn()
 }
 func (b *Bubbles) Empty() bool {
 	return len(b.stack) == 0 || len(b.stack[0].Text) == 0
