@@ -159,7 +159,7 @@ func init() {
 
 	Resources.images["photo_id"] = Resources.GetImage("photo_id.png")
 
-	Resources.images["drone"] = Resources.GetImage("drone.png")
+	Resources.images["drone.png"] = Resources.GetImage("drone.png")
 
 	Resources.images["call_button_holo"] = Resources.GetImage("call_button_hologram.png")
 	Resources.images["call_button"] = Resources.GetImage("call_button.png")

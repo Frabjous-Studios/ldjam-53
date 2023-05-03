@@ -59,7 +59,6 @@ func NewDialogueRunner(vars yarn.MapVariableStorage, handler yarn.DialogueHandle
 		stringTable: st,
 		runState:    RunnerStopped,
 		mut:         &sync.RWMutex{},
-		portraitImg: ebiten.NewImage(100, 100),
 	}
 	r.vm = &yarn.VirtualMachine{
 		Program: r.program,
@@ -134,8 +133,8 @@ func (r *DialogueRunner) SetAccountNumber(val int) {
 }
 
 // CustomerIntent gets the intent set for this node.
-func (r *DialogueRunner) CustomerIntent() Intent {
-	node, ok := r.vm.Program.Nodes[r.CurrNodeName]
+func (r *DialogueRunner) CustomerIntent(currNode string) Intent {
+	node, ok := r.vm.Program.Nodes[currNode]
 	if !ok {
 		debug.Printf("could not find node %v when looking for intent", r.CurrNodeName)
 		return ""
@@ -159,47 +158,42 @@ func (r *DialogueRunner) CustomerIntent() Intent {
 	return ""
 }
 
-func (r *DialogueRunner) Portrait() (p *Customer) {
-	r.mut.Lock()
-	defer r.mut.Unlock()
+func (r *DialogueRunner) PortraitID(nodeName string) string {
+	node, ok := r.vm.Program.Nodes[nodeName]
+	if !ok {
+		return ""
+	}
+	return portrait(node)
+}
+
+func (r *DialogueRunner) DrawPortrait(img *ebiten.Image, nodeID string) (p *Customer) {
 	defer func() {
 		// TODO: ths defer makes this func a bit weird.
 		if p != nil {
 			r.customer = p
-			p.CustomerIntent = r.CustomerIntent()
+			p.CustomerIntent = r.CustomerIntent(nodeID)
 			p.CustomerName = r.RandomName()
-			p.IsRude = strings.Contains(strings.ToLower(r.CurrNodeName), "rude")
+			p.IsRude = strings.Contains(strings.ToLower(nodeID), "rude")
 		}
 	}()
-	if r.customer != nil {
-		debug.Println("still using the same customer as before!")
-		return r.customer
-	}
-	debug.Println("generating a new customer for node", r.CurrNodeName)
-	node, ok := r.vm.Program.Nodes[r.CurrNodeName]
-	if !ok {
-		debug.Printf("could not find node %v", r.CurrNodeName)
-		return nil
-	}
-	r.portraitImg.Clear()
-	portraitID := portrait(node)
+	portraitID := r.PortraitID(nodeID)
 	if portraitID == "" {
-		debug.Println("missing portraitID in node", r.CurrNodeName)
+		debug.Println("missing portraitID in node", nodeID)
 		portraitID = "random"
 	}
 	if portraitID == "random" {
-		return newRandPortrait(r.portraitImg)
+		return newRandPortrait(img)
 	}
 	toks := strings.Split(portraitID, ":")
 	if len(toks) == 1 {
-		return newSimplePortrait(r.portraitImg, toks[0])
+		return newSimplePortrait(img, toks[0])
 	}
 	if len(toks) != 2 {
 		debug.Printf("malformed customer portraitID! using random: %v", portraitID)
-		return newRandPortrait(r.portraitImg)
+		return newRandPortrait(img)
 	}
 	head, body := toks[0], toks[1]
-	return newPortrait(r.portraitImg, body, head)
+	return newPortrait(img, body, head)
 }
 
 func (r *DialogueRunner) GameState() *GameState {

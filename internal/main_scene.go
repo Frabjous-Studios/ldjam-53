@@ -22,67 +22,6 @@ import (
 // ScaleFactor global scaling factor for pixel art.
 const ScaleFactor = 2.0
 
-type BaseScene struct {
-}
-
-type Sprite interface {
-	DrawTo(screen *ebiten.Image)
-	Bounds() image.Rectangle
-	Pos() image.Point
-	SetPos(image.Point)
-	MoveX(float64)
-	MoveY(float64)
-}
-
-type BaseSprite struct {
-	X, Y   int
-	fX, fY float64
-	Img    *ebiten.Image
-}
-
-func (s *BaseSprite) DrawTo(screen *ebiten.Image) {
-	if s.Img == nil {
-		debug.Println("image for sprite was nil at point:", s.X, s.Y)
-		return
-	}
-	opt := &ebiten.DrawImageOptions{}
-	opt.GeoM.Translate(float64(s.X), float64(s.Y))
-	opt.GeoM.Scale(ScaleFactor, ScaleFactor)
-	screen.DrawImage(s.Img, opt)
-}
-
-func (s *BaseSprite) Bounds() image.Rectangle {
-	return s.Img.Bounds().Add(image.Pt(s.X, s.Y))
-}
-
-func (s *BaseSprite) Pos() image.Point {
-	return image.Pt(s.X, s.Y)
-}
-
-func (s *BaseSprite) SetPos(pt image.Point) {
-	s.X = pt.X
-	s.Y = pt.Y
-}
-
-func (s *BaseSprite) ClampToRect(r image.Rectangle) {
-	s.X = clamp(s.X, r.Min.X, r.Max.X-s.Bounds().Dx())
-	s.Y = clamp(s.Y, r.Min.Y, r.Max.Y-s.Bounds().Dy())
-}
-
-func (s *BaseSprite) MoveX(amt float64) {
-	s.fX += amt
-	px, fx := math.Modf(s.fX)
-	s.fX = fx
-	s.X = s.X + int(math.Round(px))
-}
-
-func (s *BaseSprite) MoveY(amt float64) {
-	s.fY += amt
-	px, fx := math.Modf(s.fY)
-	s.fY = fx
-	s.Y = s.Y + int(px)
-}
-
 type Hologram struct {
 	*BaseSprite
 	StartTime time.Time
@@ -121,6 +60,7 @@ type MainScene struct {
 
 	Days         []*Day
 	Day          *Day // Customers is a list of Yarnspinner nodes happening on the current day
+	CurrNode     string
 	dayIdx       int
 	Customer     *Customer
 	CustomerName string
@@ -153,8 +93,10 @@ type MainScene struct {
 	vars yarn.MapVariableStorage
 	mut  sync.Mutex
 
-	endOfDaySync *sync.Cond
+	endOfDaySync *sync.Cond // TODO: remoove
 	selection    int
+	portraitID   string
+	portraitImg  *ebiten.Image
 
 	debouceTime      time.Time
 	dayStartTime     time.Time
@@ -183,6 +125,7 @@ func NewMainScene(g *Game) *MainScene {
 		State:            StateFadeIn,
 		dayFadeStartTime: time.Now(),
 		till:             NewTill(),
+		portraitImg:      ebiten.NewImage(100, 100),
 		counter:          &BaseSprite{X: 112, Y: 152, Img: Resources.images["counter"]},
 		buttonBase:       &BaseSprite{X: 259, Y: 147, Img: Resources.images["call_button"]},
 		buttonHolo: &Hologram{
@@ -271,11 +214,11 @@ func (m *MainScene) Update() error {
 			debug.Println("transition to conversing")
 			m.State = StateConversing
 		} else if !m.Runner.running {
-			go m.startRunner()
+			m.startRunner()
 			m.Runner.running = true
 		}
 	case StateDismissing:
-		m.resetDialogue()
+
 		m.Customer.MoveX(DismissalPxPerSecond / TPS)
 		if m.Customer.Pos().X > m.Game.Width/2 {
 			debug.Println("transition to approaching")
@@ -332,7 +275,6 @@ var ShredderButtonHotspot = rect(116, 174, 8, 10)
 const debounceDuration = 300 * time.Millisecond
 
 func (m *MainScene) resetDialogue() {
-	debug.Println("resetting dialogue")
 	m.bubbles.SetLine("")
 	m.options = nil
 }
@@ -458,6 +400,7 @@ func (m *MainScene) updateInput() error {
 
 func (m *MainScene) depart() error {
 	m.State = StateDismissing // without playing a sound
+	m.resetDialogue()
 	return nil
 }
 
@@ -469,11 +412,8 @@ func (m *MainScene) nextButton() {
 		m.bubbles.SetLine(randSlice(BossDismissal))
 	} else {
 		m.State = StateDismissing
+		m.resetDialogue()
 	}
-}
-
-func paperPlaceSound() {
-
 }
 
 // cheatValue is some random value added to required withdrawal thresholds for the customer to walk away on their own.
@@ -677,9 +617,10 @@ func (m *MainScene) Draw(screen *ebiten.Image) {
 
 	if m.Customer != nil {
 		m.Customer.DrawTo(m.offscreen)
-	} else if m.Runner.running && len(m.Runner.CurrNodeName) > 0 {
-		// TODO: animate the customer into position
-		m.Customer = m.Runner.Portrait()
+	} else if len(m.CurrNode) > 0 {
+		// TODO: animate the customer into position as well
+		m.portraitImg.Clear()
+		m.Customer = m.Runner.DrawPortrait(m.portraitImg, m.CurrNode)
 		if m.Customer != nil {
 			m.Customer.SetPos(image.Pt(170, 53))
 			m.Customer.DrawTo(m.offscreen)
@@ -844,11 +785,19 @@ func (m *MainScene) dayLength() time.Duration {
 
 func (m *MainScene) startRunner() {
 	debug.Println("starting runner!")
-	if err := m.Runner.DoNode(m.Day.Next(m.dayLength())); err != nil {
-		debug.Printf("error starting runner: %v", err)
-		return
-	}
-	m.Runner.running = false
+	m.advanceCurrNode()
+	m.portraitID = m.Runner.PortraitID(m.CurrNode)
+	go func() {
+		if err := m.Runner.DoNode(m.CurrNode); err != nil {
+			debug.Printf("error starting runner: %v", err)
+			return
+		}
+		m.Runner.running = false
+	}()
+}
+
+func (m *MainScene) advanceCurrNode() {
+	m.CurrNode = m.Day.Next(m.dayLength())
 }
 
 func (m *MainScene) pickUp() {
