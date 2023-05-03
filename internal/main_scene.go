@@ -93,8 +93,7 @@ type MainScene struct {
 	vars yarn.MapVariableStorage
 	mut  sync.Mutex
 
-	endOfDaySync *sync.Cond // TODO: remoove
-	selection    int
+	endOfDaySync *sync.Cond // TODO: remove
 	portraitID   string
 	portraitImg  *ebiten.Image
 
@@ -210,12 +209,13 @@ func (m *MainScene) Update() error {
 	switch m.State {
 	case StateApproaching:
 		// TODO: animate the customer approaching
+		if !m.Runner.running {
+			m.startRunner()
+			m.Runner.running = true
+		}
 		if m.Customer != nil {
 			debug.Println("transition to conversing")
 			m.State = StateConversing
-		} else if !m.Runner.running {
-			m.startRunner()
-			m.Runner.running = true
 		}
 	case StateDismissing:
 
@@ -255,6 +255,7 @@ func (m *MainScene) clearCustomer() {
 	defer m.Runner.mut.Unlock()
 	m.Customer = nil
 	m.Runner.customer = nil
+	m.Runner.running = false
 }
 
 const HoverHeight = 0.2
@@ -272,11 +273,21 @@ func (m *MainScene) maybeHoverDrone() {
 var NextButtonHotspot = rect(275, 151, 14, 8)
 var ShredderButtonHotspot = rect(116, 174, 8, 10)
 
+const StopOption = -1
+
 const debounceDuration = 300 * time.Millisecond
 
 func (m *MainScene) resetDialogue() {
 	m.bubbles.SetLine("")
-	m.options = nil
+	debug.Println("resetting dialogue")
+	if m.options != nil {
+		select {
+		case m.dialogueOptions <- StopOption:
+			debug.Println("sent stop option")
+		default:
+			debug.Println("resetting dialogue failed")
+		}
+	}
 }
 
 var CustomerDropZone = rect(170, 52, 100, 100)
@@ -382,7 +393,6 @@ func (m *MainScene) updateInput() error {
 							m.dialogueOptions <- idx
 							debug.Println("player dialogue option was sent")
 
-							m.options = nil
 							selected = true
 							break
 						}
@@ -900,11 +910,32 @@ func (m *MainScene) Options(options []yarn.Option) (int, error) {
 	}
 	debug.Println("Options(): waiting for player to select an option")
 	opt := <-m.dialogueOptions
-	debug.Println("Options() continuing, option selected:", m.selection)
+	m.options = nil
+	if opt == StopOption {
+		debug.Println("Options(): received stop option")
+		return 0, yarn.Stop
+	}
+	debug.Println("Options() continuing, option selected:", opt)
 	if m.State == StateDismissing {
 		return 0, yarn.Stop
 	}
 	return opt, nil
+}
+
+func (m *MainScene) NodeComplete(nodeName string) error {
+	debug.Println("node done", nodeName)
+	if m.State == StateDismissing {
+		return yarn.Stop
+	}
+	return nil
+}
+
+func (m *MainScene) DialogueComplete() error {
+	debug.Println("dialogue complete")
+	if m.State == StateDismissing {
+		return yarn.Stop
+	}
+	return nil
 }
 
 func (m *MainScene) Command(command string) error {
@@ -1017,23 +1048,6 @@ func (m *MainScene) setWrong() error {
 		m.Customer.DepositSlip.IsWrong = true
 	}
 	// TODO: set for checks and such as well.
-	return nil
-}
-
-func (m *MainScene) NodeComplete(nodeName string) error {
-	debug.Println("node done", nodeName)
-	if m.State == StateDismissing {
-		return yarn.Stop
-	}
-	return nil
-}
-
-func (m *MainScene) DialogueComplete() error {
-	m.resetDialogue()
-	debug.Println("dialogue complete")
-	if m.State == StateDismissing {
-		return yarn.Stop
-	}
 	return nil
 }
 
