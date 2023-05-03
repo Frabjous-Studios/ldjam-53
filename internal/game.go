@@ -49,7 +49,6 @@ func (g *Game) PlayMusic(file string) {
 	}
 
 	g.playingFilename = file
-	g.fadeStart = time.Now()
 	loop := Resources.GetMusic(g.ACtx, file)
 	if loop == nil {
 		debug.Printf("no file found with name: %s", file)
@@ -61,6 +60,7 @@ func (g *Game) PlayMusic(file string) {
 	g.incomingPlayer = ch.CreatePlayer(loop)
 	g.incomingPlayer.Rewind()
 	g.incomingPlayer.Play()
+	g.fadeStart = time.Now()
 }
 
 // Layout is hardcoded for now, may be made dynamic in future
@@ -68,7 +68,7 @@ func (g *Game) Layout(outsideWidth int, outsideHeight int) (screenWidth int, scr
 	return g.Width, g.Height
 }
 
-const crossFadeTime = 5 * time.Second
+const crossFadeTime = 2 * time.Second
 
 const maxVolume = 0.75
 
@@ -94,7 +94,7 @@ func (g *Game) Update() error {
 	}
 
 	if g.incomingPlayer != nil && g.playingPlayer != nil {
-		dt := float64(time.Now().Sub(g.fadeStart)) / float64(crossFadeTime)
+		dt := float64(time.Now().Sub(g.fadeStart).Seconds()) / float64(crossFadeTime.Seconds())
 		if dt >= 1.0 {
 			g.incomingVolume.SetStrength(maxVolume)
 			g.playingVolume.SetStrength(0.0)
