@@ -78,6 +78,7 @@ const (
 
 // DoNode starts the runner, which blocks the current thread until a fatal error occurs.
 func (r *DialogueRunner) DoNode(name string) error {
+	// TODO: this should generate a new customer picture and identity before starting *anything* so we can avoid race conditions.
 	defer func() {
 		r.runState = RunnerStopped
 	}()
