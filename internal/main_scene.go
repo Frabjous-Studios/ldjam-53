@@ -804,6 +804,7 @@ func (m *MainScene) startRunner() {
 			return
 		}
 		m.Runner.running = false
+		m.CurrNode = ""
 	}()
 }
 
