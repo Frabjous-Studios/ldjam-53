@@ -20,8 +20,8 @@ github.com/golang/protobuf v1.5.0/go.mod h1:FsONVRAS9T7sI+LIUmWTfcYkHO4aIWwzhcaS
 github.com/google/go-cmp v0.5.5/go.mod h1:v8dTdLbMG2kIc/vJvl+f65V22dbkXbowE6jgT/gNBxE=
 github.com/google/go-cmp v0.5.8 h1:e6P7q2lk1O+qJJb4BtCQXlK8vWEO8V1ZeuEdJNOqZyg=
 github.com/hajimehoshi/bitmapfont/v2 v2.2.3 h1:jmq/TMNj352V062Tr5e3hAoipkoxCbY1JWTzor0zNps=
-github.com/hajimehoshi/ebiten/v2 v2.6.0-alpha.2.0.20230501101708-d16b591a352b h1:bzOlQV4FMA1EDpMmQ6c15leIjVaGyII39+TWEaSeALU=
-github.com/hajimehoshi/ebiten/v2 v2.6.0-alpha.2.0.20230501101708-d16b591a352b/go.mod h1:+fFI6Ag5YvbX1ivNQD2TxNhpWFDPuxEoew421TTQAxI=
+github.com/hajimehoshi/ebiten/v2 v2.5.0 h1:jnz5dngMflIbsIZoj19Vs4zF3kDv1hPUFSeu4r0hIpY=
+github.com/hajimehoshi/ebiten/v2 v2.5.0/go.mod h1:mnHSOVysTr/nUZrN1lBTRqhK4NG+T9NR3JsJP2rCppk=
 github.com/hajimehoshi/oto/v2 v2.5.0-alpha.0.20230315035531-31c83ff4311d h1:/uxUAmMcbof/7h4JwG+Tg6yrmvwsn2/9FAaVPXg9kYc=
 github.com/hajimehoshi/oto/v2 v2.5.0-alpha.0.20230315035531-31c83ff4311d/go.mod h1:HGiZnUkxl2+l+fNpiYJFfzhs4N1KeYaksFcnB8FmqDw=
 github.com/hexops/gotextdiff v1.0.3 h1:gitA9+qJrrTCsiCl7+kh75nPqQt1cx4ZkudSTLoUqJM=

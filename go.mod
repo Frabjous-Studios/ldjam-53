@@ -6,7 +6,7 @@ require (
 	github.com/DrJosh9000/yarn v0.5.0
 	github.com/ebitenui/ebitenui v0.5.1
 	github.com/golang/freetype v0.0.0-20170609003504-e2365dfdc4a0
-	github.com/hajimehoshi/ebiten/v2 v2.6.0-alpha.2.0.20230501101708-d16b591a352b
+	github.com/hajimehoshi/ebiten/v2 v2.5.0
 	github.com/kalexmills/asebiten v0.4.3
 	github.com/razor-1/localizer-cldr v0.2.0
 	github.com/stretchr/testify v1.8.2
