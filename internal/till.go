@@ -263,10 +263,12 @@ func (t *Till) Remove(s Sprite) {
 	for i := 0; i < 5; i++ {
 		if len(t.BillSlots[i]) > 0 && t.BillSlots[i][len(t.BillSlots[i])-1] == m {
 			t.BillSlots[i] = t.BillSlots[i][:len(t.BillSlots[i])-1]
+			debug.Println("removing money from bill slot")
 			return
 		}
 		if len(t.CoinSlots[i]) > 0 && t.CoinSlots[i][len(t.CoinSlots[i])-1] == m {
 			t.CoinSlots[i] = t.CoinSlots[i][:len(t.CoinSlots[i])-1]
+			debug.Println("removing money from coinslot")
 			return
 		}
 	}

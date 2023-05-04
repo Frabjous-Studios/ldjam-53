@@ -75,7 +75,7 @@ const maxVolume = 0.75
 // Update calculates game logic
 func (g *Game) Update() error {
 	TPSOnce.Do(func() {
-		ebiten.SetTPS(240)
+
 		TPS = float64(ebiten.TPS())
 	})
 

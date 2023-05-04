@@ -77,7 +77,10 @@ func (b *Bubbles) Update() {
 			debug.Println("dialogue timed out; moving on")
 			lastLog = b.startTime
 		}
-		b.scene.lineShown <- struct{}{}
+		select {
+		case b.scene.lineShown <- struct{}{}:
+		default:
+		}
 		b.startTime = time.Time{}
 	}
 }

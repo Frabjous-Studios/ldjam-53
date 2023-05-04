@@ -201,8 +201,6 @@ func (m *MainScene) Update() error {
 			m.endOfDaySync.Broadcast()
 			m.dayFadeStartTime = time.Time{}
 		}
-	} else {
-		m.endOfDaySync.Broadcast() // might as well
 	}
 	if err := m.updateInput(); err != nil {
 		debug.Printf("error from updateInput: %v", err)
