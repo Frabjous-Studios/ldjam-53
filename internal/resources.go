@@ -16,7 +16,9 @@ import (
 	"github.com/kalexmills/asebiten"
 	"github.com/solarlune/resound"
 	"github.com/tinne26/etxt"
+	"golang.org/x/image/draw"
 	"golang.org/x/image/font"
+	img2 "image"
 	"image/color"
 	_ "image/png"
 	"io/fs"
@@ -241,6 +243,15 @@ func (r *resources) GetMusic(aCtx *audio.Context, file string) *audio.InfiniteLo
 	return loop
 }
 
+// Portrait composites the provided head and body portraits on the CPU into a new image, which is returned.
+func (r *resources) Portrait(head, body string) img2.Image {
+	rect := rect(0, 0, 100, 100)
+	out := img2.NewRGBA(rect)
+	draw.Draw(out, rect, r.GetImage(body), img2.Pt(0, -33), draw.Over)
+	draw.Draw(out, rect, r.GetImage(head), img2.Pt(0, 0), draw.Over)
+	return out
+}
+
 func (r *resources) GetAnim(path string) *asebiten.Animation {
 	if _, ok := r.anims[path]; !ok {
 		a, err := asebiten.LoadAnimation(art, fmt.Sprintf("gamedata/img/%s", path))
@@ -386,34 +397,28 @@ func placeholder(c color.Color, w, h int) *ebiten.Image {
 	return i
 }
 
-func newPortrait(target *ebiten.Image, body, head string) *Customer {
-	b, h := Resources.GetImage(body), Resources.GetImage(head)
-	opts := &ebiten.DrawImageOptions{}
-	opts.GeoM.Translate(0, 32)
-	target.DrawImage(b, opts)
-	opts.GeoM.Translate(0, -32)
-	target.DrawImage(h, opts)
+func newPortrait(body, head string) *Customer {
+	img := ebiten.NewImageFromImage(Resources.Portrait(head, body))
+
 	return &Customer{
 		ImageKey: fmt.Sprintf("%s:%s", body, head),
 		BaseSprite: &BaseSprite{
-			Img: target,
+			Img: img,
 			X:   portraitStartX,
 			Y:   portraitStartY,
 		},
 	}
 }
 
-func newRandPortrait(target *ebiten.Image) *Customer {
-	return newPortrait(target, randMapKey(Resources.bodies), randMapKey(Resources.heads))
+func newRandPortrait() *Customer {
+	return newPortrait(randMapKey(Resources.bodies), randMapKey(Resources.heads))
 }
 
-func newSimplePortrait(target *ebiten.Image, head string) *Customer {
-	h := Resources.GetImage(head)
-	target.DrawImage(h, nil)
+func newSimplePortrait(head string) *Customer {
 	return &Customer{
 		ImageKey: head,
 		BaseSprite: &BaseSprite{
-			Img: target,
+			Img: Resources.GetImage(head),
 			X:   portraitStartX,
 			Y:   portraitStartY,
 		},

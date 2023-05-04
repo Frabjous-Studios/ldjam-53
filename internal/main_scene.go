@@ -94,7 +94,6 @@ type MainScene struct {
 	mut  sync.Mutex
 
 	endOfDaySync *sync.Cond // TODO: remove
-	portraitID   string
 	portraitImg  *ebiten.Image
 
 	debouceTime      time.Time
@@ -629,15 +628,6 @@ func (m *MainScene) Draw(screen *ebiten.Image) {
 
 	if m.Customer != nil {
 		m.Customer.DrawTo(m.offscreen)
-	} else if len(m.CurrNode) > 0 {
-		debug.Println("redrawing customer portrait")
-		// TODO: animate the customer into position as well
-		m.portraitImg.Clear()
-		m.Customer = m.Runner.DrawPortrait(m.portraitImg, m.CurrNode)
-		if m.Customer != nil {
-			m.Customer.SetPos(image.Pt(170, 53))
-			m.Customer.DrawTo(m.offscreen)
-		}
 	}
 
 	m.counter.DrawTo(m.offscreen)
@@ -799,7 +789,7 @@ func (m *MainScene) dayLength() time.Duration {
 func (m *MainScene) startRunner() {
 	debug.Println("starting runner!")
 	m.advanceCurrNode()
-	m.portraitID = m.Runner.PortraitID(m.CurrNode)
+	m.Customer = m.Runner.Customer(m.CurrNode)
 	go func() {
 		if err := m.Runner.DoNode(m.CurrNode); err != nil {
 			debug.Printf("error starting runner: %v", err)

@@ -175,7 +175,7 @@ func (r *DialogueRunner) PortraitID(nodeName string) string {
 	return portrait(node)
 }
 
-func (r *DialogueRunner) DrawPortrait(img *ebiten.Image, nodeID string) (p *Customer) {
+func (r *DialogueRunner) Customer(nodeID string) (p *Customer) {
 	defer func() {
 		// TODO: ths defer makes this func a bit weird.
 		if p != nil {
@@ -191,18 +191,18 @@ func (r *DialogueRunner) DrawPortrait(img *ebiten.Image, nodeID string) (p *Cust
 		portraitID = "random"
 	}
 	if portraitID == "random" {
-		return newRandPortrait(img)
+		return newRandPortrait()
 	}
 	toks := strings.Split(portraitID, ":")
 	if len(toks) == 1 {
-		return newSimplePortrait(img, toks[0])
+		return newSimplePortrait(toks[0])
 	}
 	if len(toks) != 2 {
 		debug.Printf("malformed customer portraitID! using random: %v", portraitID)
-		return newRandPortrait(img)
+		return newRandPortrait()
 	}
 	head, body := toks[0], toks[1]
-	return newPortrait(img, body, head)
+	return newPortrait(body, head)
 }
 
 func (r *DialogueRunner) IsLastLine(line yarn.Line) bool {
