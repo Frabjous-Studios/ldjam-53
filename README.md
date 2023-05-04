@@ -24,4 +24,6 @@ Manifesting to this Earth-dimension through a slippage in the primordial Nexus, 
 
 **PinkVirus** is a young independent artist and developer 🎨👩‍💻. They love exploring and experimenting with different forms of art, from illustration to animation. 🧐 They enjoy the freedom their work provides and are always looking for new ways to improve their skills and express their creativity. 🚀
 
+**Joshua Djakaria** is an avid board-gamer with a passion for discussing the works of philosophers like Kant, John Rawls, and Alan Watts. When he’s not gaming, he likes to meditate and do yoga. He has over nine years of experience as a software engineer, and he’s excited to use his skills to create video games that people will love.
+
 **CaptianSkilly** is a young creative working in all of the fields involving music, visual art, and writing. He is trying to make his focus in life the mental health and well being of others, to help to change the world into a more loving and accepting place. He also really really likes taco bell, even after he swore to go organic.
