@@ -26,15 +26,19 @@ func Fragment(position vec4, _ vec2, _ vec4) vec4 {
 	c20 := [3]vec3{vec3(float(253)/255, float(137)/255, float(254)/255), vec3(float(238)/255, float(200)/255, float(245)/255), vec3(float(255)/255, float(131)/255, float(255)/255)}
 
 	origC := imageColorAtPixel(position.xy)
-	c := origC.rgb
+	c := origC.rbg
 
-	t := 1.0
+	t := 0.0
 
-	if Dt <= 0.1 { // sunrise
-		t = eoc(Dt / 0.1) // ease-out
-	} else if Dt >= 0.9 { // sunset
-		t = (1 - Dt) / 0.1
+	dt := clamp(Dt, 0.0, 1.0)
+
+	if dt <= 0.1 { // sunrise
+		t = eoc(dt / 0.1) // ease-out
+		t = 1 - t
+	} else if dt >= 0.9 { // sunset
+		t = (1 - dt) / 0.1
 		t = eic(t) // ease-in
+		t = 1 - t
 	}
 
 	if c == c0[0] {
@@ -165,7 +169,7 @@ func Fragment(position vec4, _ vec2, _ vec4) vec4 {
 		}
 	}
 
-	return vec4(c.r, c.g, c.b, origC.a)
+	return vec4(c.r, c.b, c.g, origC.a)
 }
 
 // Helper function to access an image's color at the given pixel coordinates.

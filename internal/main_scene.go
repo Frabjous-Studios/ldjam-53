@@ -99,6 +99,7 @@ type MainScene struct {
 	debouceTime      time.Time
 	dayStartTime     time.Time
 	dayFadeStartTime time.Time
+	dayNight         *ebiten.Shader
 
 	txt *etxt.Renderer
 
@@ -142,6 +143,7 @@ func NewMainScene(g *Game) *MainScene {
 		dialogueLines:   make(chan string),
 		dialogueOptions: make(chan int),
 		lineShown:       make(chan struct{}),
+		dayNight:        Resources.GetShader("day_night"),
 	}
 	result.Day = result.Days[0]
 	result.randomizeTill()
@@ -682,17 +684,19 @@ func (m *MainScene) drawOffscreen(screen *ebiten.Image) {
 	if unif == nil {
 		unif = make(map[string]any)
 	}
-	dt := float64(m.dayLength().Seconds()) / float64(DayLength.Seconds())
+	dt := float32(m.dayLength().Seconds()) / float32(DayLength.Seconds())
 
-	opts := ebiten.DrawRectShaderOptions{}
+	opts := ebiten.DrawRectShaderOptions{
+		Uniforms: unif,
+	}
 	opts.Images[0] = m.offscreen
-	opts.Uniforms = unif
 	opts.Uniforms["Dt"] = dt
+	debug.Println("Dt:", dt)
 
 	screen.DrawRectShader(
 		m.offscreen.Bounds().Dx(),
 		m.offscreen.Bounds().Dy(),
-		Resources.GetShader("day_night"),
+		m.dayNight,
 		&opts)
 }
 
