@@ -6,13 +6,19 @@ package main
 
 import (
 	"github.com/Frabjous-Studios/bankwave/internal"
+	"github.com/Frabjous-Studios/bankwave/internal/debug"
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/audio"
 	"log"
+	"os"
 )
 
 func main() {
 	gameWidth, gameHeight := 640, 480
+	err := os.Setenv("EBITENGINE_GRAPHICS_LIBRARY", "opengl")
+	if err != nil {
+		debug.Println("could not set gfx lib")
+	}
 
 	ebiten.SetWindowSize(gameWidth, gameHeight)
 	ebiten.SetWindowTitle("BankWave: Neon Networth")
