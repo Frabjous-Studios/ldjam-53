@@ -48,6 +48,7 @@ func NewBubbles(m *MainScene) *Bubbles {
 	}
 	result.offscrn = ebiten.NewImage(200, 80)
 	txt := etxt.NewStdRenderer()
+	txt.SetCacheHandler(etxt.NewDefaultCache(4 * 1024 * 1024).NewHandler())
 	txt.SetRasterizer(emask.NewStdEdgeMarkerRasterizer())
 	txt.SetTarget(result.offscrn)
 	txt.SetFont(Resources.GetFont(DialogFont))

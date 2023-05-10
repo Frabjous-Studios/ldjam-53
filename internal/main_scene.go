@@ -154,6 +154,7 @@ func NewMainScene(g *Game) *MainScene {
 	result.Runner, err = NewDialogueRunner(result.vars, result)
 
 	result.txt = etxt.NewStdRenderer()
+	result.txt.SetCacheHandler(etxt.NewDefaultCache(4 * 1024 * 1024).NewHandler())
 	result.txt.SetRasterizer(emask.NewStdEdgeMarkerRasterizer())
 	result.txt.SetFont(Resources.GetFont(IndicatorFont))
 	result.txt.SetAlign(etxt.Top, etxt.Left)
